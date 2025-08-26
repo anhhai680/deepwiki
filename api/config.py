@@ -189,16 +189,7 @@ def load_repo_config():
 def load_lang_config():
     default_config = {
         "supported_languages": {
-            "en": "English",
-            "ja": "Japanese (日本語)",
-            "zh": "Mandarin Chinese (中文)",
-            "zh-tw": "Traditional Chinese (繁體中文)",
-            "es": "Spanish (Español)",
-            "kr": "Korean (한국어)",
-            "vi": "Vietnamese (Tiếng Việt)",
-            "pt-br": "Brazilian Portuguese (Português Brasileiro)",
-            "fr": "Français (French)",
-            "ru": "Русский (Russian)"
+            "en": "English"
         },
         "default": "en"
     }
