@@ -1,13 +1,12 @@
 import os
 import logging
-from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from typing import List, Optional, Dict, Any, Literal
+from typing import List, Optional, Dict, Literal
 import json
 from datetime import datetime
 from pydantic import BaseModel, Field
-import google.generativeai as genai
 import asyncio
 
 # Configure logging
