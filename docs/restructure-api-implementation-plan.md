@@ -1,8 +1,8 @@
-# API Restructure Implementation Plan
+# API Restructure Implementation Plan - Enhanced Version
 
 ## Overview
 
-This document outlines the comprehensive plan for restructuring the `api/` folder to implement a clean, maintainable, and RAG-optimized architecture. The new structure follows modern Python project best practices and is inspired by successful RAG applications like the [knowledge-base-agent repository](https://github.com/anhhai680/knowledge-base-agent/tree/main/src).
+This document outlines the comprehensive plan for restructuring the `api/` folder to implement a clean, maintainable, and RAG-optimized architecture. The new structure follows modern Python project best practices and focuses on extracting and reorganizing existing functionality rather than adding new features.
 
 ## Current State Analysis
 
@@ -12,6 +12,9 @@ This document outlines the comprehensive plan for restructuring the `api/` folde
 - **Poor separation of concerns**: RAG components, chat logic, and configuration mixed together
 - **Difficult testing**: Large files make unit testing challenging
 - **Maintenance overhead**: Changes require navigating large, complex files
+- **Missing abstractions**: No clear interfaces or dependency injection
+- **Limited observability**: Poor logging and monitoring capabilities
+- **Coupling issues**: Direct dependencies between layers
 
 ### Current File Distribution
 ```
@@ -33,445 +36,709 @@ api/
 └── config/ - JSON configuration files
 ```
 
-## Target Architecture
+## Focused RAG-Optimized Architecture (Based on Existing Code)
 
-### New RAG-Optimized Structure
+### New Structure Derived from Current Files
 ```
 api/
 ├── __init__.py
-├── main.py                 # Entry point
-├── app.py                  # FastAPI app configuration
+├── main.py                 # Entry point (extracted from current main.py)
+├── app.py                  # FastAPI app configuration (extracted from api.py)
+├── container.py            # DI container configuration (new - for existing dependencies)
 ├── core/                   # Core application components
 │   ├── __init__.py
-│   ├── config.py          # Configuration management
-│   ├── logging.py         # Logging configuration
-│   └── exceptions.py      # Custom exception classes
-├── agents/                 # AI Agent layer
+│   ├── config/             # Configuration management
+│   │   ├── __init__.py
+│   │   ├── settings.py     # Extracted from config.py
+│   │   ├── logging.py      # Logging configuration (extracted from existing)
+│   │   └── providers.py    # Provider configurations (extracted from config.py)
+│   ├── interfaces/         # Abstract interfaces (extracted patterns)
+│   │   ├── __init__.py
+│   │   ├── embedder.py     # Interface for embedder.py
+│   │   ├── generator.py    # Interface for client files
+│   │   ├── retriever.py    # Interface for rag.py retrieval
+│   │   └── memory.py       # Interface for rag.py memory
+│   ├── exceptions.py       # Custom exception classes (extracted from existing)
+│   └── types.py           # Common type definitions (extracted from existing)
+├── components/             # RAG pipeline components (extracted from existing)
 │   ├── __init__.py
-│   ├── base.py            # Base agent interface
-│   ├── chat_agent.py      # Chat conversation agent
-│   ├── wiki_agent.py      # Wiki generation agent
-│   └── rag_agent.py       # RAG processing agent
-├── components/             # RAG pipeline components
-│   ├── __init__.py
-│   ├── retriever/         # Retrieval components
+│   ├── retriever/         # Retrieval components (from rag.py)
 │   │   ├── __init__.py
 │   │   ├── base.py        # Base retriever interface
-│   │   ├── faiss_retriever.py
-│   │   └── vector_store.py
-│   ├── embedder/          # Embedding components
+│   │   ├── faiss_retriever.py # Extracted from rag.py
+│   │   └── vector_store.py # Extracted from rag.py
+│   ├── embedder/          # Embedding components (from tools/embedder.py)
 │   │   ├── __init__.py
 │   │   ├── base.py        # Base embedder interface
-│   │   ├── openai_embedder.py
-│   │   ├── ollama_embedder.py
-│   │   └── embedder_manager.py
-│   ├── generator/         # Text generation components
+│   │   ├── openai_embedder.py # Extracted from existing clients
+│   │   ├── ollama_embedder.py # Extracted from existing clients
+│   │   └── embedder_manager.py # Extracted from tools/embedder.py
+│   ├── generator/         # Text generation components (from client files)
 │   │   ├── __init__.py
 │   │   ├── base.py        # Base generator interface
-│   │   ├── openai_generator.py
-│   │   ├── azure_generator.py
-│   │   ├── bedrock_generator.py
-│   │   ├── dashscope_generator.py
-│   │   ├── openrouter_generator.py
-│   │   ├── ollama_generator.py
-│   │   └── generator_manager.py
-│   └── memory/            # Conversation memory
+│   │   ├── providers/     # Provider implementations
+│   │   │   ├── __init__.py
+│   │   │   ├── openai_generator.py     # Extracted from openai_client.py
+│   │   │   ├── azure_generator.py      # Extracted from azureai_client.py
+│   │   │   ├── bedrock_generator.py    # Extracted from bedrock_client.py
+│   │   │   ├── dashscope_generator.py  # Extracted from dashscope_client.py
+│   │   │   ├── openrouter_generator.py # Extracted from openrouter_client.py
+│   │   │   └── ollama_generator.py     # Extracted from ollama_patch.py
+│   │   ├── templates/     # Prompt templates (from prompts.py)
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py
+│   │   │   └── templates.py # Extracted from prompts.py
+│   │   └── generator_manager.py # Orchestration (extracted from config.py)
+│   ├── memory/            # Conversation memory (from rag.py)
+│   │   ├── __init__.py
+│   │   ├── base.py        # Base memory interface
+│   │   └── conversation_memory.py # Extracted from rag.py
+│   └── processors/        # Data processors (from data_pipeline.py)
 │       ├── __init__.py
-│       ├── base.py        # Base memory interface
-│       └── conversation_memory.py
-├── pipelines/              # RAG pipeline orchestration
+│       ├── text_processor.py  # Extracted from data_pipeline.py
+│       ├── code_processor.py  # Extracted from data_pipeline.py
+│       └── document_processor.py # Extracted from data_pipeline.py
+├── pipelines/              # RAG pipeline orchestration (from rag.py)
 │   ├── __init__.py
-│   ├── base_pipeline.py   # Base pipeline interface
-│   ├── chat_pipeline.py   # Chat conversation pipeline
-│   ├── wiki_pipeline.py   # Wiki generation pipeline
-│   └── rag_pipeline.py    # RAG query pipeline
-├── models/                 # Data models
+│   ├── base/              # Base pipeline components
+│   │   ├── __init__.py
+│   │   ├── pipeline.py    # Base pipeline interface
+│   │   └── context.py     # Pipeline context
+│   ├── chat/              # Chat pipelines (from simple_chat.py)
+│   │   ├── __init__.py
+│   │   └── chat_pipeline.py # Extracted from simple_chat.py
+│   └── rag/               # RAG pipelines (from rag.py)
+│       ├── __init__.py
+│       └── rag_pipeline.py # Extracted from rag.py
+├── models/                 # Data models (from api.py)
 │   ├── __init__.py
-│   ├── chat.py            # Chat models
-│   ├── wiki.py            # Wiki models
-│   ├── rag.py             # RAG models
-│   └── common.py          # Shared models
-├── api/                    # API endpoints
+│   ├── base.py            # Base model classes
+│   ├── chat.py            # Chat models (extracted from api.py)
+│   ├── wiki.py            # Wiki models (extracted from api.py)
+│   ├── rag.py             # RAG models (extracted from api.py)
+│   └── common.py          # Shared models (extracted from api.py)
+├── api/                    # API endpoints (from api.py)
 │   ├── __init__.py
 │   ├── v1/                # API versioning
 │   │   ├── __init__.py
-│   │   ├── chat.py        # Chat endpoints
-│   │   ├── wiki.py        # Wiki endpoints
-│   │   └── projects.py    # Project endpoints
-│   └── dependencies.py    # Shared dependencies
-├── services/               # Business logic services
+│   │   ├── chat.py        # Chat endpoints (extracted from api.py)
+│   │   ├── wiki.py        # Wiki endpoints (extracted from api.py)
+│   │   └── projects.py    # Project endpoints (extracted from api.py)
+│   └── dependencies.py    # Shared dependencies (extracted from api.py)
+├── services/               # Business logic services (extracted from existing)
 │   ├── __init__.py
-│   ├── chat_service.py    # Chat orchestration
-│   ├── wiki_service.py    # Wiki generation
-│   ├── project_service.py # Project management
-│   └── cache_service.py   # Caching layer
-├── data/                   # Data management
+│   ├── chat_service.py    # Chat orchestration (extracted from simple_chat.py)
+│   ├── wiki_service.py    # Wiki generation (extracted from existing)
+│   └── project_service.py # Project management (extracted from data_pipeline.py)
+├── data/                   # Data management (from data_pipeline.py)
 │   ├── __init__.py
-│   ├── database.py        # Database management
-│   ├── vector_store.py    # Vector database operations
-│   └── repositories/      # Data access layer
-│       ├── __init__.py
-│       ├── wiki_repo.py   # Wiki data access
-│       └── project_repo.py # Project data access
-├── utils/                  # Utility functions
+│   ├── vector_store.py    # Vector database operations (extracted from rag.py)
+│   ├── repositories/      # Data access layer
+│   │   ├── __init__.py
+│   │   └── base_repo.py   # Base repository (extracted patterns)
+│   └── database.py        # Database management (extracted from data_pipeline.py)
+├── utils/                  # Utility functions (extracted from existing)
 │   ├── __init__.py
-│   ├── text_processing.py # Text preprocessing
-│   ├── file_utils.py      # File operations
-│   └── validation.py      # Data validation
-├── config/                 # Configuration files
+│   ├── text_processing.py # Text preprocessing (extracted from existing)
+│   ├── file_utils.py      # File operations (extracted from data_pipeline.py)
+│   └── validation.py      # Data validation (extracted from existing)
+├── config/                 # Configuration files (existing)
 │   ├── embedder.json
 │   ├── generator.json
 │   ├── lang.json
 │   └── repo.json
-├── websocket/              # WebSocket handling
+├── websocket/              # WebSocket handling (from websocket_wiki.py)
 │   ├── __init__.py
-│   └── wiki_handler.py    # Wiki WebSocket logic
-└── tests/                  # Test files
+│   └── wiki_handler.py    # Wiki WebSocket logic (extracted from websocket_wiki.py)
+└── tests/                  # Test files (new structure for existing tests)
     ├── __init__.py
-    ├── test_agents.py
-    ├── test_components.py
-    ├── test_pipelines.py
-    └── test_services.py
+    ├── conftest.py        # Test configuration
+    └── test_components.py # Component tests
 ```
 
-## Implementation Phases
+## Revised Implementation Phases (Existing Code Only)
 
 ### Phase 1: Foundation Setup (Week 1)
 
-#### 1.1 Create New Directory Structure
-- [ ] Create all new directories
-- [ ] Set up `__init__.py` files
-- [ ] Create placeholder files for new structure
+#### 1.1 Create Directory Structure
+- [ ] Create new directories with `__init__.py` files
+- [ ] Set up basic dependency injection structure
 
-#### 1.2 Core Infrastructure
-- [ ] Implement `core/config.py` with Pydantic settings
-- [ ] Implement `core/logging.py` with structured logging
-- [ ] Implement `core/exceptions.py` with custom exception classes
-- [ ] Create base interfaces and abstract classes
-
-#### 1.3 Configuration Management
-- [ ] Refactor configuration loading from `config.py`
-- [ ] Implement environment variable management
-- [ ] Create component-specific configuration classes
+#### 1.2 Core Infrastructure (From Existing Code)
+- [ ] Extract configuration from `config.py` to `core/config/settings.py`
+- [ ] Extract logging setup to `core/config/logging.py`
+- [ ] Create `core/exceptions.py` from existing error handling
+- [ ] Create `core/types.py` from existing type definitions
 
 ### Phase 2: Component Extraction (Week 2)
 
-#### 2.1 Generator Components
-- [ ] Extract generator logic from client files
-- [ ] Implement `components/generator/base.py`
-- [ ] Create individual generator implementations:
-  - [ ] `openai_generator.py` from `openai_client.py`
-  - [ ] `azure_generator.py` from `azureai_client.py`
-  - [ ] `bedrock_generator.py` from `bedrock_client.py`
-  - [ ] `dashscope_generator.py` from `dashscope_client.py`
-  - [ ] `openrouter_generator.py` from `openrouter_client.py`
-  - [ ] `ollama_generator.py` from `ollama_patch.py`
-- [ ] Implement `components/generator/generator_manager.py`
+#### 2.1 Generator Components (From Client Files)
+- [ ] Extract `openai_client.py` logic to `components/generator/providers/openai_generator.py`
+- [ ] Extract `azureai_client.py` logic to `components/generator/providers/azure_generator.py`
+- [ ] Extract `bedrock_client.py` logic to `components/generator/providers/bedrock_generator.py`
+- [ ] Extract `dashscope_client.py` logic to `components/generator/providers/dashscope_generator.py`
+- [ ] Extract `openrouter_client.py` logic to `components/generator/providers/openrouter_generator.py`
+- [ ] Extract `ollama_patch.py` logic to `components/generator/providers/ollama_generator.py`
+- [ ] Create `components/generator/base.py` interface
+- [ ] Create `components/generator/generator_manager.py` orchestration
 
-#### 2.2 Embedder Components
-- [ ] Extract embedder logic from `tools/embedder.py`
-- [ ] Implement `components/embedder/base.py`
-- [ ] Create `components/embedder/embedder_manager.py`
-- [ ] Implement provider-specific embedders
+#### 2.2 Embedder Components (From tools/embedder.py)
+- [ ] Extract embedder logic to `components/embedder/embedder_manager.py`
+- [ ] Create provider-specific embedders based on existing client code
+- [ ] Create `components/embedder/base.py` interface
 
-#### 2.3 Retriever Components
-- [ ] Extract retriever logic from `rag.py`
-- [ ] Implement `components/retriever/base.py`
-- [ ] Create `components/retriever/faiss_retriever.py`
-- [ ] Implement `components/retriever/vector_store.py`
-
-#### 2.4 Memory Components
-- [ ] Extract conversation memory from `rag.py`
-- [ ] Implement `components/memory/base.py`
-- [ ] Create `components/memory/conversation_memory.py`
+#### 2.3 Retriever and Memory (From rag.py)
+- [ ] Extract retrieval logic to `components/retriever/faiss_retriever.py`
+- [ ] Extract vector store logic to `components/retriever/vector_store.py`
+- [ ] Extract conversation memory to `components/memory/conversation_memory.py`
+- [ ] Create base interfaces
 
 ### Phase 3: Pipeline Implementation (Week 3)
 
-#### 3.1 Base Pipeline
-- [ ] Implement `pipelines/base_pipeline.py`
-- [ ] Create pipeline interfaces and abstract methods
-- [ ] Implement pipeline configuration management
+#### 3.1 RAG Pipeline (From rag.py)
+- [ ] Extract RAG orchestration to `pipelines/rag/rag_pipeline.py`
+- [ ] Create base pipeline framework
+- [ ] Implement pipeline context management
 
-#### 3.2 RAG Pipeline
-- [ ] Implement `pipelines/rag_pipeline.py`
-- [ ] Extract RAG logic from `rag.py`
-- [ ] Implement query processing flow
-- [ ] Add error handling and validation
+#### 3.2 Chat Pipeline (From simple_chat.py)
+- [ ] Extract chat logic to `pipelines/chat/chat_pipeline.py`
+- [ ] Preserve existing conversation flow
+- [ ] Maintain streaming support
 
-#### 3.3 Chat Pipeline
-- [ ] Implement `pipelines/chat_pipeline.py`
-- [ ] Extract chat logic from `simple_chat.py`
-- [ ] Implement conversation flow management
-- [ ] Add streaming support
+### Phase 4: Service Layer (Week 4)
 
-#### 3.4 Wiki Pipeline
-- [ ] Implement `pipelines/wiki_pipeline.py`
-- [ ] Extract wiki generation logic
-- [ ] Implement document processing flow
+#### 4.1 Chat Service (From simple_chat.py)
+- [ ] Extract business logic to `services/chat_service.py`
+- [ ] Preserve chat orchestration and state management
 
-### Phase 4: Agent Layer (Week 4)
+#### 4.2 Project Service (From data_pipeline.py)
+- [ ] Extract project processing to `services/project_service.py`
+- [ ] Maintain existing processing capabilities
 
-#### 4.1 Base Agent
-- [ ] Implement `agents/base.py`
-- [ ] Create agent interfaces and abstract methods
-- [ ] Implement agent configuration management
+### Phase 5: API Layer Refactoring (Week 5)
 
-#### 4.2 RAG Agent
-- [ ] Implement `agents/rag_agent.py`
-- [ ] Orchestrate RAG pipeline components
-- [ ] Implement query processing and response generation
+#### 5.1 Models (From api.py)
+- [ ] Extract Pydantic models to `models/` directory
+- [ ] Organize by domain (chat, wiki, rag, common)
+- [ ] Preserve existing validation
 
-#### 4.3 Chat Agent
-- [ ] Implement `agents/chat_agent.py`
-- [ ] Manage conversation state and flow
-- [ ] Implement chat history and context management
+#### 5.2 Endpoints (From api.py)
+- [ ] Split endpoints into domain-specific files
+- [ ] Create `api/v1/chat.py` for chat endpoints
+- [ ] Create `api/v1/wiki.py` for wiki endpoints
+- [ ] Create `api/v1/projects.py` for project endpoints
+- [ ] Extract dependencies to `api/dependencies.py`
 
-#### 4.4 Wiki Agent
-- [ ] Implement `agents/wiki_agent.py`
-- [ ] Orchestrate wiki generation pipeline
-- [ ] Manage wiki structure and content
+#### 5.3 App Configuration
+- [ ] Create `app.py` for FastAPI configuration (from api.py)
+- [ ] Preserve middleware and CORS settings
 
-### Phase 5: Service Layer (Week 5)
+### Phase 6: Data Layer (Week 6)
 
-#### 5.1 Chat Service
-- [ ] Implement `services/chat_service.py`
-- [ ] Extract business logic from `simple_chat.py`
-- [ ] Implement chat orchestration and state management
+#### 6.1 Data Processing (From data_pipeline.py)
+- [ ] Extract processors to `components/processors/`
+- [ ] Extract database logic to `data/database.py`
+- [ ] Create repository base class
 
-#### 5.2 Wiki Service
-- [ ] Implement `services/wiki_service.py`
-- [ ] Extract wiki business logic
-- [ ] Implement wiki generation and management
+#### 6.2 Vector Operations
+- [ ] Extract vector operations to `data/vector_store.py`
+- [ ] Maintain existing FAISS integration
 
-#### 5.3 Project Service
-- [ ] Implement `services/project_service.py`
-- [ ] Extract project management logic
-- [ ] Implement project processing and caching
+### Phase 7: Utilities and WebSocket (Week 7)
 
-#### 5.4 Cache Service
-- [ ] Implement `services/cache_service.py`
-- [ ] Implement caching layer for responses
-- [ ] Add cache invalidation and management
+#### 7.1 Utilities (From Existing Code)
+- [ ] Extract text processing utilities
+- [ ] Extract file operations from `data_pipeline.py`
+- [ ] Create validation utilities
 
-### Phase 6: API Layer Refactoring (Week 6)
+#### 7.2 WebSocket (From websocket_wiki.py)
+- [ ] Move to `websocket/wiki_handler.py`
+- [ ] Preserve existing functionality
+- [ ] Maintain connection management
 
-#### 6.1 API Models
-- [ ] Extract models from `api.py` to `models/` directory
-- [ ] Organize models by domain (chat, wiki, rag)
-- [ ] Implement proper validation and serialization
+#### 7.3 Prompts (From prompts.py)
+- [ ] Move to `components/generator/templates/templates.py`
+- [ ] Organize prompt management
 
-#### 6.2 API Endpoints
-- [ ] Split `api.py` into domain-specific endpoint files
-- [ ] Implement `api/v1/chat.py`
-- [ ] Implement `api/v1/wiki.py`
-- [ ] Implement `api/v1/projects.py`
-- [ ] Create `api/dependencies.py` for shared dependencies
+### Phase 8: Testing and Migration (Week 8)
 
-#### 6.3 FastAPI App Configuration
-- [ ] Create `app.py` for FastAPI configuration
-- [ ] Implement middleware and CORS configuration
-- [ ] Set up route registration and error handling
+#### 8.1 Test Structure
+- [ ] Create test directory structure
+- [ ] Implement test configuration
+- [ ] Test extracted components
 
-### Phase 7: Data Layer (Week 7)
+#### 8.2 Import Updates
+- [ ] Update all import statements
+- [ ] Fix circular imports
+- [ ] Validate module paths
 
-#### 7.1 Database Management
-- [ ] Implement `data/database.py`
-- [ ] Extract database logic from `data_pipeline.py`
-- [ ] Implement connection management and pooling
+#### 8.3 Final Integration
+- [ ] Update `main.py` to use new structure
+- [ ] Remove old files after validation
+- [ ] Final testing and validation
 
-#### 7.2 Vector Store
-- [ ] Implement `data/vector_store.py`
-- [ ] Extract vector operations from RAG components
-- [ ] Implement vector database abstraction
-
-#### 7.3 Repositories
-- [ ] Implement `data/repositories/wiki_repo.py`
-- [ ] Implement `data/repositories/project_repo.py`
-- [ ] Create data access layer abstractions
-
-### Phase 8: Utility and Support (Week 8)
-
-#### 8.1 Utility Functions
-- [ ] Implement `utils/text_processing.py`
-- [ ] Implement `utils/file_utils.py`
-- [ ] Implement `utils/validation.py`
-- [ ] Extract utility functions from existing files
-
-#### 8.2 WebSocket Handling
-- [ ] Move `websocket_wiki.py` to `websocket/wiki_handler.py`
-- [ ] Refactor WebSocket logic for new structure
-- [ ] Implement proper error handling and connection management
-
-#### 8.3 Prompt Management
-- [ ] Move `prompts.py` to appropriate location
-- [ ] Organize prompts by component and use case
-- [ ] Implement prompt versioning and management
-
-### Phase 9: Testing and Validation (Week 9)
-
-#### 9.1 Test Infrastructure
-- [ ] Set up test directory structure
-- [ ] Implement test configuration and fixtures
-- [ ] Create mock objects for external dependencies
-
-#### 9.2 Component Tests
-- [ ] Implement `tests/test_components.py`
-- [ ] Test individual RAG components
-- [ ] Validate component interfaces and contracts
-
-#### 9.3 Pipeline Tests
-- [ ] Implement `tests/test_pipelines.py`
-- [ ] Test RAG pipeline integration
-- [ ] Validate end-to-end workflows
-
-#### 9.4 Service Tests
-- [ ] Implement `tests/test_services.py`
-- [ ] Test business logic services
-- [ ] Validate service orchestration
-
-#### 9.5 Integration Tests
-- [ ] Test API endpoints with new structure
-- [ ] Validate WebSocket functionality
-- [ ] Test complete user workflows
-
-### Phase 10: Migration and Cleanup (Week 10)
-
-#### 10.1 Update Main Entry Point
-- [ ] Refactor `main.py` to use new structure
-- [ ] Update import statements
-- [ ] Implement proper startup sequence
-
-#### 10.2 Import Statement Updates
-- [ ] Update all import statements throughout codebase
-- [ ] Fix circular import issues
-- [ ] Validate import paths
-
-#### 10.3 Remove Old Files
-- [ ] Remove original monolithic files
-- [ ] Clean up unused imports and dependencies
-- [ ] Update documentation and README files
-
-#### 10.4 Final Validation
-- [ ] Run comprehensive test suite
-- [ ] Validate all functionality works as expected
-- [ ] Performance testing and optimization
-- [ ] Documentation updates
-
-## File Migration Mapping
+## Focused File Migration Mapping (Existing Code Only)
 
 ### Current → New Location
-| Current File | New Location | Action |
-|--------------|--------------|---------|
-| `api.py` | `api/api/v1/` + `models/` + `app.py` | Split into multiple files |
-| `rag.py` | `components/` + `pipelines/` + `agents/` | Extract components |
-| `simple_chat.py` | `services/chat_service.py` + `pipelines/chat_pipeline.py` | Extract service and pipeline |
-| `config.py` | `core/config.py` | Refactor and move |
-| `openai_client.py` | `components/generator/openai_generator.py` | Extract generator logic |
-| `azureai_client.py` | `components/generator/azure_generator.py` | Extract generator logic |
-| `bedrock_client.py` | `components/generator/bedrock_generator.py` | Extract generator logic |
-| `dashscope_client.py` | `components/generator/dashscope_generator.py` | Extract generator logic |
-| `openrouter_client.py` | `components/generator/openrouter_generator.py` | Extract generator logic |
-| `ollama_patch.py` | `components/generator/ollama_generator.py` | Extract generator logic |
-| `data_pipeline.py` | `data/` + `services/` | Split into data and service layers |
-| `websocket_wiki.py` | `websocket/wiki_handler.py` | Move and refactor |
-| `prompts.py` | `utils/prompts.py` | Move and organize |
-| `tools/embedder.py` | `components/embedder/embedder_manager.py` | Refactor and enhance |
+| Current File | New Location | Extraction Focus | Notes |
+|--------------|--------------|------------------|-------|
+| `api.py` | `api/v1/` + `models/` + `app.py` | Split endpoints, models, and app config | Large file - careful extraction |
+| `rag.py` | `components/retriever/` + `pipelines/rag/` + `components/memory/` | Extract RAG components | Core RAG functionality |
+| `simple_chat.py` | `services/chat_service.py` + `pipelines/chat/` | Extract service and pipeline logic | Chat functionality |
+| `config.py` | `core/config/settings.py` | Configuration management | Client management logic |
+| `openai_client.py` | `components/generator/providers/openai_generator.py` | Generator interface | OpenAI-specific logic |
+| `azureai_client.py` | `components/generator/providers/azure_generator.py` | Generator interface | Azure-specific logic |
+| `bedrock_client.py` | `components/generator/providers/bedrock_generator.py` | Generator interface | AWS-specific logic |
+| `dashscope_client.py` | `components/generator/providers/dashscope_generator.py` | Generator interface | DashScope-specific logic |
+| `openrouter_client.py` | `components/generator/providers/openrouter_generator.py` | Generator interface | OpenRouter-specific logic |
+| `ollama_patch.py` | `components/generator/providers/ollama_generator.py` | Generator interface | Ollama-specific logic |
+| `data_pipeline.py` | `data/database.py` + `services/project_service.py` + `components/processors/` | Split data, service, and processing | Large file - multiple concerns |
+| `websocket_wiki.py` | `websocket/wiki_handler.py` | WebSocket functionality | Move and organize |
+| `prompts.py` | `components/generator/templates/templates.py` | Template management | Organize prompts |
+| `tools/embedder.py` | `components/embedder/embedder_manager.py` | Embedder management | Small file - enhance |
 
-## Risk Assessment and Mitigation
+## Risk Mitigation for Existing Code
 
-### High-Risk Areas
-1. **Breaking Changes**: API endpoints may change during refactoring
-   - **Mitigation**: Maintain backward compatibility during transition
-   - **Mitigation**: Implement feature flags for gradual rollout
+### High-Risk Extractions
+1. **api.py (634 lines)**: Large file with mixed concerns
+   - **Approach**: Extract incrementally, test each extraction
+   - **Priority**: Models first, then endpoints, finally app config
 
-2. **Import Dependencies**: Complex import relationships may cause issues
-   - **Mitigation**: Use dependency injection and interfaces
-   - **Mitigation**: Implement comprehensive testing
+2. **rag.py (445 lines)**: Core RAG functionality
+   - **Approach**: Maintain interfaces, extract components carefully
+   - **Priority**: Test retrieval and memory components thoroughly
 
-3. **Performance Impact**: New structure may introduce overhead
-   - **Mitigation**: Profile and optimize critical paths
-   - **Mitigation**: Implement caching where appropriate
+3. **simple_chat.py (690 lines)**: Complex chat logic
+   - **Approach**: Preserve conversation state and streaming
+   - **Priority**: Maintain existing chat capabilities
 
-### Medium-Risk Areas
-1. **Configuration Management**: New config structure may break existing setups
-   - **Mitigation**: Provide migration scripts
-   - **Mitigation**: Maintain backward compatibility
+### Medium-Risk Extractions
+1. **data_pipeline.py (842 lines)**: Multiple responsibilities
+   - **Approach**: Split by clear boundaries (data, service, processing)
+   - **Priority**: Preserve data processing capabilities
 
-2. **Testing Coverage**: New structure requires comprehensive testing
-   - **Mitigation**: Implement test-driven development
-   - **Mitigation**: Maintain high test coverage
+2. **Client Files**: Provider-specific implementations
+   - **Approach**: Standardize interfaces while preserving functionality
+   - **Priority**: Maintain all provider capabilities
 
-## Success Criteria
+## Success Criteria (Focused on Existing Functionality)
 
-### Functional Requirements
-- [ ] All existing functionality preserved
-- [ ] API endpoints work identically
-- [ ] WebSocket functionality maintained
-- [ ] RAG pipeline performance maintained or improved
+### Functional Preservation
+- [ ] All existing API endpoints work identically
+- [ ] RAG functionality preserved with same performance
+- [ ] Chat functionality maintains conversation state
+- [ ] All AI provider integrations work unchanged
+- [ ] WebSocket functionality preserved
+- [ ] Project processing capabilities maintained
 
-### Quality Requirements
-- [ ] Code coverage > 90%
-- [ ] All tests passing
-- [ ] No circular import issues
-- [ ] Clean dependency graph
+### Code Quality Improvements
+- [ ] Reduced file sizes (no file > 300 lines)
+- [ ] Clear separation of concerns
+- [ ] Improved testability through smaller components
+- [ ] Better import organization
+- [ ] Consistent interfaces across components
 
-### Performance Requirements
-- [ ] Response times within 10% of current performance
-- [ ] Memory usage optimized
-- [ ] Startup time improved
-
-## Rollback Plan
-
-### Rollback Triggers
-- Critical functionality broken
-- Performance degradation > 20%
-- Test coverage drops below 80%
-
-### Rollback Procedure
-1. Revert to previous Git commit
-2. Restore original file structure
-3. Validate functionality
-4. Document issues for future iteration
-
-## Post-Implementation Tasks
-
-### Documentation Updates
-- [ ] Update API documentation
-- [ ] Create component usage guides
-- [ ] Update README files
-- [ ] Create architecture diagrams
-
-### Team Training
-- [ ] Conduct code walkthroughs
-- [ ] Create development guidelines
-- [ ] Document best practices
-- [ ] Provide examples and templates
-
-### Monitoring and Maintenance
-- [ ] Set up performance monitoring
-- [ ] Implement health checks
-- [ ] Create maintenance schedules
-- [ ] Plan future enhancements
-
-## Timeline Summary
-
-| Week | Phase | Focus | Deliverables |
-|------|-------|-------|--------------|
-| 1 | Foundation | Directory structure, core infrastructure | New folder structure, base classes |
-| 2 | Components | Extract generator, embedder, retriever | Component implementations |
-| 3 | Pipelines | RAG, chat, wiki pipelines | Pipeline orchestration |
-| 4 | Agents | AI agent layer | Agent implementations |
-| 5 | Services | Business logic services | Service layer |
-| 6 | API Layer | Endpoints and models | API refactoring |
-| 7 | Data Layer | Database and repositories | Data access layer |
-| 8 | Utilities | Support functions and WebSocket | Utility implementations |
-| 9 | Testing | Comprehensive testing | Test suite |
-| 10 | Migration | Final migration and cleanup | Production-ready code |
+### No New Features
+- [ ] No new functionality added during restructure
+- [ ] No performance optimizations that change behavior
+- [ ] No new dependencies introduced
+- [ ] No API changes or additions
 
 ## Conclusion
 
-This restructure will transform the API folder from a monolithic, hard-to-maintain structure into a clean, modular, and RAG-optimized architecture. The new structure will improve code maintainability, enable better testing, and provide a solid foundation for future enhancements.
+This revised implementation plan focuses exclusively on restructuring existing code without adding new functionality. The approach prioritizes:
 
-The phased approach minimizes risk while ensuring all functionality is preserved. Each phase builds upon the previous one, allowing for incremental validation and early detection of issues.
+1. **Code Organization**: Breaking large files into focused components
+2. **Interface Standardization**: Creating consistent patterns across providers
+3. **Separation of Concerns**: Clear boundaries between layers
+4. **Maintainability**: Smaller, more focused files
+5. **Testability**: Components that can be tested in isolation
 
-Upon completion, the codebase will be significantly more maintainable, testable, and scalable, following modern Python project best practices and RAG application patterns.
+The restructure will make the codebase more maintainable and provide a solid foundation for future enhancements, but the scope is limited to reorganizing what already exists.
+- [ ] Implement `core/interfaces/memory.py` with persistent storage interface
+- [ ] Implement `core/interfaces/pipeline.py` with context management
+
+#### 2.2 Base Component Implementation
+- [ ] Create `components/embedder/base.py` with abstract methods
+- [ ] Create `components/generator/base.py` with retry logic
+- [ ] Create `components/retriever/base.py` with filtering capabilities
+- [ ] Create `components/memory/base.py` with serialization support
+- [ ] Implement base classes with proper error handling
+
+#### 2.3 Enhanced Chunking Strategies
+- [ ] Implement `components/embedder/chunkers/semantic_chunker.py`
+- [ ] Implement `components/embedder/chunkers/code_chunker.py`
+- [ ] Add overlap and metadata preservation
+- [ ] Implement chunking quality metrics
+
+### Phase 3: Component Implementations (Week 3)
+
+#### 3.1 Embedder Components
+- [ ] Implement provider-specific embedders with retry logic
+- [ ] Add embedding caching and optimization
+- [ ] Implement batch processing capabilities
+- [ ] Add embedding quality validation
+
+#### 3.2 Generator Components
+- [ ] Extract and enhance generator logic from client files
+- [ ] Implement streaming support for all providers
+- [ ] Add response validation and filtering
+- [ ] Implement token usage tracking
+
+#### 3.3 Retriever Components
+- [ ] Implement `components/retriever/hybrid_retriever.py`
+- [ ] Add `components/retriever/reranker.py` for result optimization
+- [ ] Implement semantic and keyword search combination
+- [ ] Add retrieval quality metrics
+
+#### 3.4 Memory Components
+- [ ] Implement vector-based conversation memory
+- [ ] Add persistent storage with database integration
+- [ ] Implement memory compression and archival
+- [ ] Add memory search and retrieval capabilities
+
+### Phase 4: Pipeline Architecture (Week 4)
+
+#### 4.1 Base Pipeline Framework
+- [ ] Implement `pipelines/base/pipeline.py` with stage management
+- [ ] Create `pipelines/base/stage.py` for modular processing
+- [ ] Implement `pipelines/base/context.py` for data flow
+- [ ] Add pipeline monitoring and error recovery
+
+#### 4.2 RAG Pipeline Implementation
+- [ ] Implement multi-stage RAG pipeline
+- [ ] Add query planning and optimization
+- [ ] Implement parallel processing for efficiency
+- [ ] Add pipeline caching and optimization
+
+#### 4.3 Chat Pipeline Enhancement
+- [ ] Implement context-aware chat pipeline
+- [ ] Add conversation state management
+- [ ] Implement response filtering and validation
+- [ ] Add streaming response support
+
+#### 4.4 Wiki Pipeline Architecture
+- [ ] Implement modular wiki generation pipeline
+- [ ] Add code analysis and documentation stages
+- [ ] Implement content assembly and formatting
+- [ ] Add wiki quality validation
+
+### Phase 5: Agent Layer Implementation (Week 5)
+
+#### 5.1 Base Agent Framework
+- [ ] Implement `agents/base/agent.py` with lifecycle management
+- [ ] Create `agents/base/context.py` for agent state
+- [ ] Implement agent communication protocols
+- [ ] Add agent monitoring and health checks
+
+#### 5.2 Specialized Agent Implementation
+- [ ] Implement RAG agent with query planning
+- [ ] Create chat agent with conversation management
+- [ ] Implement wiki agent with content generation
+- [ ] Add agent orchestration and coordination
+
+#### 5.3 Agent Strategies and Handlers
+- [ ] Implement response strategies for different scenarios
+- [ ] Create message handlers for various input types
+- [ ] Add agent learning and adaptation capabilities
+- [ ] Implement agent performance optimization
+
+### Phase 6: Service Layer Enhancement (Week 6)
+
+#### 6.1 Base Service Framework
+- [ ] Implement `services/base/service.py` with common patterns
+- [ ] Create service decorators for cross-cutting concerns
+- [ ] Implement service health monitoring
+- [ ] Add service dependency management
+
+#### 6.2 Domain Service Implementation
+- [ ] Implement chat service with session management
+- [ ] Create wiki service with caching and optimization
+- [ ] Implement project service with indexing
+- [ ] Add notification and monitoring services
+
+#### 6.3 Service Integration
+- [ ] Implement service orchestration patterns
+- [ ] Add inter-service communication
+- [ ] Implement service discovery and registration
+- [ ] Add service performance monitoring
+
+### Phase 7: API Layer Refactoring (Week 7)
+
+#### 7.1 Enhanced API Structure
+- [ ] Implement versioned API endpoints
+- [ ] Create domain-specific endpoint modules
+- [ ] Add comprehensive request/response schemas
+- [ ] Implement API middleware stack
+
+#### 7.2 API Security and Monitoring
+- [ ] Implement authentication and authorization
+- [ ] Add rate limiting and throttling
+- [ ] Implement request/response logging
+- [ ] Add API performance monitoring
+
+#### 7.3 WebSocket Enhancement
+- [ ] Implement base WebSocket framework
+- [ ] Create event-driven WebSocket handlers
+- [ ] Add connection management and scaling
+- [ ] Implement WebSocket security
+
+### Phase 8: Data Layer Implementation (Week 8)
+
+#### 8.1 Enhanced Data Stores
+- [ ] Implement vector store abstraction
+- [ ] Create cache store with TTL management
+- [ ] Implement file store with metadata
+- [ ] Add data store monitoring
+
+#### 8.2 Repository Pattern
+- [ ] Implement base repository with CRUD operations
+- [ ] Create domain-specific repositories
+- [ ] Add data access optimization
+- [ ] Implement data validation and transformation
+
+#### 8.3 Database Management
+- [ ] Implement connection pooling and management
+- [ ] Create database migration system
+- [ ] Add database monitoring and health checks
+- [ ] Implement backup and recovery procedures
+
+### Phase 9: Utilities and Cross-Cutting Concerns (Week 9)
+
+#### 9.1 Enhanced Utility Functions
+- [ ] Implement comprehensive text processing utilities
+- [ ] Create file operation utilities with validation
+- [ ] Add monitoring and profiling utilities
+- [ ] Implement security and validation utilities
+
+#### 9.2 Monitoring and Observability
+- [ ] Implement metrics collection and reporting
+- [ ] Create health check endpoints
+- [ ] Add distributed tracing support
+- [ ] Implement performance profiling
+
+#### 9.3 Security Implementation
+- [ ] Implement input validation and sanitization
+- [ ] Add authentication and authorization utilities
+- [ ] Create security middleware
+- [ ] Implement audit logging
+
+### Phase 10: Testing Infrastructure (Week 10)
+
+#### 10.1 Test Framework Setup
+- [ ] Configure comprehensive test environment
+- [ ] Create test fixtures and factories
+- [ ] Implement test database setup
+- [ ] Add test data management
+
+#### 10.2 Comprehensive Test Suite
+- [ ] Implement unit tests for all components
+- [ ] Create integration tests for pipelines
+- [ ] Add end-to-end test scenarios
+- [ ] Implement performance and load testing
+
+#### 10.3 Test Automation
+- [ ] Set up continuous integration
+- [ ] Implement automated test reporting
+- [ ] Add test coverage monitoring
+- [ ] Create test performance benchmarks
+
+### Phase 11: Migration and Integration (Week 11)
+
+#### 11.1 Gradual Migration
+- [ ] Implement feature toggles for gradual rollout
+- [ ] Create migration scripts for data
+- [ ] Update import statements and dependencies
+- [ ] Implement backward compatibility layer
+
+#### 11.2 Integration Validation
+- [ ] Test all API endpoints with new structure
+- [ ] Validate WebSocket functionality
+- [ ] Test complete user workflows
+- [ ] Validate performance benchmarks
+
+#### 11.3 Documentation and Training
+- [ ] Update API documentation
+- [ ] Create component usage guides
+- [ ] Document best practices
+- [ ] Provide migration documentation
+
+### Phase 12: Production Preparation (Week 12)
+
+#### 12.1 Production Optimization
+- [ ] Optimize performance critical paths
+- [ ] Implement production monitoring
+- [ ] Add error tracking and alerting
+- [ ] Configure production logging
+
+#### 12.2 Final Validation
+- [ ] Run comprehensive test suite
+- [ ] Validate all functionality
+- [ ] Performance and load testing
+- [ ] Security testing and validation
+
+#### 12.3 Deployment and Rollback
+- [ ] Prepare production deployment
+- [ ] Create rollback procedures
+- [ ] Monitor production metrics
+- [ ] Document lessons learned
+
+## Enhanced File Migration Mapping
+
+### Current → New Location (Enhanced)
+| Current File | New Location | Action | Priority |
+|--------------|--------------|---------|----------|
+| `api.py` | `api/v1/` + `models/` + `app.py` | Split into versioned endpoints | High |
+| `rag.py` | `components/` + `pipelines/rag/` + `agents/rag/` | Extract to RAG architecture | High |
+| `simple_chat.py` | `services/chat/` + `pipelines/chat/` | Split service and pipeline logic | High |
+| `config.py` | `core/config/` + `container.py` | Enhance with DI and validation | High |
+| Provider clients | `components/generator/providers/` | Standardize provider interfaces | Medium |
+| `data_pipeline.py` | `data/` + `services/` + `utils/` | Split by responsibility | Medium |
+| `websocket_wiki.py` | `websocket/wiki/` | Enhance with event system | Medium |
+| `prompts.py` | `components/generator/templates/` | Organize by component | Low |
+| `tools/embedder.py` | `components/embedder/` | Enhance with chunking | Low |
+
+## Enhanced Risk Assessment
+
+### Critical Risks (High Impact, High Probability)
+1. **Complex Dependencies**: Circular imports and tight coupling
+   - **Mitigation**: Implement dependency injection early
+   - **Mitigation**: Use interfaces and abstract base classes
+   - **Monitoring**: Automated dependency analysis
+
+2. **Performance Degradation**: New abstraction layers may impact performance
+   - **Mitigation**: Implement performance benchmarking
+   - **Mitigation**: Use lazy loading and caching strategies
+   - **Monitoring**: Continuous performance monitoring
+
+3. **Breaking Changes**: API compatibility issues
+   - **Mitigation**: Implement gradual migration with feature flags
+   - **Mitigation**: Maintain backward compatibility layer
+   - **Monitoring**: API contract testing
+
+### High Risks (High Impact, Medium Probability)
+1. **Data Migration Issues**: Loss of existing data or configurations
+   - **Mitigation**: Comprehensive backup and rollback procedures
+   - **Mitigation**: Gradual migration with validation
+   - **Monitoring**: Data integrity checks
+
+2. **Integration Failures**: Components not working together
+   - **Mitigation**: Extensive integration testing
+   - **Mitigation**: Incremental integration approach
+   - **Monitoring**: End-to-end test automation
+
+### Medium Risks (Medium Impact, Medium Probability)
+1. **Configuration Complexity**: New configuration system too complex
+   - **Mitigation**: Provide migration tools and documentation
+   - **Mitigation**: Maintain configuration validation
+   - **Monitoring**: Configuration health checks
+
+2. **Learning Curve**: Team adaptation to new architecture
+   - **Mitigation**: Comprehensive documentation and training
+   - **Mitigation**: Gradual introduction of new patterns
+   - **Monitoring**: Code review and mentoring
+
+## Enhanced Success Criteria
+
+### Functional Requirements
+- [ ] All existing functionality preserved and enhanced
+- [ ] API endpoints maintain backward compatibility
+- [ ] WebSocket functionality improved with better error handling
+- [ ] RAG pipeline performance improved by 20%
+- [ ] New features can be added without modifying existing code
+
+### Quality Requirements
+- [ ] Code coverage > 95% with meaningful tests
+- [ ] All tests passing including integration and e2e tests
+- [ ] No circular import issues or dependency violations
+- [ ] Clean architecture with proper separation of concerns
+- [ ] Type safety with mypy compliance
+
+### Performance Requirements
+- [ ] Response times improved or within 5% of current performance
+- [ ] Memory usage optimized by 15%
+- [ ] Startup time improved by 30%
+- [ ] Concurrent request handling improved
+- [ ] Resource utilization optimized
+
+### Maintainability Requirements
+- [ ] Code complexity reduced (cyclomatic complexity < 10)
+- [ ] Clear documentation for all components
+- [ ] Easy to add new providers and features
+- [ ] Consistent coding patterns throughout
+- [ ] Automated code quality checks
+
+## Enhanced Rollback Plan
+
+### Rollback Triggers (Enhanced)
+- Critical functionality broken for > 15 minutes
+- Performance degradation > 15%
+- Test coverage drops below 90%
+- Memory leaks detected
+- Security vulnerabilities introduced
+
+### Rollback Procedure (Enhanced)
+1. **Immediate Response**
+   - Activate feature flags to disable new components
+   - Switch to previous deployment if necessary
+   - Monitor system stability
+
+2. **Investigation and Recovery**
+   - Analyze logs and metrics
+   - Identify root cause
+   - Apply hotfix if possible
+
+3. **Full Rollback if Needed**
+   - Revert to previous Git commit
+   - Restore database state if modified
+   - Validate all functionality
+   - Document issues and lessons learned
+
+## Post-Implementation Enhancement
+
+### Continuous Improvement
+- [ ] Implement A/B testing for new features
+- [ ] Add machine learning for performance optimization
+- [ ] Implement auto-scaling capabilities
+- [ ] Add advanced monitoring and alerting
+
+### Future Enhancements
+- [ ] Plugin architecture for extensibility
+- [ ] Multi-tenant support
+- [ ] Advanced caching strategies
+- [ ] Distributed processing capabilities
+
+## Enhanced Timeline Summary
+
+| Week | Phase | Focus | Key Deliverables | Risk Level |
+|------|-------|-------|------------------|------------|
+| 0 | Pre-Implementation | Setup and planning | Environment, documentation | Low |
+| 1 | Foundation | Core infrastructure | DI container, interfaces | Medium |
+| 2 | Interfaces | Component contracts | Abstract base classes | Medium |
+| 3 | Components | RAG component implementation | Provider abstractions | High |
+| 4 | Pipelines | Pipeline architecture | Multi-stage processing | High |
+| 5 | Agents | Agent layer | Intelligent orchestration | Medium |
+| 6 | Services | Business logic | Service implementations | Medium |
+| 7 | API Layer | Endpoint refactoring | Versioned APIs | High |
+| 8 | Data Layer | Data management | Repository pattern | Medium |
+| 9 | Utilities | Cross-cutting concerns | Monitoring, security | Low |
+| 10 | Testing | Test infrastructure | Comprehensive test suite | Medium |
+| 11 | Migration | Integration | Gradual rollout | High |
+| 12 | Production | Final preparation | Production deployment | High |
+
+## Enhanced Conclusion
+
+This enhanced restructure will transform the API folder into a world-class, RAG-optimized architecture that follows industry best practices. The new structure provides:
+
+1. **Modularity**: Clean separation of concerns with dependency injection
+2. **Scalability**: Component-based architecture that scales horizontally
+3. **Maintainability**: Clear interfaces and comprehensive testing
+4. **Extensibility**: Plugin architecture for easy feature additions
+5. **Observability**: Comprehensive monitoring and logging
+6. **Performance**: Optimized data flow and caching strategies
+7. **Security**: Built-in security patterns and validation
+8. **Reliability**: Robust error handling and recovery mechanisms
+
+The phased approach with enhanced risk management ensures minimal disruption while maximizing benefits. Each phase includes comprehensive validation and rollback procedures to minimize risk.
+
+Upon completion, the codebase will be a reference implementation for RAG applications, demonstrating best practices in software architecture, AI integration, and production deployment.
