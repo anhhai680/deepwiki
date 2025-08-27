@@ -96,7 +96,31 @@
 
 **Files**: `api/api.py`, `api/main.py`
 
-### 2. Client Factory Pattern
+### 2. Pipeline Architecture Pattern
+**Pattern**: Modular pipeline framework for orchestrating complex workflows
+**Implementation**: 
+- `BasePipeline`: Core orchestration logic with stage execution
+- `PipelineStage`: Abstract base for discrete processing units  
+- `PipelineContext`: Data and metadata flow management
+- Specialized pipelines: `RAGPipeline`, `ChatPipeline`
+
+**Files**: `api/pipelines/base/`, `api/pipelines/rag/`, `api/pipelines/chat/`
+**Benefits**:
+- **Modularity**: Individual stages can be tested and reused
+- **Extensibility**: New pipelines and stages easily added
+- **Error Handling**: Comprehensive error management per stage
+- **Observability**: Detailed logging and metadata tracking
+- **Maintainability**: Clear separation of concerns
+
+**Usage Example**:
+```python
+# Create and execute RAG pipeline
+pipeline = RAGPipeline(provider="google", model="gemini-pro")
+pipeline.prepare_retriever(repo_url)
+answer, docs = pipeline.call(query="What does this code do?")
+```
+
+### 3. Client Factory Pattern
 **Pattern**: Factory pattern for different AI service clients
 **Implementation**:
 - Base client interfaces
