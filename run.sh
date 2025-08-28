@@ -1,1 +1,1 @@
-uv run -m api.main
+uv run -m backend.main
