@@ -26,7 +26,7 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 @pytest.fixture(scope="session")
 def fastapi_app():
     """Provide the FastAPI app without starting a server."""
-    from api.app import create_app
+    from backend.app import create_app
 
     return create_app()
 

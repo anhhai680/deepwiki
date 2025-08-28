@@ -6,7 +6,7 @@ after extraction from data_pipeline.py.
 """
 
 import pytest
-from api.services.project_service import ProjectService, get_project_service, create_project_service
+from backend.services.project_service import ProjectService, get_project_service, create_project_service
 
 
 class TestProjectService:

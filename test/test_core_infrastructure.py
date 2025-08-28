@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 
 # Import the extracted core infrastructure
-from api.core.config import (
+from backend.core.config import (
     ConfigurationManager,
     get_config_manager,
     initialize_config,
@@ -22,14 +22,14 @@ from api.core.config import (
     get_excluded_dirs,
     get_excluded_files
 )
-from api.core.config.logging import setup_logging, get_logger
-from api.core.exceptions import (
+from backend.core.config.logging import setup_logging, get_logger
+from backend.core.exceptions import (
     DeepWikiException,
     ConfigurationError,
     ValidationError,
     ProcessingError
 )
-from api.core.types import (
+from backend.core.types import (
     WikiPage,
     RepoInfo,
     ChatMessage,

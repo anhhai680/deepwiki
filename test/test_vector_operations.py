@@ -10,10 +10,10 @@ import numpy as np
 from unittest.mock import Mock, MagicMock
 
 # Import the components to test
-from api.data.vector_store import VectorStore
-from api.data.faiss_integration import FAISSIntegration, FAISSCompatibilityWrapper
-from api.data.vector_operations import VectorOperationsManager
-from api.data.vector_compatibility import (
+from backend.data.vector_store import VectorStore
+from backend.data.faiss_integration import FAISSIntegration, FAISSCompatibilityWrapper
+from backend.data.vector_operations import VectorOperationsManager
+from backend.data.vector_compatibility import (
     create_vector_operations_manager,
     create_faiss_compatibility_wrapper,
     validate_embeddings,

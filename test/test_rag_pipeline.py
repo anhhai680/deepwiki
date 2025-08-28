@@ -10,17 +10,17 @@ import logging
 from unittest.mock import Mock, patch, MagicMock
 from typing import List, Dict, Any
 
-from api.pipelines.rag.rag_pipeline import RAGPipeline
-from api.pipelines.rag.rag_context import RAGPipelineContext
-from api.pipelines.rag.steps import (
+from backend.pipelines.rag.rag_pipeline import RAGPipeline
+from backend.pipelines.rag.rag_context import RAGPipelineContext
+from backend.pipelines.rag.steps import (
     RepositoryPreparationStep,
     RetrieverInitializationStep,
     DocumentRetrievalStep,
     ResponseGenerationStep,
     MemoryUpdateStep
 )
-from api.pipelines.rag.compatibility import RAGCompatibility, create_rag
-from api.pipelines.base import PipelineStep, PipelineContext
+from backend.pipelines.rag.compatibility import RAGCompatibility, create_rag
+from backend.pipelines.base import PipelineStep, PipelineContext
 
 # Configure logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -184,7 +184,7 @@ class TestRAGPipelineSteps:
         assert not step.validate_input(None)
         
         # Test output validation - mock a FAISS retriever
-        from api.components.retriever.faiss_retriever import FAISSRetriever
+        from backend.components.retriever.faiss_retriever import FAISSRetriever
         mock_retriever = Mock(spec=FAISSRetriever)
         assert step.validate_output(mock_retriever)
         assert not step.validate_output(None)
@@ -194,7 +194,7 @@ class TestRAGPipelineSteps:
         step = DocumentRetrievalStep()
         
         # Test validation
-        from api.components.retriever.faiss_retriever import FAISSRetriever
+        from backend.components.retriever.faiss_retriever import FAISSRetriever
         mock_retriever = Mock(spec=FAISSRetriever)
         valid_input = ("test query", mock_retriever)
         assert step.validate_input(valid_input)
@@ -355,7 +355,7 @@ class TestRAGCompatibility:
 class TestPipelineIntegration:
     """Test pipeline integration and workflow."""
     
-    @patch('api.pipelines.rag.steps.repository_preparation.DatabaseManager')
+    @patch('backend.pipelines.rag.steps.repository_preparation.DatabaseManager')
     def test_pipeline_workflow(self, mock_db_manager):
         """Test the complete pipeline workflow."""
         # Mock the database manager

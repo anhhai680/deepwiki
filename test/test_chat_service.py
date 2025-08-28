@@ -9,7 +9,7 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from fastapi import HTTPException
 
-from api.services.chat_service import ChatService, get_chat_service, create_chat_service
+from backend.services.chat_service import ChatService, get_chat_service, create_chat_service
 
 
 class TestChatService:
@@ -79,7 +79,7 @@ class TestChatService:
     def test_validate_and_preprocess_request_large_input(self):
         """Test request validation with large input detection."""
         # Mock count_tokens to return a large number
-        with patch('api.services.chat_service.count_tokens', return_value=9000):
+        with patch('backend.services.chat_service.count_tokens', return_value=9000):
             result = self.chat_service._validate_and_preprocess_request(
                 repo_url="https://github.com/user/repo",
                 messages=self.sample_messages,

@@ -26,8 +26,8 @@ FROM python:3.11-slim AS py_deps
 WORKDIR /app
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-COPY api/requirements.txt ./api/
-RUN pip install --no-cache -r api/requirements.txt
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache -r backend/requirements.txt
 
 # Use Python 3.11 as final image
 FROM python:3.11-slim
@@ -65,7 +65,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy Python dependencies
 COPY --from=py_deps /opt/venv /opt/venv
-COPY api/ ./api/
+COPY backend/ ./backend/
 
 # Copy Node app
 COPY --from=node_builder /app/public ./public
@@ -90,7 +90,7 @@ if [ -z "$OPENAI_API_KEY" ] || [ -z "$GOOGLE_API_KEY" ]; then\n\
 fi\n\
 \n\
 # Start the API server in the background with the configured port\n\
-python -m api.main --port ${PORT:-8001} &\n\
+python -m backend.main --port ${PORT:-8001} &\n\
 PORT=3000 HOSTNAME=0.0.0.0 node server.js &\n\
 wait -n\n\
 exit $?' > /app/start.sh && chmod +x /app/start.sh

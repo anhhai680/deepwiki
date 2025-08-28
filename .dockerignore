@@ -58,3 +58,4 @@ LICENSE
 screenshots/
 *.md
 !api/README.md
+!backend/README.md

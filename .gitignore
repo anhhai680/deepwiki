@@ -67,3 +67,6 @@ next-env.d.ts
 
 # ignore adding self-signed certs
 certs/
+
+backend/logs/
+*.log
