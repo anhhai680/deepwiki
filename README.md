@@ -25,7 +25,7 @@
 - **Easy Navigation**: Simple, intuitive interface to explore the wiki
 - **Ask Feature**: Chat with your repository using RAG-powered AI to get accurate answers
 - **DeepResearch**: Multi-turn research process that thoroughly investigates complex topics
-- **Multiple Model Providers**: Support for Google Gemini, OpenAI, OpenRouter, and local Ollama models
+- **Multiple Model Providers**: Support for Google Gemini, OpenAI, OpenRouter, Azure OpenAI, and local Ollama models
 
 ## 🚀 Quick Start (Super Easy!)
 
@@ -81,10 +81,10 @@ OLLAMA_HOST=your_ollama_host
 
 ```bash
 # Install Python dependencies
-pip install -r api/requirements.txt
+pip install -r backend/requirements.txt
 
 # Start the API server
-python -m api.main
+python -m backend.main
 ```
 
 #### Step 3: Start the Frontend
@@ -162,22 +162,39 @@ graph TD
 
 ```
 deepwiki/
-├── api/                  # Backend API server
-│   ├── main.py           # API entry point
-│   ├── api.py            # FastAPI implementation
-│   ├── rag.py            # Retrieval Augmented Generation
-│   ├── data_pipeline.py  # Data processing utilities
-│   └── requirements.txt  # Python dependencies
+├── backend/               # Backend API server
+│   ├── main.py            # API entry point
+│   ├── app.py             # FastAPI application configuration
+│   ├── api/               # API endpoints and routers
+│   │   └── v1/            # API version 1
+│   │       ├── chat.py    # Chat endpoints
+│   │       ├── config.py  # Configuration endpoints
+│   │       ├── core.py    # Core API endpoints
+│   │       ├── projects.py # Project management endpoints
+│   │       └── wiki.py    # Wiki generation endpoints
+│   ├── components/        # Core system components
+│   │   ├── embedder/      # Embedding and vector operations
+│   │   ├── generator/     # AI text generation
+│   │   ├── memory/        # Memory and context management
+│   │   ├── processors/    # Data processing pipelines
+│   │   └── retriever/     # RAG retrieval components
+│   ├── config/            # Configuration files
+│   ├── data/              # Data storage and database
+│   ├── models/            # Data models and schemas
+│   ├── pipelines/         # Processing pipelines
+│   ├── services/          # Business logic services
+│   ├── utils/             # Utility functions
+│   └── requirements.txt   # Python dependencies
 │
-├── src/                  # Frontend Next.js app
-│   ├── app/              # Next.js app directory
-│   │   └── page.tsx      # Main application page
-│   └── components/       # React components
-│       └── Mermaid.tsx   # Mermaid diagram renderer
+├── src/                   # Frontend Next.js app
+│   ├── app/               # Next.js app directory
+│   │   └── page.tsx       # Main application page
+│   └── components/        # React components
+│       └── Mermaid.tsx    # Mermaid diagram renderer
 │
-├── public/               # Static assets
-├── package.json          # JavaScript dependencies
-└── .env                  # Environment variables (create this)
+├── public/                # Static assets
+├── package.json           # JavaScript dependencies
+└── .env                   # Environment variables (create this)
 ```
 
 ## 🤖 Provider-Based Model Selection System
@@ -233,7 +250,7 @@ DeepWiki uses JSON configuration files to manage various aspects of the system:
    - Contains file filters to exclude certain files and directories
    - Defines repository size limits and processing rules
 
-By default, these files are located in the `api/config/` directory. You can customize their location using the `DEEPWIKI_CONFIG_DIR` environment variable.
+By default, these files are located in the `backend/config/` directory. You can customize their location using the `DEEPWIKI_CONFIG_DIR` environment variable.
 
 ### Custom Model Selection for Service Providers
 
@@ -259,7 +276,7 @@ The OpenAI Client's base_url configuration is designed primarily for enterprise 
 
 If you want to use embedding models compatible with the OpenAI API (such as Alibaba Qwen), follow these steps:
 
-1. Replace the contents of `api/config/embedder.json` with those from `api/config/embedder_openai_compatible.json`.
+1. Replace the contents of `backend/config/embedder.json` with those from `backend/config/embedder_openai_compatible.json`.
 2. In your project root `.env` file, set the relevant environment variables, for example:
    ```
    OPENAI_API_KEY=your_api_key
@@ -276,20 +293,20 @@ DeepWiki uses Python's built-in `logging` module for diagnostic output. You can 
 | Variable        | Description                                                        | Default                      |
 |-----------------|--------------------------------------------------------------------|------------------------------|
 | `LOG_LEVEL`     | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).             | INFO                         |
-| `LOG_FILE_PATH` | Path to the log file. If set, logs will be written to this file.   | `api/logs/application.log`   |
+| `LOG_FILE_PATH` | Path to the log file. If set, logs will be written to this file.   | `backend/logs/application.log`   |
 
 To enable debug logging and direct logs to a custom file:
 ```bash
 export LOG_LEVEL=DEBUG
 export LOG_FILE_PATH=./debug.log
-python -m api.main
+python -m backend.main
 ```
 Or with Docker Compose:
 ```bash
 LOG_LEVEL=DEBUG LOG_FILE_PATH=./debug.log docker-compose up
 ```
 
-When running with Docker Compose, the container's `api/logs` directory is bind-mounted to `./api/logs` on your host (see the `volumes` section in `docker-compose.yml`), ensuring log files persist across restarts.
+When running with Docker Compose, the container's `backend/logs` directory is bind-mounted to `./backend/logs` on your host (see the `volumes` section in `docker-compose.yml`), ensuring log files persist across restarts.
 
 Alternatively, you can store these settings in your `.env` file:
 
@@ -303,7 +320,7 @@ Then simply run:
 docker-compose up
 ```
 
-**Logging Path Security Considerations:** In production environments, ensure the `api/logs` directory and any custom log file path are secured with appropriate filesystem permissions and access controls. The application enforces that `LOG_FILE_PATH` resides within the project's `api/logs` directory to prevent path traversal or unauthorized writes.
+**Logging Path Security Considerations:** In production environments, ensure the `backend/logs` directory and any custom log file path are secured with appropriate filesystem permissions and access controls. The application enforces that `LOG_FILE_PATH` resides within the project's `backend/logs` directory to prevent path traversal or unauthorized writes.
 
 ## 🛠️ Advanced Setup
 
@@ -452,7 +469,7 @@ The API server provides:
 - RAG (Retrieval Augmented Generation)
 - Streaming chat completions
 
-For more details, see the [API README](./api/README.md).
+For more details, see the [Backend README](./backend/README.md).
 
 ## 🔌 OpenRouter Integration
 

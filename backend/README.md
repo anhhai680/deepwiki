@@ -1,14 +1,43 @@
-# 🚀 DeepWiki API
+# 🚀 DeepWiki Backend API
 
-This is the backend API for DeepWiki, providing smart code analysis and AI-powered documentation generation.
+This is the backend API for DeepWiki, providing smart code analysis and AI-powered documentation generation with a modular, scalable architecture.
 
 ## ✨ Features
 
-- **Streaming AI Responses**: Real-time responses using Google's Generative AI (Gemini)
+- **Modular Architecture**: Clean separation of concerns with domain-specific routers
+- **Streaming AI Responses**: Real-time responses using multiple AI providers
 - **Smart Code Analysis**: Automatically analyzes GitHub repositories
 - **RAG Implementation**: Retrieval Augmented Generation for context-aware responses
 - **Local Storage**: All data stored locally - no cloud dependencies
 - **Conversation History**: Maintains context across multiple questions
+- **Multi-Provider Support**: Google Gemini, OpenAI, OpenRouter, Azure OpenAI, and Ollama
+
+## 🏗️ Architecture Overview
+
+The backend follows a modular architecture pattern:
+
+```
+backend/
+├── main.py              # Application entry point
+├── app.py               # FastAPI application configuration
+├── api/                 # API layer
+│   └── v1/             # Version 1 API endpoints
+│       ├── chat.py      # Chat and conversation endpoints
+│       ├── config.py    # Configuration management
+│       ├── core.py      # Core API functionality
+│       ├── projects.py  # Project management
+│       └── wiki.py      # Wiki generation
+├── components/          # Core system components
+│   ├── embedder/        # Vector embeddings and storage
+│   ├── generator/       # AI text generation
+│   ├── memory/          # Context and memory management
+│   ├── processors/      # Data processing pipelines
+│   └── retriever/       # RAG retrieval system
+├── services/            # Business logic layer
+├── models/              # Data models and schemas
+├── data/                # Data storage and database
+└── utils/               # Utility functions
+```
 
 ## 🔧 Quick Setup
 
@@ -16,7 +45,7 @@ This is the backend API for DeepWiki, providing smart code analysis and AI-power
 
 ```bash
 # From the project root
-pip install -r api/requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 ### Step 2: Set Up Environment Variables
@@ -30,6 +59,9 @@ OPENAI_API_KEY=your_openai_api_key        # Required for embeddings and OpenAI m
 
 # Optional API Keys
 OPENROUTER_API_KEY=your_openrouter_api_key  # Required only if using OpenRouter models
+AZURE_OPENAI_API_KEY=your_azure_openai_api_key      # Required for Azure OpenAI models
+AZURE_OPENAI_ENDPOINT=your_azure_openai_endpoint    # Required for Azure OpenAI models
+AZURE_OPENAI_VERSION=your_azure_openai_version      # Required for Azure OpenAI models
 
 # AWS Bedrock Configuration
 AWS_ACCESS_KEY_ID=your_aws_access_key_id      # Required for AWS Bedrock models
@@ -45,6 +77,8 @@ OLLAMA_HOST=https://your_ollama_host"  # Optional: Add Ollama host if not local.
 
 # Server Configuration
 PORT=8001  # Optional, defaults to 8001
+HOST=0.0.0.0  # Optional, defaults to 0.0.0.0
+RELOAD=false  # Optional, enable auto-reload for development
 ```
 
 If you're not using Ollama mode, you need to configure an OpenAI API key for embeddings. Other API keys are only required when configuring and using models from the corresponding providers.
@@ -63,6 +97,7 @@ DeepWiki supports multiple LLM providers. The environment variables above are re
 - **Google Gemini**: Requires `GOOGLE_API_KEY`
 - **OpenAI**: Requires `OPENAI_API_KEY`
 - **OpenRouter**: Requires `OPENROUTER_API_KEY`
+- **Azure OpenAI**: Requires `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, and `AZURE_OPENAI_VERSION`
 - **AWS Bedrock**: Requires `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
 - **Ollama**: No API key required (runs locally)
 
@@ -82,19 +117,19 @@ OPENAI_BASE_URL=https://custom-openai-endpoint.com/v1
 DeepWiki now uses JSON configuration files to manage various system components instead of hardcoded values:
 
 1. **`generator.json`**: Configuration for text generation models
-   - Located in `api/config/` by default
-   - Defines available model providers (Google, OpenAI, OpenRouter, AWS Bedrock, Ollama)
+   - Located in `backend/config/` by default
+   - Defines available model providers (Google, OpenAI, OpenRouter, Azure OpenAI, AWS Bedrock, Ollama)
    - Specifies default and available models for each provider
    - Contains model-specific parameters like temperature and top_p
 
 2. **`embedder.json`**: Configuration for embedding models and text processing
-   - Located in `api/config/` by default
+   - Located in `backend/config/` by default
    - Defines embedding models for vector storage
    - Contains retriever configuration for RAG
    - Specifies text splitter settings for document chunking
 
 3. **`repo.json`**: Configuration for repository handling
-   - Located in `api/config/` by default
+   - Located in `backend/config/` by default
    - Contains file filters to exclude certain files and directories
    - Defines repository size limits and processing rules
 
@@ -111,9 +146,15 @@ This allows you to maintain different configurations for various environments or
 ```bash
 # From the project root
 python -m backend.main
+
+# Or with custom port/host
+python -m backend.main --port 8002 --host 127.0.0.1
+
+# Or with auto-reload for development
+RELOAD=true python -m backend.main
 ```
 
-The API will be available at `http://localhost:8001`
+The API will be available at `http://localhost:8001` (or your custom port)
 
 ## 🧠 How It Works
 
@@ -137,10 +178,23 @@ When you ask a question:
 
 ## 📡 API Endpoints
 
-### GET /
+### Core Endpoints
+
+#### GET /
 Returns basic API information and available endpoints.
 
-### POST /chat/completions/stream
+#### GET /health
+Health check endpoint for monitoring.
+
+#### GET /docs
+Interactive API documentation (Swagger UI).
+
+#### GET /redoc
+Alternative API documentation (ReDoc).
+
+### Chat Endpoints
+
+#### POST /api/v1/chat/completions/stream
 Streams an AI-generated response about a GitHub repository.
 
 **Request Body:**
@@ -161,13 +215,37 @@ Streams an AI-generated response about a GitHub repository.
 **Response:**
 A streaming response with the generated text.
 
+### Wiki Endpoints
+
+#### POST /api/v1/wiki/generate
+Generates a complete wiki for a repository.
+
+#### GET /api/v1/wiki/status/{task_id}
+Checks the status of a wiki generation task.
+
+### Project Endpoints
+
+#### GET /api/v1/projects
+Lists all processed projects.
+
+#### DELETE /api/v1/projects/{project_id}
+Deletes a project and its associated data.
+
+### Configuration Endpoints
+
+#### GET /api/v1/config
+Retrieves current configuration.
+
+#### PUT /api/v1/config
+Updates configuration settings.
+
 ## 📝 Example Code
 
 ```python
 import requests
 
 # API endpoint
-url = "http://localhost:8001/chat/completions/stream"
+url = "http://localhost:8001/api/v1/chat/completions/stream"
 
 # Request data
 payload = {
@@ -197,3 +275,61 @@ All data is stored locally on your machine:
 - Generated wiki cache: `~/.adalflow/wikicache/`
 
 No cloud storage is used - everything runs on your computer!
+
+## 🔧 Development
+
+### Running in Development Mode
+
+```bash
+# Enable auto-reload
+RELOAD=true python -m backend.main
+
+# Or use the environment variable
+export RELOAD=true
+python -m backend.main
+```
+
+### Project Structure
+
+The backend follows a clean architecture pattern:
+
+- **`main.py`**: Application entry point and server configuration
+- **`app.py`**: FastAPI application setup and middleware configuration
+- **`api/v1/`**: Versioned API endpoints organized by domain
+- **`components/`**: Core system components (embedder, generator, retriever, etc.)
+- **`services/`**: Business logic layer
+- **`models/`**: Data models and Pydantic schemas
+- **`utils/`**: Utility functions and helpers
+
+### Adding New Endpoints
+
+1. Create a new router in `api/v1/`
+2. Define your endpoints using FastAPI decorators
+3. Include the router in `app.py`
+4. Add appropriate tests
+
+### Configuration Management
+
+Configuration is managed through:
+- Environment variables for sensitive data
+- JSON configuration files for system settings
+- Runtime configuration updates via API endpoints
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+# From the project root
+python -m pytest test/
+
+# Or with coverage
+python -m pytest test/ --cov=backend
+```
+
+## 📚 Additional Resources
+
+- [Main README](../README.md) - Complete project overview
+- [Frontend Documentation](../src/README.md) - Frontend setup and usage
+- [Configuration Guide](../docs/) - Detailed configuration options
+- [API Documentation](http://localhost:8001/docs) - Interactive API docs when running
