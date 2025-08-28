@@ -32,7 +32,7 @@
 - Real-time diagram updates
 - Async processing with FastAPI
 
-**Files**: `api/websocket_wiki.py`, `src/utils/websocketClient.ts`
+**Files**: `api/websocket/wiki_handler.py`
 
 ### 4. Configuration Management Pattern
 **Pattern**: JSON-based configuration with environment variable substitution
