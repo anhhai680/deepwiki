@@ -1,12 +1,11 @@
 """
 Main entry point for the DeepWiki API.
 
-This module will be the main entry point for the application,
-replacing the current main.py functionality.
+This module is the main entry point for the application,
+using the new modular app structure.
 """
 
 import uvicorn
-from fastapi import FastAPI
 from .app import create_app
 
 
