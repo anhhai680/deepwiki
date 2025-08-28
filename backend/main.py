@@ -8,7 +8,7 @@ using the new modular app structure.
 import os
 import argparse
 import uvicorn
-from .app import create_app
+from backend.app import create_app
 
 # Create app instance for import compatibility
 app = create_app()

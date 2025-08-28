@@ -14,7 +14,7 @@ from typing import List, Optional
 from datetime import datetime
 
 # Configure logging
-from .logging_config import setup_logging
+from backend.logging_config import setup_logging
 
 # Setup logging first
 setup_logging()
@@ -63,7 +63,7 @@ def create_app() -> FastAPI:
     
     # Include domain-specific routers
     try:
-        from .api.v1 import core, config as config_router, chat, wiki, projects
+        from backend.api.v1 import core, config as config_router, chat, wiki, projects
         app.include_router(core.router, tags=["core"])
         app.include_router(config_router.router, tags=["configuration"])
         app.include_router(chat.router, tags=["chat"])
