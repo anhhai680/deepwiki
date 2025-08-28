@@ -1,21 +1,23 @@
 """
 FastAPI application configuration.
 
-This module will contain the FastAPI app configuration
+This module contains the FastAPI app configuration
 extracted from the existing api.py file during the restructure.
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .container import get_container
+
+# Import all routers
+from api.v1 import chat, wiki, projects, config, core
 
 
 def create_app() -> FastAPI:
     """
     Create and configure the FastAPI application.
     
-    This function will be populated with app configuration
-    extracted from the existing api.py file during the restructure.
+    This function configures the FastAPI app with all domain-specific routers
+    and middleware extracted from the existing api.py file during the restructure.
     """
     
     # Create FastAPI app instance
@@ -27,35 +29,24 @@ def create_app() -> FastAPI:
         redoc_url="/redoc"
     )
     
-    # Add CORS middleware (placeholder - will be configured during restructure)
+    # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Will be configured properly during restructure
+        allow_origins=["*"],  # Configured from original api.py
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
     
-    # Get dependency injection container
-    container = get_container()
-    
-    # Wire container to app (will be implemented during restructure)
+    # TODO: Add dependency injection container when properly configured
+    # container = get_container()
     # container.wire(modules=[...])
     
-    # Include routers (will be added during restructure)
-    # from .api.v1 import chat, wiki, projects
-    # app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
-    # app.include_router(wiki.router, prefix="/api/v1", tags=["wiki"])
-    # app.include_router(projects.router, prefix="/api/v1", tags=["projects"])
-    
-    @app.get("/")
-    async def root():
-        """Root endpoint."""
-        return {"message": "DeepWiki API v2.0.0", "status": "restructuring"}
-    
-    @app.get("/health")
-    async def health_check():
-        """Health check endpoint."""
-        return {"status": "healthy", "version": "2.0.0"}
+    # Include all domain-specific routers
+    app.include_router(core.router, tags=["core"])
+    app.include_router(config.router, tags=["configuration"])
+    app.include_router(chat.router, tags=["chat"])
+    app.include_router(wiki.router, tags=["wiki"])
+    app.include_router(projects.router, tags=["projects"])
     
     return app
