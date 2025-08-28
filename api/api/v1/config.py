@@ -7,7 +7,7 @@ This module contains all configuration-related API endpoints extracted from the 
 import logging
 from fastapi import APIRouter
 
-from models import ModelConfig, Provider, Model
+from ..models import ModelConfig, Provider, Model
 
 logger = logging.getLogger(__name__)
 

@@ -14,7 +14,7 @@ from fastapi import HTTPException, Query
 
 # Import models directly to avoid circular imports
 try:
-    from models import WikiCacheData, WikiCacheRequest
+    from api.models import WikiCacheData, WikiCacheRequest
 except ImportError:
     # Fallback for when models are not available
     WikiCacheData = None

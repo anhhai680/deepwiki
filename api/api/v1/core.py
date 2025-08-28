@@ -6,7 +6,7 @@ This module contains core API endpoints like root and health check extracted fro
 
 import logging
 from datetime import datetime
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ async def health_check():
     }
 
 @router.get("/")
-async def root():
+async def root(request: Request):
     """Root endpoint to check if the API is running and list available endpoints dynamically."""
     # This endpoint will be populated with dynamic endpoint listing
     # when the app is fully configured with all routers
@@ -31,5 +31,7 @@ async def root():
         "message": "Welcome to DeepWiki API",
         "version": "2.0.0",
         "status": "restructuring",
-        "note": "Endpoints are being organized into domain-specific modules"
+        "note": "Endpoints are being organized into domain-specific modules",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc"
     }
