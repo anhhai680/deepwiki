@@ -136,6 +136,40 @@ DEFAULT_EXCLUDED_FILES: List[str] = [
 # Global settings instance
 settings = Settings()
 
+# Global configs dictionary for backward compatibility
+configs = {
+    "lang_config": {
+        "default": "en",
+        "supported_languages": {
+            "en": "English",
+            "ja": "Japanese",
+            "zh": "Chinese",
+            "es": "Spanish",
+            "kr": "Korean",
+            "vi": "Vietnamese",
+            "fr": "French",
+            "pt-br": "Portuguese (Brazil)",
+            "ru": "Russian",
+            "zh-tw": "Chinese (Traditional)"
+        }
+    },
+    "file_filters": {
+        "excluded_dirs": DEFAULT_EXCLUDED_DIRS,
+        "excluded_files": DEFAULT_EXCLUDED_FILES
+    },
+    "embedder": {},
+    "retriever": {},
+    "text_splitter": {},
+    "generator": {}
+}
+
+# Environment variable access for backward compatibility
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_REGION = os.environ.get('AWS_REGION')
+AWS_ROLE_ARN = os.environ.get('AWS_ROLE_ARN')
 
 def get_settings() -> Settings:
     """Get the global settings instance."""
@@ -157,3 +191,124 @@ def get_excluded_dirs() -> List[str]:
 def get_excluded_files() -> List[str]:
     """Get the list of excluded files."""
     return DEFAULT_EXCLUDED_FILES.copy()
+
+
+def get_model_config(provider: str = "google", model: str = None) -> Dict[str, Any]:
+    """
+    Get model configuration for the specified provider.
+    
+    Args:
+        provider: The AI provider (e.g., 'openai', 'google', 'azure')
+        model: The specific model name (optional)
+        
+    Returns:
+        Dictionary containing model configuration
+    """
+    # Default configuration
+    default_config = {
+        "model_kwargs": {
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "top_k": 40,
+            "max_tokens": 4000
+        }
+    }
+    
+    # Provider-specific configurations
+    provider_configs = {
+        "openai": {
+            "model": "gpt-4o-mini",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 4000
+            }
+        },
+        "google": {
+            "model": "gemini-1.5-pro",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "top_k": 40,
+                "max_tokens": 4000
+            }
+        },
+        "azure": {
+            "model": "gpt-4o-mini",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 4000
+            }
+        },
+        "openrouter": {
+            "model": "openai/gpt-4o-mini",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 4000
+            }
+        },
+        "bedrock": {
+            "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 4000
+            }
+        },
+        "dashscope": {
+            "model": "qwen-plus",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 4000
+            }
+        },
+        "ollama": {
+            "model": "llama3.1:8b-instruct-q4_0",
+            "model_kwargs": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 4000
+            }
+        }
+    }
+    
+    # Get provider config or use default
+    provider_config = provider_configs.get(provider, default_config)
+    
+    # If model is specified, try to get model-specific config
+    if model and provider in configs.get("generator", {}).get("providers", {}):
+        model_config = configs["generator"]["providers"][provider].get("models", {}).get(model, {})
+        if model_config:
+            # Merge provider config with model-specific config
+            merged_config = provider_config.copy()
+            if "model_kwargs" in model_config:
+                merged_config["model_kwargs"].update(model_config["model_kwargs"])
+            if "model" in model_config:
+                merged_config["model"] = model_config["model"]
+            return merged_config
+    
+    return provider_config
+
+
+def get_embedder_config() -> Dict[str, Any]:
+    """
+    Get embedder configuration.
+    
+    Returns:
+        Dictionary containing embedder configuration
+    """
+    return configs.get("embedder", {})
+
+
+def is_ollama_embedder() -> bool:
+    """
+    Check if Ollama is being used as the embedder.
+    
+    Returns:
+        True if Ollama embedder is configured, False otherwise
+    """
+    embedder_config = get_embedder_config()
+    return embedder_config.get("embedder", {}).get("provider", "").lower() == "ollama"

@@ -10,9 +10,9 @@ from typing import List, Optional
 from adalflow.core.types import Document
 from adalflow.core.db import LocalDB
 from adalflow.components.data_process import TextSplitter, ToEmbeddings
-from api.config import configs
+from api.core.config.settings import configs
 from api.tools.embedder import get_embedder
-from api.ollama_patch import OllamaDocumentProcessor
+from api.components.embedder import OllamaDocumentProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -247,7 +247,7 @@ class DatabaseManager:
         Returns:
             adal.Sequential: The data transformation pipeline
         """
-        from api.config import get_embedder_config, is_ollama_embedder as check_ollama
+        from api.core.config.settings import get_embedder_config, is_ollama_embedder as check_ollama
 
         # Determine if using Ollama embedder if not specified
         if is_ollama_embedder is None:

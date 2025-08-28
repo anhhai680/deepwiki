@@ -11,8 +11,8 @@ from urllib.parse import unquote
 
 from ..base.base_pipeline import PipelineStep, PipelineContext
 from .chat_context import ChatPipelineContext
-from api.data_pipeline import count_tokens
-from api.config import get_model_config
+from api.utils.token_utils import count_tokens
+from api.core.config.settings import get_model_config
 
 
 class RequestValidationStep(PipelineStep[ChatPipelineContext, ChatPipelineContext]):
@@ -151,7 +151,7 @@ class SystemPromptGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineC
         repo_name = context.repo_url.split("/")[-1] if "/" in context.repo_url else context.repo_url
         
         # Get language information
-        from api.config import configs
+        from api.core.config.settings import configs
         supported_langs = configs["lang_config"]["supported_languages"]
         language_name = supported_langs.get(context.language, "English")
         
@@ -211,10 +211,10 @@ class ContextPreparationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         # Only retrieve documents if input is not too large
         if not context.input_too_large:
             try:
-                from api.rag import RAG
+                from api.pipelines.rag import create_rag
                 
                 # Create a new RAG instance for this request
-                request_rag = RAG(provider=context.provider, model=context.model)
+                request_rag = create_rag(provider=context.provider, model=context.model)
                 
                 # Prepare retriever
                 request_rag.prepare_retriever(
@@ -273,7 +273,7 @@ class ContextPreparationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         # Fetch file content if provided
         if context.file_path:
             try:
-                from api.data_pipeline import get_file_content
+                from api.utils.file_utils import get_file_content
                 context.file_content = get_file_content(
                     context.repo_url, 
                     context.file_path, 

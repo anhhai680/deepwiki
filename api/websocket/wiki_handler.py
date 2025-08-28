@@ -16,13 +16,14 @@ from adalflow.core.types import ModelType
 from fastapi import WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel, Field
 
-from api.config import get_model_config, configs, OPENROUTER_API_KEY, OPENAI_API_KEY
-from api.data_pipeline import count_tokens, get_file_content
-from api.openai_client import OpenAIClient
-from api.openrouter_client import OpenRouterClient
-from api.azureai_client import AzureAIClient
-from api.dashscope_client import DashscopeClient
-from api.rag import RAG
+from api.core.config.settings import get_model_config, configs, OPENROUTER_API_KEY, OPENAI_API_KEY
+from api.utils.token_utils import count_tokens
+from api.utils.file_utils import get_file_content
+from api.components.generator.providers.openai_generator import OpenAIGenerator
+from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
+from api.components.generator.providers.azure_generator import AzureAIGenerator
+from api.components.generator.providers.dashscope_generator import DashScopeGenerator
+from api.pipelines.rag import create_rag
 
 # Configure logging
 from api.logging_config import setup_logging
@@ -81,7 +82,7 @@ async def handle_websocket_chat(websocket: WebSocket):
 
         # Create a new RAG instance for this request
         try:
-            request_rag = RAG(provider=request.provider, model=request.model)
+            request_rag = create_rag(provider=request.provider, model=request.model)
 
             # Extract custom file filter parameters if provided
             excluded_dirs = None
@@ -460,9 +461,9 @@ This file contains...
             # Check if OpenRouter API key is set
             if not OPENROUTER_API_KEY:
                 logger.warning("OPENROUTER_API_KEY not configured, but continuing with request")
-                # We'll let the OpenRouterClient handle this and return a friendly error message
+                # We'll let the OpenRouterGenerator handle this and return a friendly error message
 
-            model = OpenRouterClient()
+            model = OpenRouterGenerator()
             model_kwargs = {
                 "model": request.model,
                 "stream": True,
@@ -483,10 +484,10 @@ This file contains...
             # Check if an API key is set for Openai
             if not OPENAI_API_KEY:
                 logger.warning("OPENAI_API_KEY not configured, but continuing with request")
-                # We'll let the OpenAIClient handle this and return an error message
+                # We'll let the OpenAIGenerator handle this and return an error message
 
             # Initialize Openai client
-            model = OpenAIClient()
+            model = OpenAIGenerator()
             model_kwargs = {
                 "model": request.model,
                 "stream": True,
@@ -505,7 +506,7 @@ This file contains...
             logger.info(f"Using Azure AI with model: {request.model}")
 
             # Initialize Azure AI client
-            model = AzureAIClient()
+            model = AzureAIGenerator()
             model_kwargs = {
                 "model": request.model,
                 "stream": True,
@@ -522,7 +523,7 @@ This file contains...
             logger.info(f"Using Dashscope with model: {request.model}")
 
             # Initialize Dashscope client
-            model = DashscopeClient()
+            model = DashScopeGenerator()
             model_kwargs = {
                 "model": request.model,
                 "stream": True,

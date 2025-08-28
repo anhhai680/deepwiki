@@ -125,7 +125,7 @@ class TestOpenAIEmbedder(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        with patch('api.openai_client.OpenAIClient'):
+        with patch('api.components.generator.providers.openai_generator.OpenAIGenerator'):
             self.embedder = OpenAIEmbedder()
     
     def test_embedder_initialization(self):

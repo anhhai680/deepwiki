@@ -98,12 +98,12 @@ def load_generator_config(client_classes: Dict[str, Any]) -> Dict[str, Any]:
             elif provider_id in ["google", "openai", "openrouter", "ollama", "bedrock", "azure", "dashscope"]:
                 default_map = {
                     "google": client_classes.get("GoogleGenAIClient"),
-                    "openai": client_classes.get("OpenAIClient"),
-                    "openrouter": client_classes.get("OpenRouterClient"),
-                    "ollama": client_classes.get("OllamaClient"),
-                    "bedrock": client_classes.get("BedrockClient"),
-                    "azure": client_classes.get("AzureAIClient"),
-                    "dashscope": client_classes.get("DashscopeClient")
+                    "openai": client_classes.get("OpenAIGenerator"),
+                    "openrouter": client_classes.get("OpenRouterGenerator"),
+                    "ollama": client_classes.get("OllamaGenerator"),
+                    "bedrock": client_classes.get("BedrockGenerator"),
+                    "azure": client_classes.get("AzureAIGenerator"),
+                    "dashscope": client_classes.get("DashScopeGenerator")
                 }
                 provider_config["model_client"] = default_map[provider_id]
             else:

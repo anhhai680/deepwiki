@@ -48,7 +48,7 @@ class BedrockGenerator(BaseGenerator):
         super().__init__(**kwargs)
         
         # Import config here to avoid circular imports
-        from api.config import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_ROLE_ARN
+        from api.core.config.settings import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_ROLE_ARN
         
         self.aws_access_key_id = aws_access_key_id or AWS_ACCESS_KEY_ID
         self.aws_secret_access_key = aws_secret_access_key or AWS_SECRET_ACCESS_KEY

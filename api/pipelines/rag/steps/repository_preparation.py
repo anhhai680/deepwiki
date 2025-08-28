@@ -11,7 +11,7 @@ from typing import Any, List
 
 from api.pipelines.base import PipelineStep, PipelineContext
 from api.pipelines.rag.rag_context import RAGPipelineContext
-from api.data_pipeline import DatabaseManager
+from api.data.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 

@@ -37,23 +37,24 @@ class ConfigurationManager:
         self._client_classes = {}
     
     def _load_client_classes(self):
-        """Load client classes for provider configuration."""
+        """Load generator classes for provider configuration."""
         try:
-            from api.openai_client import OpenAIClient
-            from api.openrouter_client import OpenRouterClient
-            from api.bedrock_client import BedrockClient
-            from api.azureai_client import AzureAIClient
-            from api.dashscope_client import DashscopeClient
+            from api.components.generator.providers.openai_generator import OpenAIGenerator
+            from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
+            from api.components.generator.providers.bedrock_generator import BedrockGenerator
+            from api.components.generator.providers.azure_generator import AzureAIGenerator
+            from api.components.generator.providers.dashscope_generator import DashScopeGenerator
+            from api.components.generator.providers.ollama_generator import OllamaGenerator
             from adalflow import GoogleGenAIClient, OllamaClient
             
             self._client_classes = {
                 "GoogleGenAIClient": GoogleGenAIClient,
-                "OpenAIClient": OpenAIClient,
-                "OpenRouterClient": OpenRouterClient,
-                "OllamaClient": OllamaClient,
-                "BedrockClient": BedrockClient,
-                "AzureAIClient": AzureAIClient,
-                "DashscopeClient": DashscopeClient
+                "OpenAIGenerator": OpenAIGenerator,
+                "OpenRouterGenerator": OpenRouterGenerator,
+                "OllamaGenerator": OllamaGenerator,
+                "BedrockGenerator": BedrockGenerator,
+                "AzureAIGenerator": AzureAIGenerator,
+                "DashScopeGenerator": DashScopeGenerator
             }
         except ImportError:
             # Handle import errors gracefully during development

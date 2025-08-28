@@ -27,6 +27,17 @@ from .config import (
     AuthorizationConfig
 )
 
+from .chat import (
+    ChatMessage,
+    ChatCompletionRequest,
+    ChatResponse
+)
+
+# Rebuild models to resolve forward references
+# This is required for Pydantic v2 when using forward references
+WikiCacheData.model_rebuild()
+WikiCacheRequest.model_rebuild()
+
 __all__ = [
     # Wiki models
     "WikiPage",
@@ -44,5 +55,10 @@ __all__ = [
     "Model",
     "Provider", 
     "ModelConfig",
-    "AuthorizationConfig"
+    "AuthorizationConfig",
+    
+    # Chat models
+    "ChatMessage",
+    "ChatCompletionRequest",
+    "ChatResponse"
 ]

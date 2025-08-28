@@ -13,7 +13,7 @@ from api.pipelines.base import PipelineStep, PipelineContext
 from api.pipelines.rag.rag_context import RAGPipelineContext
 from api.components.retriever.faiss_retriever import FAISSRetriever
 from api.tools.embedder import get_embedder
-from api.config import configs
+from api.core.config.settings import configs
 
 logger = logging.getLogger(__name__)
 

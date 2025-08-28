@@ -10,6 +10,9 @@ import argparse
 import uvicorn
 from .app import create_app
 
+# Create app instance for import compatibility
+app = create_app()
+
 
 def _resolve_port(cli_port: int | None) -> int:
     """Resolve server port from CLI arg or environment, defaulting to 8001.

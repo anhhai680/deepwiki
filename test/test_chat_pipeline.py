@@ -309,9 +309,9 @@ class TestContextPreparationStep:
         )
         
         # Mock RAG and file content retrieval
-        with patch('api.rag.RAG') as mock_rag_class:
+        with patch('api.pipelines.rag.create_rag') as mock_create_rag:
             mock_rag = Mock()
-            mock_rag_class.return_value = mock_rag
+            mock_create_rag.return_value = mock_rag
             
             # Mock documents
             mock_doc = Mock()
@@ -320,7 +320,7 @@ class TestContextPreparationStep:
             
             mock_rag.return_value = [Mock(documents=[mock_doc])]
             
-            with patch('api.data_pipeline.get_file_content') as mock_get_file:
+            with patch('api.utils.file_utils.get_file_content') as mock_get_file:
                 mock_get_file.return_value = "file content"
                 
                 result = step.execute(context)

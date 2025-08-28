@@ -28,7 +28,7 @@ def count_tokens(text: str, is_ollama_embedder: Optional[bool] = None) -> int:
         # Determine if using Ollama embedder if not specified
         if is_ollama_embedder is None:
             try:
-                from api.config import is_ollama_embedder as check_ollama
+                from api.core.config.settings import is_ollama_embedder as check_ollama
                 is_ollama_embedder = check_ollama()
             except ImportError:
                 # Fallback to default if config is not available

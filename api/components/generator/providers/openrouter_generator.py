@@ -46,7 +46,7 @@ class OpenRouterGenerator(BaseGenerator):
     
     def init_sync_client(self):
         """Initialize the synchronous OpenRouter client."""
-        from api.config import OPENROUTER_API_KEY
+        from api.core.config.settings import OPENROUTER_API_KEY
         api_key = OPENROUTER_API_KEY
         if not api_key:
             log.warning("OPENROUTER_API_KEY not configured")
@@ -59,7 +59,7 @@ class OpenRouterGenerator(BaseGenerator):
     
     def init_async_client(self):
         """Initialize the asynchronous OpenRouter client."""
-        from api.config import OPENROUTER_API_KEY
+        from api.core.config.settings import OPENROUTER_API_KEY
         api_key = OPENROUTER_API_KEY
         if not api_key:
             log.warning("OPENROUTER_API_KEY not configured")

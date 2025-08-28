@@ -57,6 +57,10 @@ class WikiCacheData(BaseModel):
     provider: Optional[str] = None
     model: Optional[str] = None
 
+    class Config:
+        # Enable arbitrary types for forward references
+        arbitrary_types_allowed = True
+
 
 class WikiCacheRequest(BaseModel):
     """
@@ -68,6 +72,10 @@ class WikiCacheRequest(BaseModel):
     generated_pages: Dict[str, WikiPage]
     provider: str
     model: str
+
+    class Config:
+        # Enable arbitrary types for forward references
+        arbitrary_types_allowed = True
 
 
 class WikiExportRequest(BaseModel):

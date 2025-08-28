@@ -393,6 +393,25 @@ def normalize_path(path: str) -> str:
     return os.path.normpath(path.replace('\\', '/'))
 
 
+def get_file_content(repo_url: str, file_path: str, repo_type: str = "github", token: Optional[str] = None) -> str:
+    """
+    Retrieve file content from a repository (GitHub, GitLab, Bitbucket) using the processors layer.
+
+    Args:
+        repo_url: Repository URL
+        file_path: Path to the file in the repository
+        repo_type: Repository type (github, gitlab, bitbucket)
+        token: Optional access token for private repositories
+
+    Returns:
+        File content as a string
+    """
+    from api.components.processors.repository_processor import RepositoryProcessor
+
+    processor = RepositoryProcessor()
+    return processor.get_file_content(repo_url, file_path, type=repo_type, access_token=token)
+
+
 def is_subdirectory(path: str, parent_path: str) -> bool:
     """
     Check if a path is a subdirectory of a parent path.

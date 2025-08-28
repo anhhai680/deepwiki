@@ -22,7 +22,7 @@ from adalflow.core.types import Document
 from adalflow.core.db import LocalDB
 from adalflow.utils import get_adalflow_default_root_path
 
-from api.config import configs, DEFAULT_EXCLUDED_DIRS, DEFAULT_EXCLUDED_FILES
+from api.core.config.settings import configs, DEFAULT_EXCLUDED_DIRS, DEFAULT_EXCLUDED_FILES
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class ProjectService:
         try:
             # Determine if using Ollama embedder if not specified
             if is_ollama_embedder is None:
-                from api.config import is_ollama_embedder as check_ollama
+                from api.core.config.settings import is_ollama_embedder as check_ollama
                 is_ollama_embedder = check_ollama()
 
             if is_ollama_embedder:

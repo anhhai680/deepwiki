@@ -9,7 +9,7 @@ import logging
 from typing import Dict, Any, Optional
 
 from api.components.embedder import EmbedderManager, EmbeddingProviderType
-from api.config import configs
+from api.core.config.settings import configs
 
 log = logging.getLogger(__name__)
 
@@ -28,12 +28,12 @@ def get_embedder():
         embedder_config = configs.get("embedder", {})
         
         # Determine the provider type from configuration
-        client_class = embedder_config.get("client_class", "OpenAIClient")
+        client_class = embedder_config.get("client_class", "OpenAIGenerator")
         
         # Map client class names to provider types
         provider_mapping = {
-            "OpenAIClient": EmbeddingProviderType.OPENAI,
-            "OllamaClient": EmbeddingProviderType.OLLAMA,
+            "OpenAIGenerator": EmbeddingProviderType.OPENAI,
+            "OllamaGenerator": EmbeddingProviderType.OLLAMA,
         }
         
         provider_type = provider_mapping.get(client_class, EmbeddingProviderType.OPENAI)

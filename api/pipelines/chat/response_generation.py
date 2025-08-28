@@ -21,6 +21,20 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     def __init__(self):
         super().__init__("ResponseGeneration")
     
+    def _clean_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Remove keys with None values recursively from a dict."""
+        if not isinstance(data, dict):
+            return data
+        cleaned: Dict[str, Any] = {}
+        for key, value in data.items():
+            if isinstance(value, dict):
+                nested = self._clean_dict(value)
+                if len(nested) > 0:
+                    cleaned[key] = nested
+            elif value is not None:
+                cleaned[key] = value
+        return cleaned
+    
     def execute(self, context: ChatPipelineContext) -> ChatPipelineContext:
         """Generate streaming response from the AI model."""
         self.logger.info("Generating AI response")
@@ -35,6 +49,10 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     async def generate_streaming_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from the AI model."""
         self.logger.info(f"Starting streaming response generation for {context.provider}")
+        
+        # Ensure model_config is always a dictionary
+        if context.model_config is None:
+            context.model_config = {}
         
         try:
             if context.provider == "ollama":
@@ -72,15 +90,16 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     async def _generate_ollama_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Ollama."""
         model = OllamaClient()
-        model_kwargs = {
-            "model": context.model_config["model"],
+        model_name = context.model or context.model_config.get("model")
+        model_kwargs = self._clean_dict({
+            "model": model_name,
             "stream": True,
             "options": {
-                "temperature": context.model_config["temperature"],
-                "top_p": context.model_config["top_p"],
-                "num_ctx": context.model_config["num_ctx"]
+                "temperature": context.model_config.get("temperature"),
+                "top_p": context.model_config.get("top_p"),
+                "num_ctx": context.model_config.get("num_ctx")
             }
-        }
+        })
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=context.final_prompt,
@@ -98,17 +117,19 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_openrouter_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from OpenRouter."""
-        from api.openrouter_client import OpenRouterClient
+        from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
         
-        model = OpenRouterClient()
+        model = OpenRouterGenerator()
         model_kwargs = {
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config["temperature"]
+            "temperature": context.model_config.get("temperature")
         }
         
-        if "top_p" in context.model_config:
-            model_kwargs["top_p"] = context.model_config["top_p"]
+        top_p = context.model_config.get("top_p")
+        if top_p is not None:
+            model_kwargs["top_p"] = top_p
+        model_kwargs = self._clean_dict(model_kwargs)
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=context.final_prompt,
@@ -125,17 +146,19 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_openai_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from OpenAI."""
-        from api.openai_client import OpenAIClient
+        from api.components.generator.providers.openai_generator import OpenAIGenerator
         
-        model = OpenAIClient()
+        model = OpenAIGenerator()
         model_kwargs = {
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config["temperature"]
+            "temperature": context.model_config.get("temperature")
         }
         
-        if "top_p" in context.model_config:
-            model_kwargs["top_p"] = context.model_config["top_p"]
+        top_p = context.model_config.get("top_p")
+        if top_p is not None:
+            model_kwargs["top_p"] = top_p
+        model_kwargs = self._clean_dict(model_kwargs)
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=context.final_prompt,
@@ -158,14 +181,14 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_bedrock_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from AWS Bedrock."""
-        from api.bedrock_client import BedrockClient
+        from api.components.generator.providers.bedrock_generator import BedrockGenerator
         
-        model = BedrockClient()
-        model_kwargs = {
+        model = BedrockGenerator()
+        model_kwargs = self._clean_dict({
             "model": context.model,
-            "temperature": context.model_config["temperature"],
-            "top_p": context.model_config["top_p"]
-        }
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p")
+        })
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=context.final_prompt,
@@ -184,15 +207,16 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_azure_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Azure AI."""
-        from api.azureai_client import AzureAIClient
+        from api.components.generator.providers.azure_generator import AzureAIGenerator
         
-        model = AzureAIClient()
+        model = AzureAIGenerator()
         model_kwargs = {
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config["temperature"],
-            "top_p": context.model_config["top_p"]
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p")
         }
+        model_kwargs = self._clean_dict(model_kwargs)
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=context.final_prompt,
@@ -215,13 +239,15 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_google_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Google Generative AI."""
+        model_name = context.model or context.model_config.get("model")
+        generation_config = self._clean_dict({
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p"),
+            "top_k": context.model_config.get("top_k")
+        })
         model = genai.GenerativeModel(
-            model_name=context.model_config["model"],
-            generation_config={
-                "temperature": context.model_config["temperature"],
-                "top_p": context.model_config["top_p"],
-                "top_k": context.model_config["top_k"]
-            }
+            model_name=model_name,
+            generation_config=generation_config
         )
         
         response = model.generate_content(context.final_prompt, stream=True)
@@ -275,15 +301,16 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     async def _generate_ollama_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Ollama fallback response."""
         model = OllamaClient()
-        model_kwargs = {
-            "model": context.model_config["model"],
+        model_name = context.model or context.model_config.get("model")
+        model_kwargs = self._clean_dict({
+            "model": model_name,
             "stream": True,
             "options": {
-                "temperature": context.model_config["temperature"],
-                "top_p": context.model_config["top_p"],
-                "num_ctx": context.model_config["num_ctx"]
+                "temperature": context.model_config.get("temperature"),
+                "top_p": context.model_config.get("top_p"),
+                "num_ctx": context.model_config.get("num_ctx")
             }
-        }
+        })
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=simplified_prompt,
@@ -300,17 +327,19 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_openrouter_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate OpenRouter fallback response."""
-        from api.openrouter_client import OpenRouterClient
+        from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
         
-        model = OpenRouterClient()
+        model = OpenRouterGenerator()
         model_kwargs = {
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config["temperature"]
+            "temperature": context.model_config.get("temperature")
         }
         
-        if "top_p" in context.model_config:
-            model_kwargs["top_p"] = context.model_config["top_p"]
+        top_p = context.model_config.get("top_p")
+        if top_p is not None:
+            model_kwargs["top_p"] = top_p
+        model_kwargs = self._clean_dict(model_kwargs)
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=simplified_prompt,
@@ -327,17 +356,19 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_openai_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate OpenAI fallback response."""
-        from api.openai_client import OpenAIClient
+        from api.components.generator.providers.openai_generator import OpenAIGenerator
         
-        model = OpenAIClient()
+        model = OpenAIGenerator()
         model_kwargs = {
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config["temperature"]
+            "temperature": context.model_config.get("temperature")
         }
         
-        if "top_p" in context.model_config:
-            model_kwargs["top_p"] = context.model_config["top_p"]
+        top_p = context.model_config.get("top_p")
+        if top_p is not None:
+            model_kwargs["top_p"] = top_p
+        model_kwargs = self._clean_dict(model_kwargs)
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=simplified_prompt,
@@ -355,14 +386,14 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_bedrock_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Bedrock fallback response."""
-        from api.bedrock_client import BedrockClient
+        from api.components.generator.providers.bedrock_generator import BedrockGenerator
         
-        model = BedrockClient()
-        model_kwargs = {
+        model = BedrockGenerator()
+        model_kwargs = self._clean_dict({
             "model": context.model,
-            "temperature": context.model_config["temperature"],
-            "top_p": context.model_config["top_p"]
-        }
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p")
+        })
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=simplified_prompt,
@@ -381,15 +412,16 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_azure_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Azure AI fallback response."""
-        from api.azureai_client import AzureAIClient
+        from api.components.generator.providers.azure_generator import AzureAIGenerator
         
-        model = AzureAIClient()
+        model = AzureAIGenerator()
         model_kwargs = {
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config["temperature"],
-            "top_p": context.model_config["top_p"]
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p")
         }
+        model_kwargs = self._clean_dict(model_kwargs)
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=simplified_prompt,
@@ -412,13 +444,15 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_google_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Google Generative AI fallback response."""
+        model_name = context.model or context.model_config.get("model")
+        generation_config = self._clean_dict({
+            "temperature": context.model_config.get("temperature", 0.7),
+            "top_p": context.model_config.get("top_p", 0.8),
+            "top_k": context.model_config.get("top_k", 40)
+        })
         model = genai.GenerativeModel(
-            model_name=context.model_config["model"],
-            generation_config={
-                "temperature": context.model_config.get("temperature", 0.7),
-                "top_p": context.model_config.get("top_p", 0.8),
-                "top_k": context.model_config.get("top_k", 40)
-            }
+            model_name=model_name,
+            generation_config=generation_config
         )
         
         response = model.generate_content(simplified_prompt, stream=True)

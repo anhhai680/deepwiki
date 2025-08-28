@@ -11,7 +11,7 @@ import os
 
 from api.components.embedder.base import BaseEmbedder, EmbeddingModelType, EmbedderOutput
 from api.core.types import EmbeddingVector
-from api.openai_client import OpenAIClient
+from api.components.generator.providers.openai_generator import OpenAIGenerator
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class OpenAIEmbedder(BaseEmbedder):
     def init_sync_client(self):
         """Initialize the synchronous OpenAI client."""
         try:
-            self._sync_client = OpenAIClient()
+            self._sync_client = OpenAIGenerator()
             log.debug("Initialized OpenAI sync client for embeddings")
         except Exception as e:
             log.error(f"Failed to initialize OpenAI sync client: {e}")
@@ -49,7 +49,7 @@ class OpenAIEmbedder(BaseEmbedder):
     def init_async_client(self):
         """Initialize the asynchronous OpenAI client."""
         try:
-            self._async_client = OpenAIClient()
+            self._async_client = OpenAIGenerator()
             log.debug("Initialized OpenAI async client for embeddings")
         except Exception as e:
             log.error(f"Failed to initialize OpenAI async client: {e}")
@@ -116,7 +116,7 @@ class OpenAIEmbedder(BaseEmbedder):
         
         try:
             # Use the existing OpenAI client's embedding functionality
-            response = self._sync_client.create_embeddings(**api_kwargs)
+            response = self._sync_client.call(api_kwargs=api_kwargs, model_type=EmbeddingModelType.TEXT)
             log.debug(f"OpenAI embedding response received: {type(response)}")
             return response
         except Exception as e:
@@ -143,7 +143,7 @@ class OpenAIEmbedder(BaseEmbedder):
         
         try:
             # Use the existing OpenAI client's async embedding functionality
-            response = await self._async_client.acreate_embeddings(**api_kwargs)
+            response = await self._async_client.acall(api_kwargs=api_kwargs, model_type=EmbeddingModelType.TEXT)
             log.debug(f"OpenAI async embedding response received: {type(response)}")
             return response
         except Exception as e:

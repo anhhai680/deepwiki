@@ -12,8 +12,9 @@ from urllib.parse import unquote
 
 from fastapi import HTTPException
 
-from api.config import get_model_config, configs
-from api.data_pipeline import count_tokens, get_file_content
+from api.core.config.settings import get_model_config, configs
+from api.utils.token_utils import count_tokens
+from api.utils.file_utils import get_file_content
 from api.pipelines.chat import get_chat_compatibility
 from api.pipelines.chat.chat_context import ChatPipelineContext
 
