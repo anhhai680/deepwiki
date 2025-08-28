@@ -110,7 +110,7 @@ This allows you to maintain different configurations for various environments or
 
 ```bash
 # From the project root
-python -m api.main
+python -m backend.main
 ```
 
 The API will be available at `http://localhost:8001`
