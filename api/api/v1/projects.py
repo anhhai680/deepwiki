@@ -10,8 +10,8 @@ import logging
 from typing import List
 from fastapi import APIRouter, HTTPException
 
-from ..models import ProcessedProjectEntry
-from ..api.dependencies import WIKI_CACHE_DIR
+from ...models import ProcessedProjectEntry
+from ..dependencies import WIKI_CACHE_DIR
 
 logger = logging.getLogger(__name__)
 

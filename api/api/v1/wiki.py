@@ -12,13 +12,13 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse, Response
 
-from ..models import (
+from ...models import (
     WikiPage,
     WikiExportRequest,
     WikiCacheData,
     WikiCacheRequest
 )
-from ..api.dependencies import (
+from ..dependencies import (
     read_wiki_cache,
     save_wiki_cache,
     get_wiki_cache_path,

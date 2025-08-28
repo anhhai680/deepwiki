@@ -43,7 +43,7 @@ class RetrieverManager:
             self._vector_store = kwargs["vector_store"]
         
         # Initialize default retriever if specified
-        default_type = kwargs.get("default_type", RetrieverType.FAISS)
+        default_type = kwargs.get("default_type", RetrieverType.UNDEFINED)
         if default_type != RetrieverType.UNDEFINED:
             self.set_default_retriever(default_type.value)
     

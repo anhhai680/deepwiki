@@ -1,6 +1,9 @@
 import requests
 import json
 import sys
+import pytest
+
+pytestmark = pytest.mark.skip("Manual API streaming test; requires server running")
 
 def test_streaming_endpoint(repo_url, query, file_path=None):
     """

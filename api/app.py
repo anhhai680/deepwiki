@@ -14,7 +14,7 @@ from typing import List, Optional
 from datetime import datetime
 
 # Configure logging
-from logging_config import setup_logging
+from .logging_config import setup_logging
 
 # Setup logging first
 setup_logging()

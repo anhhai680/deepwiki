@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 # Import the actual chat implementations from the existing modules
-from ..simple_chat import chat_completions_stream, ChatCompletionRequest, ChatMessage
-from ..websocket import handle_websocket_chat
+from ...simple_chat import chat_completions_stream, ChatCompletionRequest, ChatMessage
+from ...websocket import handle_websocket_chat
 
 # Create router for chat endpoints
 router = APIRouter()
