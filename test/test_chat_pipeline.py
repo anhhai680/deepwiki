@@ -10,17 +10,17 @@ import asyncio
 from unittest.mock import Mock, patch, AsyncMock
 from typing import AsyncGenerator
 
-from api.pipelines.chat.chat_context import ChatPipelineContext
-from api.pipelines.chat.steps import (
+from backend.pipelines.chat.chat_context import ChatPipelineContext
+from backend.pipelines.chat.steps import (
     RequestValidationStep,
     ConversationAnalysisStep,
     SystemPromptGenerationStep,
     ContextPreparationStep,
     PromptAssemblyStep
 )
-from api.pipelines.chat.response_generation import ResponseGenerationStep
-from api.pipelines.chat.chat_pipeline import ChatPipeline, create_chat_pipeline
-from api.pipelines.chat.compatibility import ChatCompatibility, get_chat_compatibility
+from backend.pipelines.chat.response_generation import ResponseGenerationStep
+from backend.pipelines.chat.chat_pipeline import ChatPipeline, create_chat_pipeline
+from backend.pipelines.chat.compatibility import ChatCompatibility, get_chat_compatibility
 
 
 class TestChatPipelineContext:
@@ -116,7 +116,7 @@ class TestRequestValidationStep:
             messages=[{"role": "user", "content": "test"}]
         )
         
-        with patch('api.pipelines.chat.steps.get_model_config') as mock_get_config:
+        with patch('backend.pipelines.chat.steps.get_model_config') as mock_get_config:
             mock_get_config.return_value = {
                 "model_kwargs": {"temperature": 0.7, "top_p": 0.8}
             }
@@ -137,10 +137,10 @@ class TestRequestValidationStep:
             messages=[{"role": "user", "content": "x" * 10000}]
         )
         
-        with patch('api.pipelines.chat.steps.count_tokens') as mock_count:
+        with patch('backend.pipelines.chat.steps.count_tokens') as mock_count:
             mock_count.return_value = 9000
             
-            with patch('api.pipelines.chat.steps.get_model_config') as mock_get_config:
+            with patch('backend.pipelines.chat.steps.get_model_config') as mock_get_config:
                 mock_get_config.return_value = {
                     "model_kwargs": {"temperature": 0.7}
                 }
@@ -160,7 +160,7 @@ class TestRequestValidationStep:
             excluded_files="*.log\n*.tmp"
         )
         
-        with patch('api.config.get_model_config') as mock_get_config:
+        with patch('backend.config.get_model_config') as mock_get_config:
             mock_get_config.return_value = {
                 "model_kwargs": {"temperature": 0.7}
             }
@@ -252,7 +252,7 @@ class TestSystemPromptGenerationStep:
             is_deep_research=False
         )
         
-        with patch('api.config.configs') as mock_configs:
+        with patch('backend.config.configs') as mock_configs:
             mock_configs.return_value = {
                 "lang_config": {
                     "supported_languages": {"en": "English"}
@@ -276,7 +276,7 @@ class TestSystemPromptGenerationStep:
             research_iteration=1
         )
         
-        with patch('api.config.configs') as mock_configs:
+        with patch('backend.config.configs') as mock_configs:
             mock_configs.return_value = {
                 "lang_config": {
                     "supported_languages": {"en": "English"}
@@ -309,7 +309,7 @@ class TestContextPreparationStep:
         )
         
         # Mock RAG and file content retrieval
-        with patch('api.pipelines.rag.create_rag') as mock_create_rag:
+        with patch('backend.pipelines.rag.create_rag') as mock_create_rag:
             mock_rag = Mock()
             mock_create_rag.return_value = mock_rag
             
@@ -320,7 +320,7 @@ class TestContextPreparationStep:
             
             mock_rag.return_value = [Mock(documents=[mock_doc])]
             
-            with patch('api.utils.file_utils.get_file_content') as mock_get_file:
+            with patch('backend.utils.file_utils.get_file_content') as mock_get_file:
                 mock_get_file.return_value = "file content"
                 
                 result = step.execute(context)

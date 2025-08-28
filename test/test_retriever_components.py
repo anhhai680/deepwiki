@@ -10,21 +10,21 @@ import numpy as np
 from unittest.mock import Mock, MagicMock
 from typing import List
 
-from api.components.retriever.base import (
+from backend.components.retriever.base import (
     BaseRetriever,
     RetrievalMethod,
     RetrievalResult
 )
-from api.components.retriever.faiss_retriever import FAISSRetriever
-from api.components.retriever.vector_store import VectorStore
-from api.components.retriever.retriever_manager import RetrieverManager, RetrieverType
-from api.components.retriever.compatibility import (
+from backend.components.retriever.faiss_retriever import FAISSRetriever
+from backend.components.retriever.vector_store import VectorStore
+from backend.components.retriever.retriever_manager import RetrieverManager, RetrieverType
+from backend.components.retriever.compatibility import (
     create_faiss_retriever_from_config,
     create_vector_store_from_documents,
     create_memory_component,
     validate_and_filter_embeddings
 )
-from api.components.memory.conversation_memory import (
+from backend.components.memory.conversation_memory import (
     ConversationMemory,
     UserQuery,
     AssistantResponse,

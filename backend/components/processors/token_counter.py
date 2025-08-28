@@ -33,7 +33,7 @@ class TokenCounter:
         try:
             # Determine if using Ollama embedder if not specified
             if is_ollama_embedder is None:
-                from api.core.config.settings import is_ollama_embedder as check_ollama
+                from backend.core.config.settings import is_ollama_embedder as check_ollama
                 is_ollama_embedder = check_ollama()
 
             if is_ollama_embedder:

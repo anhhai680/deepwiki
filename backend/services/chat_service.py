@@ -12,11 +12,11 @@ from urllib.parse import unquote
 
 from fastapi import HTTPException
 
-from api.core.config.settings import get_model_config, configs
-from api.utils.token_utils import count_tokens
-from api.utils.file_utils import get_file_content
-from api.pipelines.chat import get_chat_compatibility
-from api.pipelines.chat.chat_context import ChatPipelineContext
+from backend.core.config.settings import get_model_config, configs
+from backend.utils.token_utils import count_tokens
+from backend.utils.file_utils import get_file_content
+from backend.pipelines.chat import get_chat_compatibility
+from backend.pipelines.chat.chat_context import ChatPipelineContext
 
 logger = logging.getLogger(__name__)
 

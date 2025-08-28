@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 def test_import_generator_base():
     """Test that the base generator module can be imported."""
     try:
-        from api.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
+        from backend.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
         assert BaseGenerator is not None
         assert ModelType is not None
         assert GeneratorOutput is not None
@@ -28,12 +28,12 @@ def test_import_generator_base():
 def test_import_generator_providers():
     """Test that all generator providers can be imported."""
     try:
-        from api.components.generator.providers.openai_generator import OpenAIGenerator
-        from api.components.generator.providers.azure_generator import AzureAIGenerator
-        from api.components.generator.providers.bedrock_generator import BedrockGenerator
-        from api.components.generator.providers.dashscope_generator import DashScopeGenerator
-        from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
-        from api.components.generator.providers.ollama_generator import OllamaGenerator
+        from backend.components.generator.providers.openai_generator import OpenAIGenerator
+        from backend.components.generator.providers.azure_generator import AzureAIGenerator
+        from backend.components.generator.providers.bedrock_generator import BedrockGenerator
+        from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
+        from backend.components.generator.providers.openrouter_generator import OpenRouterGenerator
+        from backend.components.generator.providers.ollama_generator import OllamaGenerator
         
         assert OpenAIGenerator is not None
         assert AzureAIGenerator is not None
@@ -50,7 +50,7 @@ def test_import_generator_providers():
 def test_import_generator_manager():
     """Test that the generator manager can be imported."""
     try:
-        from api.components.generator.generator_manager import (
+        from backend.components.generator.generator_manager import (
             GeneratorManager, 
             ProviderType,
             get_generator_manager,
@@ -70,7 +70,7 @@ def test_import_generator_manager():
 def test_import_generator_module():
     """Test that the main generator module can be imported."""
     try:
-        from api.components.generator import (
+        from backend.components.generator import (
             BaseGenerator,
             ModelType,
             GeneratorOutput,
@@ -91,7 +91,7 @@ def test_import_generator_module():
 def test_model_type_enum():
     """Test that ModelType enum has expected values."""
     try:
-        from api.components.generator.base import ModelType
+        from backend.components.generator.base import ModelType
         
         assert ModelType.UNDEFINED.value == "undefined"
         assert ModelType.LLM.value == "llm"
@@ -106,7 +106,7 @@ def test_model_type_enum():
 def test_provider_type_enum():
     """Test that ProviderType enum has expected values."""
     try:
-        from api.components.generator.generator_manager import ProviderType
+        from backend.components.generator.generator_manager import ProviderType
         
         assert ProviderType.OPENAI.value == "openai"
         assert ProviderType.AZURE.value == "azure"
@@ -123,7 +123,7 @@ def test_provider_type_enum():
 def test_generator_output_creation():
     """Test that GeneratorOutput can be created correctly."""
     try:
-        from api.components.generator.base import GeneratorOutput
+        from backend.components.generator.base import GeneratorOutput
         
         # Test basic creation
         output = GeneratorOutput(data="test", error=None)
@@ -145,7 +145,7 @@ def test_generator_output_creation():
 def test_generator_manager_creation():
     """Test that GeneratorManager can be created."""
     try:
-        from api.components.generator.generator_manager import GeneratorManager
+        from backend.components.generator.generator_manager import GeneratorManager
         
         manager = GeneratorManager()
         assert manager is not None

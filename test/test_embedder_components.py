@@ -13,11 +13,11 @@ import os
 # Add the api directory to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from api.components.embedder.base import BaseEmbedder, EmbeddingModelType, EmbedderOutput
-from api.components.embedder.embedder_manager import EmbedderManager, EmbeddingProviderType
-from api.components.embedder.providers.openai_embedder import OpenAIEmbedder
-from api.components.embedder.providers.ollama_embedder import OllamaEmbedder
-from api.components.embedder.compatibility import get_embedder, get_embedder_manager, create_embedder, embed_text
+from backend.components.embedder.base import BaseEmbedder, EmbeddingModelType, EmbedderOutput
+from backend.components.embedder.embedder_manager import EmbedderManager, EmbeddingProviderType
+from backend.components.embedder.providers.openai_embedder import OpenAIEmbedder
+from backend.components.embedder.providers.ollama_embedder import OllamaEmbedder
+from backend.components.embedder.compatibility import get_embedder, get_embedder_manager, create_embedder, embed_text
 
 
 class TestEmbedderBase(unittest.TestCase):
@@ -125,7 +125,7 @@ class TestOpenAIEmbedder(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        with patch('api.components.generator.providers.openai_generator.OpenAIGenerator'):
+        with patch('backend.components.generator.providers.openai_generator.OpenAIGenerator'):
             self.embedder = OpenAIEmbedder()
     
     def test_embedder_initialization(self):
@@ -215,19 +215,19 @@ class TestOllamaEmbedder(unittest.TestCase):
 class TestCompatibilityLayer(unittest.TestCase):
     """Test the compatibility layer functionality."""
     
-    @patch('api.components.embedder.compatibility.configs')
+    @patch('backend.components.embedder.compatibility.configs')
     def test_get_embedder_manager(self, mock_configs):
         """Test that the embedder manager can be retrieved."""
         manager = get_embedder_manager()
         self.assertIsInstance(manager, EmbedderManager)
     
-    @patch('api.components.embedder.compatibility.configs')
+    @patch('backend.components.embedder.compatibility.configs')
     def test_create_embedder_function(self, mock_configs):
         """Test the create_embedder convenience function."""
         embedder = create_embedder("openai")
         self.assertIsInstance(embedder, OpenAIEmbedder)
     
-    @patch('api.components.embedder.compatibility.configs')
+    @patch('backend.components.embedder.compatibility.configs')
     def test_embed_text_function(self, mock_configs):
         """Test the embed_text convenience function."""
         with patch.object(EmbedderManager, 'embed_text') as mock_embed:

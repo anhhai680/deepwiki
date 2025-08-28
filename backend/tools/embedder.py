@@ -1,6 +1,6 @@
 import adalflow as adal
 
-from api.core.config import get_config_manager
+from backend.core.config import get_config_manager
 
 
 def get_embedder() -> adal.Embedder:

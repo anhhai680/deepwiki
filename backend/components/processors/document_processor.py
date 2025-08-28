@@ -49,7 +49,7 @@ class DocumentProcessor:
         Returns:
             list: A list of Document objects with metadata.
         """
-        from api.core.config.settings import configs, DEFAULT_EXCLUDED_DIRS, DEFAULT_EXCLUDED_FILES
+        from backend.core.config.settings import configs, DEFAULT_EXCLUDED_DIRS, DEFAULT_EXCLUDED_FILES
         
         documents = []
         

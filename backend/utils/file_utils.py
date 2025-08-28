@@ -406,7 +406,7 @@ def get_file_content(repo_url: str, file_path: str, repo_type: str = "github", t
     Returns:
         File content as a string
     """
-    from api.components.processors.repository_processor import RepositoryProcessor
+    from backend.components.processors.repository_processor import RepositoryProcessor
 
     processor = RepositoryProcessor()
     return processor.get_file_content(repo_url, file_path, type=repo_type, access_token=token)

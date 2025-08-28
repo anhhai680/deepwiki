@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass, field
 from uuid import uuid4
 
-from api.pipelines.base import PipelineContext
-from api.components.retriever.base import RetrievalResult
-from api.components.memory.conversation_memory import DialogTurn
+from backend.pipelines.base import PipelineContext
+from backend.components.retriever.base import RetrievalResult
+from backend.components.memory.conversation_memory import DialogTurn
 
 logger = logging.getLogger(__name__)
 

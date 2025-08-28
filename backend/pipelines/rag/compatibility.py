@@ -8,8 +8,8 @@ allowing existing code to work with the new pipeline architecture without change
 import logging
 from typing import Any, List, Tuple, Optional
 
-from api.pipelines.rag.rag_pipeline import RAGPipeline
-from api.pipelines.rag.rag_context import RAGPipelineContext
+from backend.pipelines.rag.rag_pipeline import RAGPipeline
+from backend.pipelines.rag.rag_context import RAGPipelineContext
 
 logger = logging.getLogger(__name__)
 

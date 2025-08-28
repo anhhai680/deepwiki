@@ -327,7 +327,7 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_openrouter_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate OpenRouter fallback response."""
-        from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
+        from backend.components.generator.providers.openrouter_generator import OpenRouterGenerator
         
         model = OpenRouterGenerator()
         model_kwargs = {

@@ -16,17 +16,17 @@ from adalflow.core.types import ModelType
 from fastapi import WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel, Field
 
-from api.core.config.settings import get_model_config, configs, OPENROUTER_API_KEY, OPENAI_API_KEY
-from api.utils.token_utils import count_tokens
-from api.utils.file_utils import get_file_content
-from api.components.generator.providers.openai_generator import OpenAIGenerator
-from api.components.generator.providers.openrouter_generator import OpenRouterGenerator
-from api.components.generator.providers.azure_generator import AzureAIGenerator
-from api.components.generator.providers.dashscope_generator import DashScopeGenerator
-from api.pipelines.rag import create_rag
+from backend.core.config.settings import get_model_config, configs, OPENROUTER_API_KEY, OPENAI_API_KEY
+from backend.utils.token_utils import count_tokens
+from backend.utils.file_utils import get_file_content
+from backend.components.generator.providers.openai_generator import OpenAIGenerator
+from backend.components.generator.providers.openrouter_generator import OpenRouterGenerator
+from backend.components.generator.providers.azure_generator import AzureAIGenerator
+from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
+from backend.pipelines.rag import create_rag
 
 # Configure logging
-from api.logging_config import setup_logging
+from backend.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)
