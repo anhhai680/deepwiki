@@ -1,3 +1,10 @@
+"""
+WebSocket handler for wiki chat functionality.
+
+This module handles WebSocket connections for real-time chat completions
+with AI models, including RAG-powered responses and multi-provider support.
+"""
+
 import logging
 import os
 from typing import List, Optional, Dict, Any

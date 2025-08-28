@@ -299,7 +299,7 @@ def generate_json_export(repo_url: str, pages: List[WikiPage]) -> str:
 
 # Import the simplified chat implementation
 from api.simple_chat import chat_completions_stream
-from api.websocket_wiki import handle_websocket_chat
+from api.websocket import handle_websocket_chat
 
 # Add the chat_completions_stream endpoint to the main app
 app.add_api_route("/chat/completions/stream", chat_completions_stream, methods=["POST"])
