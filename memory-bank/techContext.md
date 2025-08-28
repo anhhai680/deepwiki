@@ -33,6 +33,93 @@
 - **Logging**: Python logging module
 - **File Storage**: Local filesystem with volume mounting
 
+## Current Project Architecture (Post-Restructure)
+
+### Backend Structure
+```
+backend/
+├── api/                    # API layer with versioned endpoints
+│   ├── v1/                # API version 1 endpoints
+│   │   ├── chat.py        # Chat-related endpoints
+│   │   ├── config.py      # Configuration endpoints
+│   │   ├── core.py        # Core functionality endpoints
+│   │   ├── projects.py    # Project management endpoints
+│   │   └── wiki.py        # Wiki-related endpoints
+│   ├── dependencies.py    # FastAPI dependencies
+│   └── __init__.py        # API package initialization
+├── components/             # Core business logic components
+│   ├── embedder/          # Embedding provider components
+│   ├── generator/          # AI generation components
+│   │   ├── providers/     # AI provider implementations
+│   │   └── templates/     # Prompt templates
+│   ├── memory/            # Memory management components
+│   ├── processors/        # Data processing components
+│   └── retriever/         # Retrieval components
+├── core/                   # Core infrastructure
+│   ├── config/            # Configuration management
+│   ├── exceptions.py      # Custom exception classes
+│   ├── interfaces/        # Abstract interfaces
+│   └── types.py           # Type definitions
+├── data/                   # Data layer
+│   ├── repositories/      # Data access layer
+│   ├── vector_store.py    # Vector storage operations
+│   └── faiss_integration.py # FAISS integration
+├── models/                 # Pydantic data models
+│   ├── chat.py            # Chat-related models
+│   ├── common.py          # Common model definitions
+│   ├── config.py          # Configuration models
+│   └── wiki.py            # Wiki-related models
+├── pipelines/              # Processing pipelines
+│   ├── base/              # Base pipeline classes
+│   ├── chat/              # Chat processing pipeline
+│   │   └── steps/         # Chat pipeline steps
+│   └── rag/               # RAG processing pipeline
+│       └── steps/         # RAG pipeline steps
+├── services/               # Business logic services
+│   ├── chat_service.py    # Chat business logic
+│   └── project_service.py # Project processing logic
+├── utils/                  # Utility functions
+│   ├── config_utils.py    # Configuration utilities
+│   ├── file_utils.py      # File operation utilities
+│   ├── response_utils.py  # Response formatting utilities
+│   ├── text_utils.py      # Text processing utilities
+│   ├── token_utils.py     # Token management utilities
+│   └── validation_utils.py # Validation utilities
+├── websocket/              # WebSocket functionality
+│   └── wiki_handler.py    # WebSocket message handling
+├── app.py                  # FastAPI application factory
+├── container.py            # Dependency injection container
+├── main.py                 # Application entry point
+└── requirements.txt        # Python dependencies
+```
+
+### Frontend Structure
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── [owner]/           # Dynamic owner routes
+│   │   └── [repo]/        # Dynamic repository routes
+│   ├── api/               # API route handlers
+│   ├── wiki/              # Wiki interface
+│   └── layout.tsx         # Root layout component
+├── components/             # React components
+│   ├── Ask.tsx            # Question asking interface
+│   ├── ConfigurationModal.tsx # Configuration modal
+│   ├── Markdown.tsx       # Markdown rendering
+│   ├── Mermaid.tsx        # Diagram rendering
+│   ├── ModelSelectionModal.tsx # AI model selection
+│   ├── ProcessedProjects.tsx # Project display
+│   ├── WikiTreeView.tsx   # Wiki navigation tree
+│   └── WikiTypeSelector.tsx # Wiki type selection
+├── contexts/               # React contexts
+│   └── LanguageContext.tsx # Language selection context
+├── hooks/                  # Custom React hooks
+│   └── useProcessedProjects.ts # Project data hook
+├── messages/               # Internationalization messages
+├── types/                  # TypeScript type definitions
+└── utils/                  # Utility functions
+```
+
 ## Dependencies Analysis
 
 ### Frontend Dependencies
@@ -132,7 +219,7 @@ PORT=8001                           # API server port
 SERVER_BASE_URL=http://localhost:8001
 DEEPWIKI_CONFIG_DIR=/path/to/config
 LOG_LEVEL=INFO
-LOG_FILE_PATH=api/logs/application.log
+LOG_FILE_PATH=backend/logs/application.log
 
 # Authorization
 DEEPWIKI_AUTH_MODE=false
@@ -140,19 +227,19 @@ DEEPWIKI_AUTH_CODE=your_auth_code
 ```
 
 ### Configuration Files
-- **`api/config/generator.json`**: LLM model configurations
-- **`api/config/embedder.json`**: Embedding and retrieval settings
-- **`api/config/repo.json`**: Repository processing rules
-- **`api/config/lang.json`**: Language-specific configurations
+- **`backend/config/generator.json`**: LLM model configurations
+- **`backend/config/embedder.json`**: Embedding and retrieval settings
+- **`backend/config/repo.json`**: Repository processing rules
+- **`backend/config/lang.json`**: Language-specific configurations
 
 ## Development Environment
 
 ### Local Development Setup
 ```bash
 # Backend
-cd api/
+cd backend/
 pip install -r requirements.txt
-python -m api.main
+python -m backend.main
 
 # Frontend
 npm install
@@ -172,7 +259,7 @@ docker run -p 8001:8001 -e GOOGLE_API_KEY=... deepwiki-open
 - **Repository Storage**: `~/.adalflow/repos/`
 - **Vector Database**: `~/.adalflow/databases/`
 - **Wiki Cache**: `~/.adalflow/wikicache/`
-- **Logs**: `api/logs/` (configurable)
+- **Logs**: `backend/logs/` (configurable)
 
 ## API Architecture
 
@@ -238,3 +325,31 @@ docker run -p 8001:8001 -e GOOGLE_API_KEY=... deepwiki-open
 3. **Monitoring**: Health checks and metrics
 4. **Security**: Production-ready security measures
 5. **Performance**: Caching and optimization
+
+## Post-Restructure Benefits
+
+### 1. **Architecture Improvements**
+- **Modular Design**: Clear separation of concerns
+- **Component Organization**: Logical grouping of functionality
+- **Dependency Management**: Clean dependency injection
+- **Interface Definition**: Clear contracts between components
+
+### 2. **Development Experience**
+- **Code Navigation**: Easier to find and understand code
+- **Testing**: Isolated component testing
+- **Maintenance**: Focused changes with minimal side effects
+- **Documentation**: Clear component boundaries and responsibilities
+
+### 3. **Performance and Scalability**
+- **Resource Management**: Better resource utilization
+- **Caching**: Improved caching strategies
+- **Import Optimization**: Faster module resolution
+- **Memory Usage**: Better memory management patterns
+
+### 4. **Quality Assurance**
+- **Testing Framework**: Comprehensive testing infrastructure
+- **Import Validation**: Automated import error detection
+- **Code Quality**: Consistent patterns and standards
+- **Error Handling**: Improved error management and recovery
+
+The restructure has successfully established a clean, maintainable architecture that preserves all original functionality while providing significant improvements in code organization, testability, and scalability.

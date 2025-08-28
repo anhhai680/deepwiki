@@ -10,7 +10,7 @@ import os
 # Add the parent directory to the path so we can import the utils
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import (
+from backend.utils import (
     # Text utilities
     count_paragraphs,
     has_markdown_content,
