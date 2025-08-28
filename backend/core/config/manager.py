@@ -45,10 +45,11 @@ class ConfigurationManager:
             from backend.components.generator.providers.azure_generator import AzureAIGenerator
             from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
             from backend.components.generator.providers.ollama_generator import OllamaGenerator
-            from adalflow import GoogleGenAIClient, OllamaClient
+            from adalflow import GoogleGenAIClient, OllamaClient, OpenAIClient
             
             self._client_classes = {
                 "GoogleGenAIClient": GoogleGenAIClient,
+                "OpenAIClient": OpenAIClient,
                 "OpenAIGenerator": OpenAIGenerator,
                 "OpenRouterGenerator": OpenRouterGenerator,
                 "OllamaGenerator": OllamaGenerator,
@@ -277,6 +278,7 @@ def get_config_manager() -> ConfigurationManager:
     global _config_manager
     if _config_manager is None:
         _config_manager = ConfigurationManager()
+        _config_manager.initialize()
     return _config_manager
 
 

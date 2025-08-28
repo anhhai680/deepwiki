@@ -35,7 +35,7 @@ try:
     from backend.components.generator.providers.azure_generator import AzureAIGenerator
     from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
     from backend.components.generator.providers.ollama_generator import OllamaGenerator
-    from adalflow import GoogleGenAIClient, OllamaClient
+    from adalflow import GoogleGenAIClient, OllamaClient, OpenAIClient
 except ImportError:
     # Handle import errors gracefully during development
     OpenAIGenerator = None
