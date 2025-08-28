@@ -8,6 +8,7 @@ import logging
 from fastapi import APIRouter
 
 from ...models import ModelConfig, Provider, Model
+from ...core.config.manager import get_config_manager
 
 logger = logging.getLogger(__name__)
 
@@ -52,47 +53,41 @@ async def get_model_config():
     """
     try:
         logger.info("Fetching model configurations")
+        # Load dynamic generator configuration
+        cfg_manager = get_config_manager()
+        generator_cfg = cfg_manager.get_generator_config()
 
-        # Simplified model config - will be enhanced when full config is integrated
-        providers = [
-            Provider(
-                id="google",
-                name="Google",
-                supportsCustomModel=True,
-                models=[
-                    Model(id="gemini-2.5-flash", name="Gemini 2.5 Flash")
-                ]
-            ),
-            Provider(
-                id="openai",
-                name="OpenAI",
-                supportsCustomModel=True,
-                models=[
-                    Model(id="gpt-4", name="GPT-4"),
-                    Model(id="gpt-3.5-turbo", name="GPT-3.5 Turbo"),
-                    Model(id="gpt-4o-mini", name="GPT-4o Mini"),
-                    Model(id="gpt-4.1", name="GPT-4.1"),
-                    Model(id="gpt-4.1-mini", name="GPT-4.1 Mini"),
-                    Model(id="gpt-4o", name="GPT-4o")
-                ]
-            ),
-            Provider(
-                id="ollama",
-                name="Ollama",
-                supportsCustomModel=True,
-                models=[
-                    Model(id="llama3", name="Llama 3"),
-                    Model(id="mistral", name="Mistral")
-                ]
+        providers_cfg = generator_cfg.get("providers", {}) or {}
+        default_provider = generator_cfg.get("default_provider", "openai")
+
+        # Friendly names for known providers; fallback to capitalized id
+        provider_names = {
+            "google": "Google",
+            "openai": "OpenAI",
+            "openrouter": "OpenRouter",
+            "ollama": "Ollama",
+            "bedrock": "Bedrock",
+            "azure": "Azure AI",
+            "dashscope": "DashScope",
+        }
+
+        providers: list[Provider] = []
+        for pid, pcfg in providers_cfg.items():
+            models_cfg = (pcfg.get("models") or {})
+            model_list = [
+                Model(id=mid, name=mid) for mid in models_cfg.keys()
+            ]
+
+            providers.append(
+                Provider(
+                    id=pid,
+                    name=provider_names.get(pid, pid.capitalize()),
+                    supportsCustomModel=bool(pcfg.get("supportsCustomModel", False)),
+                    models=model_list,
+                )
             )
-        ]
 
-        # Create and return the configuration
-        config = ModelConfig(
-            providers=providers,
-            defaultProvider="openai"
-        )
-        return config
+        return ModelConfig(providers=providers, defaultProvider=default_provider)
 
     except Exception as e:
         logger.error(f"Error creating model configuration: {str(e)}")
