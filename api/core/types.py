@@ -5,7 +5,13 @@ This module contains type definitions extracted
 from existing code during the restructure.
 """
 
-from typing import Dict, List, Optional, Union, Any, TypedDict, Literal
+from typing import Dict, List, Optional, Union, Any
+try:
+    # Prefer typing_extensions for Python < 3.12 compatibility
+    from typing_extensions import TypedDict, Literal
+except Exception:
+    # Fallback for Python >= 3.12 or environments without typing_extensions
+    from typing import TypedDict, Literal
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
