@@ -12,7 +12,7 @@ from urllib.parse import unquote
 
 import google.generativeai as genai
 from adalflow.components.model_client.ollama_client import OllamaClient
-from adalflow.core.types import ModelType
+from backend.components.generator.base import ModelType
 from fastapi import WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel, Field
 

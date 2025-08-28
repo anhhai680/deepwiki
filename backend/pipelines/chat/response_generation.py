@@ -12,7 +12,7 @@ from typing import AsyncGenerator, Any, Dict
 from ..base.base_pipeline import PipelineStep, PipelineContext
 from .chat_context import ChatPipelineContext
 from adalflow.components.model_client.ollama_client import OllamaClient
-from adalflow.core.types import ModelType
+from backend.components.generator.base import ModelType
 
 
 class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineContext]):
