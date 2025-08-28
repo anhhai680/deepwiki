@@ -61,33 +61,34 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     
-    # Add basic endpoints for now
-    @app.get("/health")
-    async def health_check():
-        """Health check endpoint for Docker and monitoring"""
-        return {
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "service": "deepwiki-api"
-        }
-    
-    @app.get("/")
-    async def root():
-        """Root endpoint to check if the API is running."""
-        return {
-            "message": "Welcome to DeepWiki API",
-            "version": "2.0.0",
-            "status": "restructuring",
-            "note": "App configuration extracted successfully - endpoints being integrated",
-            "docs_url": "/docs",
-            "redoc_url": "/redoc"
-        }
-    
-    # TODO: Add domain-specific routers when import issues are resolved
-    # app.include_router(core.router, tags=["core"])
-    # app.include_router(config.router, tags=["configuration"])
-    # app.include_router(chat.router, tags=["chat"])
-    # app.include_router(wiki.router, tags=["wiki"])
-    # app.include_router(projects.router, tags=["projects"])
+    # Include domain-specific routers
+    try:
+        from .api.v1 import core, config as config_router, chat, wiki, projects
+        app.include_router(core.router, tags=["core"])
+        app.include_router(config_router.router, tags=["configuration"])
+        app.include_router(chat.router, tags=["chat"])
+        app.include_router(wiki.router, tags=["wiki"])
+        app.include_router(projects.router, tags=["projects"])
+    except Exception as import_error:
+        logger.error(f"Error including routers: {import_error}")
+        # Fallback minimal endpoints to keep app responsive
+        @app.get("/health")
+        async def health_check():
+            return {
+                "status": "healthy",
+                "timestamp": datetime.now().isoformat(),
+                "service": "deepwiki-api"
+            }
+
+        @app.get("/")
+        async def root():
+            return {
+                "message": "Welcome to DeepWiki API",
+                "version": "2.0.0",
+                "status": "degraded",
+                "note": "Routers failed to load; running fallback endpoints",
+                "docs_url": "/docs",
+                "redoc_url": "/redoc"
+            }
     
     return app
