@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional, Union, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-from api.core.types import Document
+from adalflow.core.types import Document
 
 
 class RetrievalMethod(Enum):
