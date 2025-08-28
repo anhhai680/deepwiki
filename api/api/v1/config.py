@@ -19,7 +19,7 @@ async def get_lang_config():
     """Get language configuration."""
     # Simplified language config - will be enhanced when full config is integrated
     return {
-        "supported_languages": ["en", "ja", "zh", "es", "kr", "vi", "fr", "pt-br", "ru", "zh-tw"],
+        "supported_languages": ["en", "vi"],
         "default": "en"
     }
 
@@ -66,10 +66,14 @@ async def get_model_config():
             Provider(
                 id="openai",
                 name="OpenAI",
-                supportsCustomModel=False,
+                supportsCustomModel=True,
                 models=[
                     Model(id="gpt-4", name="GPT-4"),
-                    Model(id="gpt-3.5-turbo", name="GPT-3.5 Turbo")
+                    Model(id="gpt-3.5-turbo", name="GPT-3.5 Turbo"),
+                    Model(id="gpt-4o-mini", name="GPT-4o Mini"),
+                    Model(id="gpt-4.1", name="GPT-4.1"),
+                    Model(id="gpt-4.1-mini", name="GPT-4.1 Mini"),
+                    Model(id="gpt-4o", name="GPT-4o")
                 ]
             ),
             Provider(
@@ -86,7 +90,7 @@ async def get_model_config():
         # Create and return the configuration
         config = ModelConfig(
             providers=providers,
-            defaultProvider="google"
+            defaultProvider="openai"
         )
         return config
 
