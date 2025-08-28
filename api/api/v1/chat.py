@@ -5,36 +5,27 @@ This module contains all chat-related API endpoints extracted from the main api.
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+# Import the actual chat implementations from the existing modules
+from ..simple_chat import chat_completions_stream, ChatCompletionRequest, ChatMessage
+from ..websocket_wiki import handle_websocket_chat
 
 # Create router for chat endpoints
 router = APIRouter()
 
-# Temporary placeholder models until we integrate the full chat functionality
-class ChatMessage(BaseModel):
-    role: str
-    content: str
+# Re-export the models for consistency
+ChatMessage = ChatMessage
+ChatCompletionRequest = ChatCompletionRequest
 
-class ChatCompletionRequest(BaseModel):
-    repo_url: str
-    messages: List[ChatMessage]
-    provider: str = "google"
-    model: str = None
-
-# Placeholder endpoint - will be replaced with actual implementation
 @router.post("/chat/completions/stream")
-async def chat_completions_stream(request: ChatCompletionRequest):
-    """Placeholder chat completion endpoint - will be integrated with full chat functionality"""
-    return {
-        "message": "Chat endpoint placeholder - full functionality will be integrated after endpoint extraction is complete",
-        "status": "placeholder"
-    }
+async def chat_completions_stream_endpoint(request: ChatCompletionRequest):
+    """Stream a chat completion response using the existing chat implementation."""
+    return await chat_completions_stream(request)
 
-# Placeholder WebSocket endpoint - will be replaced with actual implementation
 @router.websocket("/ws/chat")
 async def websocket_endpoint(websocket):
-    """Placeholder WebSocket endpoint - will be integrated with full chat functionality"""
-    await websocket.accept()
-    await websocket.send_text("WebSocket endpoint placeholder - full functionality will be integrated after endpoint extraction is complete")
-    await websocket.close()
+    """WebSocket endpoint for chat using the existing websocket implementation."""
+    await handle_websocket_chat(websocket)
