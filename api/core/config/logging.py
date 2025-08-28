@@ -66,7 +66,7 @@ def setup_logging(
     max_bytes = max_size_mb * 1024 * 1024
     
     # Configure format
-    log_format = format_string or "%(asctime)s - %(levelname)s - %(name)s - %(filename):%(lineno)d - %(message)s"
+    log_format = format_string or "%(asctime)s - %(levelname)s - %(name)s - %(filename)s - L%(lineno)d - %(message)s"
     
     # Create handlers
     file_handler = RotatingFileHandler(
