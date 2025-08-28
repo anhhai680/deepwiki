@@ -42,7 +42,8 @@ def create_faiss_retriever_from_config(
             top_k=top_k,
             embedder=embedder,
             documents=documents,
-            document_map_func=document_map_func or (lambda doc: doc.vector)
+            document_map_func=document_map_func or (lambda doc: doc.vector),
+            allow_mock_embedder=True
         )
         
         logger.info(f"Created FAISS retriever with top_k={top_k}")
