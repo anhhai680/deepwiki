@@ -12,7 +12,7 @@ from typing import Any, List, Dict
 from api.pipelines.base import PipelineStep, PipelineContext
 from api.pipelines.rag.rag_context import RAGPipelineContext
 from api.components.generator.generator_manager import get_generator_manager
-from api.prompts import RAG_SYSTEM_PROMPT, RAG_TEMPLATE
+from api.components.generator.templates import RAG_SYSTEM_PROMPT, RAG_TEMPLATE
 
 logger = logging.getLogger(__name__)
 

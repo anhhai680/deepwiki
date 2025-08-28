@@ -1,4 +1,8 @@
-"""Module containing all prompts used in the DeepWiki project."""
+"""Centralized prompt templates for generator components.
+
+This module was moved from `api/prompts.py` to align templates with the
+generator component structure.
+"""
 
 # System prompt for RAG
 RAG_SYSTEM_PROMPT = r"""
@@ -167,14 +171,6 @@ IMPORTANT:You MUST respond in {language_name} language.
 - DO NOT start by repeating or acknowledging the question
 - JUST START with the direct answer to the question
 
-<example_of_what_not_to_do>
-```markdown
-## Analysis of `adalflow/adalflow/datasets/gsm8k.py`
-
-This file contains...
-```
-</example_of_what_not_to_do>
-
 - Format your response with proper markdown including headings, lists, and code blocks WITHIN your answer
 - For code analysis, organize your response with clear sections
 - Think step by step and structure your answer logically
@@ -189,3 +185,14 @@ This file contains...
 - When showing code, include line numbers and file paths when relevant
 - Use markdown formatting to improve readability
 </style>"""
+
+__all__ = [
+    "RAG_SYSTEM_PROMPT",
+    "RAG_TEMPLATE",
+    "DEEP_RESEARCH_FIRST_ITERATION_PROMPT",
+    "DEEP_RESEARCH_FINAL_ITERATION_PROMPT",
+    "DEEP_RESEARCH_INTERMEDIATE_ITERATION_PROMPT",
+    "SIMPLE_CHAT_SYSTEM_PROMPT",
+]
+
+

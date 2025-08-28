@@ -140,7 +140,7 @@ class SystemPromptGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineC
         """Generate system prompt based on conversation context."""
         self.logger.info("Generating system prompt")
         
-        from api.prompts import (
+        from api.components.generator.templates import (
             DEEP_RESEARCH_FIRST_ITERATION_PROMPT,
             DEEP_RESEARCH_FINAL_ITERATION_PROMPT,
             DEEP_RESEARCH_INTERMEDIATE_ITERATION_PROMPT,

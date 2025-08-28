@@ -8,7 +8,7 @@ from uuid import uuid4
 import adalflow as adal
 
 from api.tools.embedder import get_embedder
-from api.prompts import RAG_SYSTEM_PROMPT as system_prompt, RAG_TEMPLATE
+from api.components.generator.templates import RAG_SYSTEM_PROMPT as system_prompt, RAG_TEMPLATE
 
 # Create our own implementation of the conversation classes
 @dataclass

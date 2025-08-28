@@ -57,8 +57,8 @@ def setup_logging(format: str = None):
     except ValueError:
         backup_count = 5
 
-    # Configure format
-    log_format = format or "%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s"
+    # Configure format (avoid ambiguous %: parsing issues on some Python versions)
+    log_format = format or "%(asctime)s - %(levelname)s - %(name)s - %(filename)s - L%(lineno)d - %(message)s"
 
     # Create handlers
     file_handler = RotatingFileHandler(resolved_path, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8")

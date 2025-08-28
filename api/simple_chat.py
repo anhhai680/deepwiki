@@ -18,7 +18,7 @@ from api.openrouter_client import OpenRouterClient
 from api.bedrock_client import BedrockClient
 from api.azureai_client import AzureAIClient
 from api.rag import RAG
-from api.prompts import (
+from api.components.generator.templates import (
     DEEP_RESEARCH_FIRST_ITERATION_PROMPT,
     DEEP_RESEARCH_FINAL_ITERATION_PROMPT,
     DEEP_RESEARCH_INTERMEDIATE_ITERATION_PROMPT,
