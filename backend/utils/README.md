@@ -15,7 +15,7 @@ The utilities package provides common functionality for:
 ## Module Structure
 
 ```
-api/utils/
+backend/utils/
 ├── __init__.py          # Main package exports
 ├── text_utils.py        # Text processing utilities
 ├── file_utils.py        # File operations utilities
@@ -30,7 +30,7 @@ api/utils/
 ## Quick Start
 
 ```python
-from api.utils import (
+from backend.utils import (
     # Text utilities
     count_paragraphs,
     has_markdown_content,
@@ -201,7 +201,7 @@ is_valid = validate_url("https://example.com")  # Returns True
 The utilities package includes a comprehensive test suite in `test_utils.py`. Run the tests to verify functionality:
 
 ```bash
-cd api
+cd backend
 python3 -c "import utils.test_utils; utils.test_utils.run_all_tests()"
 ```
 
@@ -209,7 +209,7 @@ python3 -c "import utils.test_utils; utils.test_utils.run_all_tests()"
 
 ### Text Processing
 ```python
-from api.utils import analyze_text_file, has_markdown_content
+from backend.utils import analyze_text_file, has_markdown_content
 
 # Analyze a text file
 content = "# Title\n\nThis is content with **bold** text."
@@ -224,7 +224,7 @@ print(f"Is markdown: {is_markdown}")
 
 ### File Operations
 ```python
-from api.utils import (
+from backend.utils import (
     get_file_extension, 
     extract_repo_name_from_url,
     should_process_file
@@ -244,7 +244,7 @@ should_process = should_process_file(
 
 ### Validation
 ```python
-from api.utils import validate_url, validate_email, validate_repository_config
+from backend.utils import validate_url, validate_email, validate_repository_config
 
 # Validate inputs
 is_valid_url = validate_url("https://example.com")  # True
@@ -260,7 +260,7 @@ is_valid_repo = validate_repository_config(
 
 ### Token Management
 ```python
-from api.utils import count_tokens, is_text_too_large, truncate_text_to_tokens
+from backend.utils import count_tokens, is_text_too_large, truncate_text_to_tokens
 
 # Count tokens
 token_count = count_tokens("This is a test sentence.")
@@ -274,7 +274,7 @@ truncated = truncate_text_to_tokens(long_text, max_tokens=1000)
 
 ### Configuration
 ```python
-from api.utils import load_json_config, get_config_value, merge_configs
+from backend.utils import load_json_config, get_config_value, merge_configs
 
 # Load configuration
 config = load_json_config("config.json")
@@ -288,7 +288,7 @@ merged = merge_configs(base_config, override_config)
 
 ### Response Processing
 ```python
-from api.utils import extract_response_text, normalize_response
+from backend.utils import extract_response_text, normalize_response
 
 # Extract text from AI response
 response = {"choices": [{"message": {"content": "Hello world"}}]}
