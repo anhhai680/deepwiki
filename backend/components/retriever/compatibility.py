@@ -6,7 +6,7 @@ allowing it to use the new retriever components without breaking changes.
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 
 from .faiss_retriever import FAISSRetriever
 from .vector_store import VectorStore
