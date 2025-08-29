@@ -81,15 +81,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         // Assuming auth is required if fetch fails to avoid blocking UI for safety
         const defaultSupportedLanguages = {
           "en": "English",
-          "ja": "Japanese (日本語)",
-          "zh": "Mandarin Chinese (中文)",
-          "zh-tw": "Traditional Chinese (繁體中文)",
-          "es": "Spanish (Español)",
-          "kr": "Korean (한국어)",
-          "vi": "Vietnamese (Tiếng Việt)",
-          "pt-br": "Brazilian Portuguese (Português Brasileiro)",
-          "fr": "Français (French)",
-          "ru": "Русский (Russian)"
+          "vi": "Vietnamese (Tiếng Việt)"
         };
         setSupportedLanguages(defaultSupportedLanguages);
         setDefaultLanguage("en");
