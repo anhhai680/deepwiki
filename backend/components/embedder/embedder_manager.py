@@ -9,7 +9,7 @@ import logging
 from typing import Dict, Any, Optional, Type, Union, List
 from enum import Enum
 
-from backend.components.embedder.base import BaseEmbedder, EmbeddingModelType
+from backend.components.embedder.base import BaseEmbedder
 from backend.components.embedder.providers.openai_embedder import OpenAIEmbedder
 from backend.components.embedder.providers.ollama_embedder import OllamaEmbedder
 

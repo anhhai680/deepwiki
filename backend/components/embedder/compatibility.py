@@ -6,7 +6,6 @@ interface while using the new component-based architecture.
 """
 
 import logging
-from typing import Dict, Any, Optional
 
 from backend.components.embedder import EmbedderManager, EmbeddingProviderType
 from backend.core.config.settings import configs

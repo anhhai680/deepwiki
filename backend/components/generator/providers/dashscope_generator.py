@@ -6,13 +6,10 @@ extracted from the existing dashscope_client.py implementation.
 """
 
 import os
-import pickle
 import logging
 from typing import Dict, Optional, Any, Callable, Generator, Union, Literal, List, Sequence
 
 import backoff
-from copy import deepcopy
-from tqdm import tqdm
 
 # Optional import
 from adalflow.utils.lazy_import import safe_import, OptionalPackages

@@ -31,7 +31,7 @@ from openai.types import (
     CreateEmbeddingResponse,
     Image,
 )
-from openai.types.chat import ChatCompletionChunk, ChatCompletion, ChatCompletionMessage
+from openai.types.chat import ChatCompletionChunk, ChatCompletion
 
 from backend.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
 from backend.core.types import CompletionUsage
