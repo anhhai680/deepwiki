@@ -6,13 +6,10 @@ operations and document management for retrieval systems.
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Union
-import numpy as np
+from typing import List, Optional, Dict, Any
 
 from adalflow.core.types import Document
-from adalflow.core.db import LocalDB
 
-from .base import BaseRetriever
 
 logger = logging.getLogger(__name__)
 

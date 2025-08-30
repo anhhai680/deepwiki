@@ -5,13 +5,12 @@ This module provides AWS Bedrock-specific generator functionality,
 extracted from the existing bedrock_client.py implementation.
 """
 
-import os
 import json
 import logging
 import boto3
 import botocore
 import backoff
-from typing import Dict, Any, Optional, List, Generator, Union, AsyncGenerator
+from typing import Dict, Any, Optional
 
 from backend.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
 from backend.core.types import CompletionUsage

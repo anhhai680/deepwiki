@@ -7,7 +7,7 @@ conversation state and memory across interactions.
 
 import logging
 from typing import Dict, Any, Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from uuid import uuid4
 
 from adalflow.core.component import DataComponent

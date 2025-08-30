@@ -8,7 +8,7 @@ extracted from the existing ollama_patch.py implementation.
 import os
 import requests
 import logging
-from typing import Dict, Any, Optional, List, Sequence
+from typing import Dict, Any, Optional
 
 from backend.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
 from backend.core.types import CompletionUsage

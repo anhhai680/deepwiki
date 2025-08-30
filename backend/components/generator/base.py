@@ -6,7 +6,7 @@ must implement, ensuring consistent behavior across different AI providers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Union, List, Generator, AsyncGenerator
+from typing import Dict, Any, Optional, Union, Generator
 from enum import Enum
 
 from backend.core.types import CompletionUsage

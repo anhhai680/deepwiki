@@ -6,8 +6,7 @@ through the existing Ollama client infrastructure.
 """
 
 import logging
-from typing import Dict, Any, Optional, Union, List
-import os
+from typing import Dict, Any, Union, List
 
 from backend.components.embedder.base import BaseEmbedder, EmbeddingModelType, EmbedderOutput
 from backend.core.types import EmbeddingVector
