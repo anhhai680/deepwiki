@@ -6,8 +6,7 @@ that implements the BaseRetriever interface.
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Callable
-import numpy as np
+from typing import List, Optional
 try:
     from unittest.mock import Mock as _UMock  # For test environment detection
 except Exception:
@@ -16,7 +15,7 @@ except Exception:
 from adalflow.components.retriever.faiss_retriever import FAISSRetriever as AdalflowFAISSRetriever
 from adalflow.core.types import Document
 
-from .base import BaseRetriever, RetrievalResult, RetrievalMethod
+from .base import BaseRetriever, RetrievalResult
 
 logger = logging.getLogger(__name__)
 

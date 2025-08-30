@@ -47,17 +47,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return langCode;
       }
 
-      // Special case for Chinese variants
-      if (langCode === 'zh') {
-        console.log('Chinese language detected');
-        // Check for traditional Chinese variants
-        if (browserLang.includes('TW') || browserLang.includes('HK')) {
-          console.log('Traditional Chinese variant detected');
-          return 'zh'; // Use Mandarin for traditional Chinese
-        }
-        return 'zh'; // Use Mandarin for simplified Chinese
-      }
-
       console.log('Language not supported, defaulting to English');
       return 'en'; // Default to English if not supported
     } catch (error) {
@@ -80,16 +69,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         console.error("Failed to fetch auth status:", err);
         // Assuming auth is required if fetch fails to avoid blocking UI for safety
         const defaultSupportedLanguages = {
-          "en": "English",
-          "ja": "Japanese (日本語)",
-          "zh": "Mandarin Chinese (中文)",
-          "zh-tw": "Traditional Chinese (繁體中文)",
-          "es": "Spanish (Español)",
-          "kr": "Korean (한국어)",
-          "vi": "Vietnamese (Tiếng Việt)",
-          "pt-br": "Brazilian Portuguese (Português Brasileiro)",
-          "fr": "Français (French)",
-          "ru": "Русский (Russian)"
+          "en": "English"
         };
         setSupportedLanguages(defaultSupportedLanguages);
         setDefaultLanguage("en");

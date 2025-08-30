@@ -6,7 +6,7 @@ must implement, ensuring consistent behavior across different retrieval methods.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Union, List, Tuple
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from enum import Enum
 

@@ -9,7 +9,7 @@ import logging
 from typing import Dict, Any, Optional, Type, Union, List
 from enum import Enum
 
-from backend.components.generator.base import BaseGenerator, ModelType
+from backend.components.generator.base import BaseGenerator
 from backend.components.generator.providers.openai_generator import OpenAIGenerator
 from backend.components.generator.providers.azure_generator import AzureAIGenerator
 from backend.components.generator.providers.bedrock_generator import BedrockGenerator

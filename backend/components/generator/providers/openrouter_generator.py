@@ -6,11 +6,10 @@ extracted from the existing openrouter_client.py implementation.
 """
 
 import logging
-import json
 import aiohttp
 import requests
-from requests.exceptions import RequestException, Timeout
-from typing import Dict, Sequence, Optional, Any, List
+from requests.exceptions import RequestException
+from typing import Dict, Optional, Any
 
 from backend.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
 from backend.core.types import CompletionUsage
