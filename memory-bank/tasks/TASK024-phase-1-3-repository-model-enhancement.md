@@ -1,7 +1,7 @@
-# TASK023: Phase 1.3: Repository Model Enhancement
+# TASK024: Phase 1.3: Repository Model Enhancement
 
 ## Task Information
-- **Task ID**: TASK023
+- **Task ID**: TASK024
 - **Task Name**: Phase 1.3: Repository Model Enhancement
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -201,8 +201,8 @@ class RepoInfo(BaseModel):
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK021: Phase 1.1: Feature Flag Infrastructure (for feature flag integration)
-- TASK022: Phase 1.2: Extend Existing Models (for model structure alignment)
+- TASK022: Phase 1.1: Feature Flag Infrastructure (for feature flag integration)
+- TASK023: Phase 1.2: Extend Existing Models (for model structure alignment)
 
 ## Deliverables
 1. Enhanced `backend/models/common.py` with extended RepoInfo

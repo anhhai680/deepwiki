@@ -1,7 +1,7 @@
-# TASK026: Phase 4.1: Frontend Feature Flag Infrastructure
+# TASK027: Phase 4.1: Frontend Feature Flag Infrastructure
 
 ## Task Information
-- **Task ID**: TASK026
+- **Task ID**: TASK027
 - **Task Name**: Phase 4.1: Frontend Feature Flag Infrastructure
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -167,7 +167,7 @@ const useMultiRepositoryFeature = () => {
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK021: Phase 1.1: Feature Flag Infrastructure (backend)
+- TASK022: Phase 1.1: Feature Flag Infrastructure (backend)
 - Frontend development environment setup
 
 ## Deliverables

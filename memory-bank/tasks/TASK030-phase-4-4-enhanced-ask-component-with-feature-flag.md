@@ -1,7 +1,7 @@
-# TASK029: Phase 4.4: Enhanced Ask Component with Feature Flag
+# TASK030: Phase 4.4: Enhanced Ask Component with Feature Flag
 
 ## Task Information
-- **Task ID**: TASK029
+- **Task ID**: TASK030
 - **Task Name**: Phase 4.4: Enhanced Ask Component with Feature Flag
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -400,9 +400,9 @@ export default Ask;
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK026: Phase 4.1: Frontend Feature Flag Infrastructure
-- TASK027: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
-- TASK028: Phase 4.3: Enhanced WebSocket Client with Feature Flag
+- TASK027: Phase 4.1: Frontend Feature Flag Infrastructure
+- TASK028: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
+- TASK029: Phase 4.3: Enhanced WebSocket Client with Feature Flag
 - Existing Ask component implementation
 
 ## Deliverables

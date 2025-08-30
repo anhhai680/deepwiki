@@ -1,7 +1,7 @@
-# TASK025: Phase 3.1: Multi-RAG Support
+# TASK026: Phase 3.1: Multi-RAG Support
 
 ## Task Information
-- **Task ID**: TASK025
+- **Task ID**: TASK026
 - **Task Name**: Phase 3.1: Multi-RAG Support
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -316,10 +316,10 @@ class RAGPipeline:
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK021: Phase 1.1: Feature Flag Infrastructure
-- TASK022: Phase 1.2: Extend Existing Models
-- TASK023: Phase 1.3: Repository Model Enhancement
-- TASK024: Phase 2.1: Multi-Repository Support (WebSocket)
+- TASK022: Phase 1.1: Feature Flag Infrastructure
+- TASK023: Phase 1.2: Extend Existing Models
+- TASK024: Phase 1.3: Repository Model Enhancement
+- TASK025: Phase 2.1: Multi-Repository Support (WebSocket)
 - Repository Manager Service (to be created)
 
 ## Deliverables

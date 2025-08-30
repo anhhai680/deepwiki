@@ -1,7 +1,7 @@
-# TASK024: Phase 2.1: Multi-Repository Support
+# TASK025: Phase 2.1: Multi-Repository Support
 
 ## Task Information
-- **Task ID**: TASK024
+- **Task ID**: TASK025
 - **Task Name**: Phase 2.1: Multi-Repository Support
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -264,9 +264,9 @@ async def merge_and_send_results(websocket: WebSocket, results: List[Dict[str, A
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK021: Phase 1.1: Feature Flag Infrastructure
-- TASK022: Phase 1.2: Extend Existing Models
-- TASK023: Phase 1.3: Repository Model Enhancement
+- TASK022: Phase 1.1: Feature Flag Infrastructure
+- TASK023: Phase 1.2: Extend Existing Models
+- TASK024: Phase 1.3: Repository Model Enhancement
 - Repository Manager Service (to be created)
 
 ## Deliverables

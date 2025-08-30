@@ -1,7 +1,7 @@
-# TASK032: Phase 4.7: New Multi-Repository Components (Feature Flag Protected)
+# TASK033: Phase 4.7: New Multi-Repository Components (Feature Flag Protected)
 
 ## Task Information
-- **Task ID**: TASK032
+- **Task ID**: TASK033
 - **Task Name**: Phase 4.7: New Multi-Repository Components (Feature Flag Protected)
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -692,8 +692,8 @@ export default RepositoryPriority;
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK026: Phase 4.1: Frontend Feature Flag Infrastructure
-- TASK027: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
+- TASK027: Phase 4.1: Frontend Feature Flag Infrastructure
+- TASK028: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
 - Existing component infrastructure
 
 ## Deliverables

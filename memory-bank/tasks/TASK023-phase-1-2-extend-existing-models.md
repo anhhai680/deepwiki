@@ -1,7 +1,7 @@
-# TASK022: Phase 1.2: Extend Existing Models
+# TASK023: Phase 1.2: Extend Existing Models
 
 ## Task Information
-- **Task ID**: TASK022
+- **Task ID**: TASK023
 - **Task Name**: Phase 1.2: Extend Existing Models
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -134,7 +134,7 @@ class MultiRepositoryRequest(BaseModel):
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK021: Phase 1.1: Feature Flag Infrastructure (for feature flag integration)
+- TASK022: Phase 1.1: Feature Flag Infrastructure (for feature flag integration)
 
 ## Deliverables
 1. Enhanced `backend/models/chat.py` with new models

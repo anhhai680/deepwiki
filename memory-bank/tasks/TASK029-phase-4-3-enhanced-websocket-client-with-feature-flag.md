@@ -1,7 +1,7 @@
-# TASK028: Phase 4.3: Enhanced WebSocket Client with Feature Flag
+# TASK029: Phase 4.3: Enhanced WebSocket Client with Feature Flag
 
 ## Task Information
-- **Task ID**: TASK028
+- **Task ID**: TASK029
 - **Task Name**: Phase 4.3: Enhanced WebSocket Client with Feature Flag
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -313,8 +313,8 @@ export default EnhancedWebSocketClient;
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK026: Phase 4.1: Frontend Feature Flag Infrastructure
-- TASK027: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
+- TASK027: Phase 4.1: Frontend Feature Flag Infrastructure
+- TASK028: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
 - Existing WebSocket client implementation
 
 ## Deliverables

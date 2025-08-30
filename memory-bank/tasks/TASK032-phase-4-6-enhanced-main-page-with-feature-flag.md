@@ -1,7 +1,7 @@
-# TASK031: Phase 4.6: Enhanced Main Page with Feature Flag
+# TASK032: Phase 4.6: Enhanced Main Page with Feature Flag
 
 ## Task Information
-- **Task ID**: TASK031
+- **Task ID**: TASK032
 - **Task Name**: Phase 4.6: Enhanced Main Page with Feature Flag
 - **Status**: 🔴 Not Started
 - **Progress**: 0%
@@ -400,10 +400,10 @@ export default function Home() {
 - [ ] **Progress**: 0%
 
 ## Dependencies
-- TASK026: Phase 4.1: Frontend Feature Flag Infrastructure
-- TASK027: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
-- TASK029: Phase 4.4: Enhanced Ask Component with Feature Flag
-- TASK030: Phase 4.5: Enhanced Configuration Modal with Feature Flag
+- TASK027: Phase 4.1: Frontend Feature Flag Infrastructure
+- TASK028: Phase 4.2: Enhanced Type Definitions with Feature Flag Protection
+- TASK030: Phase 4.4: Enhanced Ask Component with Feature Flag
+- TASK031: Phase 4.5: Enhanced Configuration Modal with Feature Flag
 - Existing Main Page component implementation
 
 ## Deliverables
