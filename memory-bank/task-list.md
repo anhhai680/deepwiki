@@ -5,30 +5,30 @@
 ### Phase 1: Feature Flag Infrastructure & Model Enhancement (Week 1-2)
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| TASK021 | Phase 1.1: Feature Flag Infrastructure | 🔴 Not Started | 0% | Week 1-2 | 🟡 Medium |
-| TASK022 | Phase 1.2: Extend Existing Models | 🔴 Not Started | 0% | Week 1-2 | 🟡 Medium |
-| TASK023 | Phase 1.3: Repository Model Enhancement | 🔴 Not Started | 0% | Week 1-2 | 🟡 Medium |
+| TASK022 | Phase 1.1: Feature Flag Infrastructure | 🔴 Not Started | 0% | Week 1-2 | 🟡 Medium |
+| TASK023 | Phase 1.2: Extend Existing Models | 🔴 Not Started | 0% | Week 1-2 | 🟡 Medium |
+| TASK024 | Phase 1.3: Repository Model Enhancement | 🔴 Not Started | 0% | Week 1-2 | 🟡 Medium |
 
 ### Phase 2: WebSocket Handler Enhancement (Week 3)
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| TASK024 | Phase 2.1: Multi-Repository Support | 🔴 Not Started | 0% | Week 3 | 🟡 Medium |
+| TASK025 | Phase 2.1: Multi-Repository Support | 🔴 Not Started | 0% | Week 3 | 🟡 Medium |
 
 ### Phase 3: RAG Pipeline Enhancement (Week 4)
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| TASK025 | Phase 3.1: Multi-RAG Support | 🔴 Not Started | 0% | Week 4 | 🟡 Medium |
+| TASK026 | Phase 3.1: Multi-RAG Support | 🔴 Not Started | 0% | Week 4 | 🟡 Medium |
 
 ### Phase 4: Frontend Implementation with Feature Flag Integration (Week 5-6)
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| TASK026 | Phase 4.1: Frontend Feature Flag Infrastructure | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
-| TASK027 | Phase 4.2: Enhanced Type Definitions with Feature Flag Protection | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
-| TASK028 | Phase 4.3: Enhanced WebSocket Client with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
-| TASK029 | Phase 4.4: Enhanced Ask Component with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
-| TASK030 | Phase 4.5: Enhanced Configuration Modal with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
-| TASK031 | Phase 4.6: Enhanced Main Page with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
-| TASK032 | Phase 4.7: New Multi-Repository Components (Feature Flag Protected) | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK027 | Phase 4.1: Frontend Feature Flag Infrastructure | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK028 | Phase 4.2: Enhanced Type Definitions with Feature Flag Protection | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK029 | Phase 4.3: Enhanced WebSocket Client with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK030 | Phase 4.4: Enhanced Ask Component with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK031 | Phase 4.5: Enhanced Configuration Modal with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK032 | Phase 4.6: Enhanced Main Page with Feature Flag | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
+| TASK033 | Phase 4.7: New Multi-Repository Components (Feature Flag Protected) | 🔴 Not Started | 0% | Week 5-6 | 🟡 Medium |
 
 ## Completed Tasks
 
@@ -66,24 +66,24 @@
 ## Next Priority Tasks
 
 ### Phase 1: Foundation (Week 1-2)
-1. **TASK021: Phase 1.1: Feature Flag Infrastructure** - Create backend feature flag system
-2. **TASK022: Phase 1.2: Extend Existing Models** - Extend models for multi-repository support
-3. **TASK023: Phase 1.3: Repository Model Enhancement** - Enhance repository models
+1. **TASK022: Phase 1.1: Feature Flag Infrastructure** - Create backend feature flag system
+2. **TASK023: Phase 1.2: Extend Existing Models** - Extend models for multi-repository support
+3. **TASK024: Phase 1.3: Repository Model Enhancement** - Enhance repository models
 
 ### Phase 2: Backend Enhancement (Week 3)
-4. **TASK024: Phase 2.1: Multi-Repository Support** - Enhance WebSocket handler
+4. **TASK025: Phase 2.1: Multi-Repository Support** - Enhance WebSocket handler
 
 ### Phase 3: RAG Pipeline (Week 4)
-5. **TASK025: Phase 3.1: Multi-RAG Support** - Enhance RAG pipeline for multi-repository
+5. **TASK026: Phase 3.1: Multi-RAG Support** - Enhance RAG pipeline for multi-repository
 
 ### Phase 4: Frontend Implementation (Week 5-6)
-6. **TASK026: Phase 4.1: Frontend Feature Flag Infrastructure** - Create frontend feature flag system
-7. **TASK027: Phase 4.2: Enhanced Type Definitions** - Extend TypeScript interfaces
-8. **TASK028: Phase 4.3: Enhanced WebSocket Client** - Enhance frontend WebSocket client
-9. **TASK029: Phase 4.4: Enhanced Ask Component** - Enhance Ask component
-10. **TASK030: Phase 4.5: Enhanced Configuration Modal** - Enhance configuration modal
-11. **TASK031: Phase 4.6: Enhanced Main Page** - Enhance main page
-12. **TASK032: Phase 4.7: New Multi-Repository Components** - Create new components
+6. **TASK027: Phase 4.1: Frontend Feature Flag Infrastructure** - Create frontend feature flag system
+7. **TASK028: Phase 4.2: Enhanced Type Definitions** - Extend TypeScript interfaces
+8. **TASK029: Phase 4.3: Enhanced WebSocket Client** - Enhance frontend WebSocket client
+9. **TASK030: Phase 4.4: Enhanced Ask Component** - Enhance Ask component
+10. **TASK031: Phase 4.5: Enhanced Configuration Modal** - Enhance configuration modal
+11. **TASK032: Phase 4.6: Enhanced Main Page** - Enhance main page
+12. **TASK033: Phase 4.7: New Multi-Repository Components** - Create new components
 
 ## Multi-Repository Implementation Overview
 
