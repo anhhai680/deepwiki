@@ -1,0 +1,209 @@
+name: DeepWiki CI - Core Requirements
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '20'
+
+jobs:
+  # 1. Ensure coding syntax not failed
+  syntax-check:
+    name: Syntax & Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+          pip install -r backend/requirements.txt
+
+      - name: Install Node.js dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Python syntax check
+        run: |
+          # Check for syntax errors
+          python -m py_compile backend/main.py
+          python -m py_compile backend/app.py
+          
+          # Run flake8 for code quality
+          flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 backend/ --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+      - name: Python code formatting check
+        run: |
+          black --check --diff backend/
+
+      - name: Python import sorting check
+        run: |
+          isort --check-only --diff backend/
+
+      - name: TypeScript/JavaScript syntax check
+        run: |
+          npm run lint
+          npx eslint src/ --ext .ts,.tsx,.js,.jsx
+
+      - name: Type checking
+        run: |
+          npx tsc --noEmit
+
+  # 2. Build docker with docker-compose.yml successfully
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: syntax-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t deepwiki:test .
+
+      - name: Test Docker Compose
+        run: |
+          # Validate docker-compose.yml configuration
+          docker-compose -f docker-compose.yml config
+          
+          # Test docker-compose build
+          docker-compose -f docker-compose.yml build
+
+      - name: Test Docker image startup
+        run: |
+          # Test that the image can start
+          docker run --rm -d --name deepwiki-test deepwiki:test
+          
+          # Wait for startup
+          sleep 15
+          
+          # Verify container is running
+          docker ps | grep deepwiki-test
+          
+          # Check container logs for errors
+          docker logs deepwiki-test
+          
+          # Clean up
+          docker stop deepwiki-test
+
+  # 3. Ensure all test cases in test/ folder MUST be passed
+  test-execution:
+    name: Test Execution
+    runs-on: ubuntu-latest
+    needs: syntax-check
+    strategy:
+      matrix:
+        python-version: ['3.12']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-cov pytest-asyncio pytest-mock
+
+      - name: Run all tests
+        run: |
+          cd backend
+          python -m pytest test/ -v --tb=short
+
+      - name: Test coverage report
+        run: |
+          cd backend
+          python -m pytest test/ --cov=. --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          flags: python
+          name: python-coverage
+
+  # Final status check
+  final-check:
+    name: Final Status Check
+    runs-on: ubuntu-latest
+    needs: [syntax-check, docker-build, test-execution]
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "=== DeepWiki CI Pipeline Results ==="
+          echo "Syntax Check: ${{ needs.syntax-check.result }}"
+          echo "Docker Build: ${{ needs.docker-build.result }}"
+          echo "Test Execution: ${{ needs.test-execution.result }}"
+          
+          # Determine overall status
+          if [[ "${{ needs.syntax-check.result }}" == "success" && \
+                "${{ needs.docker-build.result }}" == "success" && \
+                "${{ needs.test-execution.result }}" == "success" ]]; then
+            echo "✅ SUCCESS: All core requirements passed!"
+            exit 0
+          else
+            echo "❌ FAILURE: Some core requirements failed!"
+            exit 1
+          fi
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = {
+              'syntax-check': '${{ needs.syntax-check.result }}',
+              'docker-build': '${{ needs.docker-build.result }}',
+              'test-execution': '${{ needs.test-execution.result }}'
+            };
+            
+            const allPassed = Object.values(status).every(s => s === 'success');
+            const emoji = allPassed ? '✅' : '❌';
+            const statusText = allPassed ? 'PASSED' : 'FAILED';
+            
+            const body = `## ${emoji} DeepWiki CI Pipeline: ${statusText}
+            
+            ### Core Requirements Status:
+            | Requirement | Status |
+            |-------------|--------|
+            | 1. Coding Syntax | ${status['syntax-check'] === 'success' ? '✅ PASS' : '❌ FAIL'} |
+            | 2. Docker Build | ${status['docker-build'] === 'success' ? '✅ PASS' : '❌ FAIL'} |
+            | 3. Test Cases | ${status['test-execution'] === 'success' ? '✅ PASS' : '❌ FAIL'} |
+            
+            **Overall Result**: ${statusText}
+            
+            ${allPassed ? '🎉 All core requirements met successfully!' : '⚠️ Some requirements failed. Please check the logs above.'}`;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
