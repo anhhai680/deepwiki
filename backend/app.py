@@ -9,9 +9,6 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from typing import List, Optional
-from datetime import datetime
 
 # Configure logging
 from backend.logging_config import setup_logging
@@ -61,15 +58,6 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     
-    # Add dedicated health endpoint for Docker and external health checks
-    @app.get("/health")
-    async def health_check():
-        return {
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "service": "deepwiki-api"
-        }
-    
     # Include domain-specific routers
     try:
         from backend.api.v1 import core, config as config_router, chat, wiki, projects
@@ -96,24 +84,6 @@ def create_app() -> FastAPI:
                         logger.info(f"  {subroute.path}")
     except Exception as import_error:
         logger.error(f"Error including routers: {import_error}")
-        # Fallback minimal endpoints to keep app responsive
-        @app.get("/health")
-        async def health_check():
-            return {
-                "status": "healthy",
-                "timestamp": datetime.now().isoformat(),
-                "service": "deepwiki-api"
-            }
-
-        @app.get("/")
-        async def root():
-            return {
-                "message": "Welcome to DeepWiki API",
-                "version": "2.0.0",
-                "status": "degraded",
-                "note": "Routers failed to load; running fallback endpoints",
-                "docs_url": "/docs",
-                "redoc_url": "/redoc"
-            }
+        raise import_error
     
     return app
