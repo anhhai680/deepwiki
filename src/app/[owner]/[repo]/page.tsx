@@ -481,9 +481,7 @@ Based ONLY on the content of the \`[RELEVANT_SOURCE_FILES]\`:
 
 9.  **Conclusion/Summary:** End with a brief summary paragraph if appropriate for "${page.title}", reiterating the key aspects covered and their significance within the project.
 
-IMPORTANT: Generate the content in ${language === 'en' ? 'English' :
-            language === 'vi' ? 'Vietnamese (Tiếng Việt)' : 
-            'English'} language.
+IMPORTANT: Generate the content in English language.
 
 Remember:
 - Ground every claim in the provided source files.
@@ -689,9 +687,7 @@ ${readme}
 
 I want to create a wiki for this repository. Determine the most logical structure for a wiki based on the repository's content.
 
-IMPORTANT: The wiki content will be generated in ${language === 'en' ? 'English' :
-            language === 'vi' ? 'Vietnamese (Tiếng Việt)' :
-            'English'} language.
+IMPORTANT: The wiki content will be generated in English language.
 
 When designing the wiki structure, include pages that would benefit from visual diagrams, such as:
 - Architecture overviews
@@ -1462,7 +1458,7 @@ IMPORTANT:
     try {
       setIsExporting(true);
       setExportError(null);
-      setLoadingMessage(`${language === 'ja' ? 'Wikiを' : 'Exporting wiki as '} ${format} ${language === 'ja' ? 'としてエクスポート中...' : '...'}`);
+      setLoadingMessage(`'Exporting wiki as ' ${format}`);
 
       // Prepare the pages for export
       const pagesToExport = wikiStructure.pages.map(page => {
