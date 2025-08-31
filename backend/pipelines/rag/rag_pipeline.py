@@ -10,7 +10,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from backend.pipelines.base import SequentialPipeline
+from backend.pipelines.base.base_pipeline import SequentialPipeline
 from backend.pipelines.rag.rag_context import RAGPipelineContext
 from backend.pipelines.rag.steps import (
     RepositoryPreparationStep,

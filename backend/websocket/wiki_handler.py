@@ -25,6 +25,7 @@ from backend.components.generator.providers.openrouter_generator import OpenRout
 from backend.components.generator.providers.azure_generator import AzureAIGenerator
 from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
 from backend.pipelines.rag import create_rag
+from backend.models.chat import ChatCompletionRequest, ChatMessage
 
 # Configure logging
 from backend.logging_config import setup_logging
@@ -825,30 +826,7 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
         }
 
 
-# Models for the API
-class ChatMessage(BaseModel):
-    role: str  # 'user' or 'assistant'
-    content: str
-
-class ChatCompletionRequest(BaseModel):
-    """
-    Model for requesting a chat completion.
-    """
-    repo_url: Union[str, List[str]] = Field(..., description="URL(s) of repository(ies) to query")
-    messages: List[ChatMessage] = Field(..., description="List of chat messages")
-    filePath: Optional[str] = Field(None, description="Optional path to a file in the repository to include in the prompt")
-    token: Optional[str] = Field(None, description="Personal access token for private repositories")
-    type: Optional[str] = Field("github", description="Type of repository (e.g., 'github', 'gitlab', 'bitbucket')")
-
-    # model parameters
-    provider: str = Field("google", description="Model provider (google, openai, openrouter, ollama, azure)")
-    model: Optional[str] = Field(None, description="Model name for the specified provider")
-
-    language: Optional[str] = Field("en", description="Language for content generation (e.g., 'en', 'ja', 'zh', 'es', 'kr', 'vi')")
-    excluded_dirs: Optional[str] = Field(None, description="Comma-separated list of directories to exclude from processing")
-    excluded_files: Optional[str] = Field(None, description="Comma-separated list of file patterns to exclude from processing")
-    included_dirs: Optional[str] = Field(None, description="Comma-separated list of directories to include exclusively")
-    included_files: Optional[str] = Field(None, description="Comma-separated list of file patterns to include exclusively")
+# Models are now imported from backend.models.chat
 
 async def handle_websocket_chat(websocket: WebSocket):
     """
