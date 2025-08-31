@@ -95,6 +95,71 @@ def parse_stream_response(completion: Any) -> str:
         return str(completion)
 
 
+def merge_repository_results(results: List[Dict]) -> Dict:
+    """
+    Merge results from multiple repositories into a single response.
+    
+    Args:
+        results: List of results from individual repositories
+        
+    Returns:
+        Merged response with content from all repositories
+    """
+    if not results:
+        return {
+            "content": "No repositories were processed successfully.",
+            "repositories": [],
+            "total_tokens": 0,
+            "total_documents": 0
+        }
+    
+    # Initialize merged response
+    merged = {
+        "content": "",
+        "repositories": [],
+        "total_tokens": 0,
+        "total_documents": 0,
+        "successful_repos": 0,
+        "failed_repos": 0
+    }
+    
+    # Process each repository result
+    for i, result in enumerate(results):
+        repo_url = result.get("repo_url", f"repository_{i+1}")
+        content = result.get("content", "")
+        tokens = result.get("tokens_used", 0)
+        documents = result.get("documents_retrieved", 0)
+        error = result.get("error")
+        
+        # Add repository to list
+        merged["repositories"].append({
+            "url": repo_url,
+            "index": i + 1,
+            "status": "success" if not error else "failed",
+            "error": error
+        })
+        
+        # Add content with repository identifier
+        if content and not error:
+            merged["content"] += f"\n\n--- Repository {i+1}: {repo_url} ---\n{content}"
+            merged["total_tokens"] += tokens
+            merged["total_documents"] += documents
+            merged["successful_repos"] += 1
+        else:
+            merged["failed_repos"] += 1
+    
+    # Add summary at the beginning
+    summary = f"Processed {len(results)} repositories:\n"
+    summary += f"✅ Successful: {merged['successful_repos']}\n"
+    summary += f"❌ Failed: {merged['failed_repos']}\n"
+    summary += f"📄 Total documents: {merged['total_documents']}\n"
+    summary += f"🔤 Total tokens: {merged['total_tokens']}\n\n"
+    
+    merged["content"] = summary + merged["content"]
+    
+    return merged
+
+
 def handle_streaming_response(generator: Any) -> str:
     """
     Handle streaming response and collect all content.

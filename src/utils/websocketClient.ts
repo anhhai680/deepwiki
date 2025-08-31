@@ -20,7 +20,7 @@ export interface ChatMessage {
 }
 
 export interface ChatCompletionRequest {
-  repo_url: string;
+  repo_url: string | string[];
   messages: ChatMessage[];
   filePath?: string;
   token?: string;
