@@ -845,7 +845,6 @@ const Ask: React.FC<AskProps> = ({
           {/* Multi-repository input fields */}
           {Array.isArray(currentRepoInfo) && (
             <div className="mt-3 space-y-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Select repositories to query:</div>
               <MultiRepositorySelector
                 projects={projects}
                 selectedRepositories={selectedRepositories}
