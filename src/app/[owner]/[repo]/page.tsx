@@ -9,6 +9,7 @@ import WikiTreeView from '@/components/WikiTreeView';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { RepoInfo } from '@/types/repoinfo';
 import getRepoUrl from '@/utils/getRepoUrl';
+import { useProcessedProjects } from '@/hooks/useProcessedProjects';
 import { extractUrlDomain, extractUrlPath } from '@/utils/urlDecoder';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -202,6 +203,9 @@ export default function RepoWikiPage() {
 
   // Import language context for translations
   const { messages } = useLanguage();
+  
+  // Get processed projects for multi-repository selection
+  const { projects } = useProcessedProjects();
 
   // Initialize repo info
   const repoInfo = useMemo<RepoInfo>(() => ({
@@ -2191,6 +2195,7 @@ IMPORTANT:
           <div className="flex-1 overflow-y-auto p-4">
             <Ask
               repoInfo={effectiveRepoInfo}
+              projects={projects}
               provider={selectedProviderState}
               model={selectedModelState}
               isCustomModel={isCustomSelectedModelState}

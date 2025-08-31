@@ -8,6 +8,7 @@ import ThemeToggle from '@/components/theme-toggle';
 import Mermaid from '../components/Mermaid';
 import ConfigurationModal from '@/components/ConfigurationModal';
 import ProcessedProjects from '@/components/ProcessedProjects';
+import RepositorySelector from '@/components/RepositorySelector';
 import { extractUrlPath, extractUrlDomain } from '@/utils/urlDecoder';
 import { useProcessedProjects } from '@/hooks/useProcessedProjects';
 
@@ -105,13 +106,11 @@ export default function Home() {
     }
   };
 
-  const handleRepositoryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newRepoUrl = e.target.value;
+  // Handle repository selection changes
+  const handleRepositorySelect = (newRepoUrl: string) => {
     setRepositoryInput(newRepoUrl);
-    if (newRepoUrl.trim() === "") {
-      // Optionally reset fields if input is cleared
-    } else {
-        loadConfigFromCache(newRepoUrl);
+    if (newRepoUrl.trim() !== "") {
+      loadConfigFromCache(newRepoUrl);
     }
   };
 
@@ -414,15 +413,14 @@ export default function Home() {
           </div>
 
           <form onSubmit={handleFormSubmit} className="flex flex-col gap-3 w-full max-w-3xl">
-            {/* Repository URL input and submit button */}
+            {/* Repository selection and submit button */}
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={repositoryInput}
-                  onChange={handleRepositoryInputChange}
-                  placeholder={t('form.repoPlaceholder') || "owner/repo, GitHub/GitLab/BitBucket URL, or local folder path"}
-                  className="input-japanese block w-full pl-10 pr-3 py-2.5 border-[var(--border-color)] rounded-lg bg-transparent text-[var(--foreground)] focus:outline-none focus:border-[var(--accent-primary)]"
+                <RepositorySelector
+                  projects={projects}
+                  selectedRepository={repositoryInput}
+                  onRepositorySelect={handleRepositorySelect}
+                  placeholder={t('form.repoPlaceholder') || "Select repository or enter URL manually..."}
                 />
                 {error && (
                   <div className="text-[var(--highlight)] text-xs mt-1">

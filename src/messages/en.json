@@ -31,7 +31,7 @@
   "form": {
     "repository": "Repository",
     "configureWiki": "Configure Wiki",
-    "repoPlaceholder": "owner/repo or GitHub/GitLab/Bitbucket URL",
+    "repoPlaceholder": "Select repository or enter URL manually...",
     "wikiLanguage": "Wiki Language",
     "modelOptions": "Model Options",
     "modelProvider": "Model Provider",
@@ -90,7 +90,9 @@
     "excludeModeDescription": "Specify paths to exclude from processing (default behavior)",
     "includeModeDescription": "Specify only the paths to include, ignoring all others",
     "authorizationCode": "Authorization Code",
-    "authorizationRequired": "Authentication is required to generate the wiki."
+    "authorizationRequired": "Authentication is required to generate the wiki.",
+    "searchRepositories": "Search repositories...",
+    "orEnterManually": "Or enter repository URL manually above"
   },
   "footer": {
     "copyright": "DeepWiki - AI-powered documentation for code repositories"

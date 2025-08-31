@@ -8,6 +8,7 @@ import RepoInfo from '@/types/repoinfo';
 import getRepoUrl from '@/utils/getRepoUrl';
 import ModelSelectionModal from './ModelSelectionModal';
 import { createChatWebSocket, closeWebSocket, ChatCompletionRequest } from '@/utils/websocketClient';
+import MultiRepositorySelector from './MultiRepositorySelector';
 
 interface Model {
   id: string;
@@ -33,8 +34,19 @@ interface ResearchStage {
   type: 'plan' | 'update' | 'conclusion';
 }
 
+interface ProcessedProject {
+  id: string;
+  owner: string;
+  repo: string;
+  name: string;
+  repo_type: string;
+  submittedAt: number;
+  language: string;
+}
+
 interface AskProps {
   repoInfo: RepoInfo | RepoInfo[];
+  projects?: ProcessedProject[];
   provider?: string;
   model?: string;
   isCustomModel?: boolean;
@@ -45,6 +57,7 @@ interface AskProps {
 
 const Ask: React.FC<AskProps> = ({
   repoInfo,
+  projects = [],
   provider = '',
   model = '',
   isCustomModel = false,
@@ -59,6 +72,16 @@ const Ask: React.FC<AskProps> = ({
 
   // Multi-repository state
   const [currentRepoInfo, setCurrentRepoInfo] = useState(repoInfo);
+  const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
+
+  // Initialize selected repositories when repoInfo changes
+  useEffect(() => {
+    if (Array.isArray(repoInfo)) {
+      setSelectedRepositories(repoInfo.map(repo => getRepoUrl(repo)));
+    } else {
+      setSelectedRepositories([getRepoUrl(repoInfo)]);
+    }
+  }, [repoInfo]);
 
   // Helper functions for URL parsing
   const extractOwnerFromUrl = (url: string): string => {
@@ -822,12 +845,14 @@ const Ask: React.FC<AskProps> = ({
           {/* Multi-repository input fields */}
           {Array.isArray(currentRepoInfo) && (
             <div className="mt-3 space-y-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Repository URLs (one per line):</div>
-              <textarea
-                value={Array.isArray(currentRepoInfo) ? currentRepoInfo.map(repo => getRepoUrl(repo)).join('\n') : ''}
-                onChange={(e) => {
-                  const urls = e.target.value.split('\n').filter(url => url.trim());
-                  const newRepos = urls.map(url => ({
+              <div className="text-xs text-gray-600 dark:text-gray-400">Select repositories to query:</div>
+              <MultiRepositorySelector
+                projects={projects}
+                selectedRepositories={selectedRepositories}
+                onRepositoriesChange={(repos) => {
+                  setSelectedRepositories(repos);
+                  // Convert URLs back to RepoInfo objects for the existing logic
+                  const newRepos = repos.map(url => ({
                     owner: extractOwnerFromUrl(url),
                     repo: extractRepoFromUrl(url),
                     type: extractTypeFromUrl(url),
@@ -837,9 +862,7 @@ const Ask: React.FC<AskProps> = ({
                   }));
                   setCurrentRepoInfo(newRepos);
                 }}
-                placeholder="https://github.com/owner/repo1&#10;https://github.com/owner/repo2&#10;https://gitlab.com/owner/repo3"
-                className="block w-full rounded-md border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:outline-none transition-all"
-                rows={3}
+                placeholder="Search and select repositories..."
                 disabled={isLoading}
               />
             </div>
