@@ -61,6 +61,15 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     
+    # Add dedicated health endpoint for Docker and external health checks
+    @app.get("/health")
+    async def health_check():
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "service": "deepwiki-api"
+        }
+    
     # Include domain-specific routers
     try:
         from backend.api.v1 import core, config as config_router, chat, wiki, projects
