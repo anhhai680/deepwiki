@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 const TARGET_SERVER_BASE_URL = process.env.SERVER_BASE_URL || 'http://localhost:8002';
 
 export async function GET() {
   try {
     // Forward the request to the backend API
-    const response = await fetch(`${TARGET_SERVER_BASE_URL}/api/auth/status`, {
+    const response = await fetch(`${TARGET_SERVER_BASE_URL}/api/lang/config`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -28,4 +28,16 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+// Handle OPTIONS requests for CORS if needed
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }

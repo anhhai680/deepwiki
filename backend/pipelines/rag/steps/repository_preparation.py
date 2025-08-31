@@ -7,7 +7,7 @@ including document transformation and embedding validation.
 
 import logging
 import time
-from typing import Any, List
+from typing import Any, List, Union
 
 from backend.pipelines.base import PipelineStep, PipelineContext
 from backend.pipelines.rag.rag_context import RAGPipelineContext
@@ -76,8 +76,10 @@ class RepositoryPreparationStep(PipelineStep[str, List[Any]]):
             self.logger.error(f"Repository preparation failed: {str(e)}")
             raise
     
-    def validate_input(self, input_data: str) -> bool:
+    def validate_input(self, input_data: Union[str, List[str]]) -> bool:
         """Validate that input is a repository URL or path."""
+        if isinstance(input_data, list):
+            return len(input_data) > 0 and all(isinstance(item, str) and len(item.strip()) > 0 for item in input_data)
         return isinstance(input_data, str) and len(input_data.strip()) > 0
     
     def validate_output(self, output_data: List[Any]) -> bool:

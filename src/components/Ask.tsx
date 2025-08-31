@@ -8,6 +8,7 @@ import RepoInfo from '@/types/repoinfo';
 import getRepoUrl from '@/utils/getRepoUrl';
 import ModelSelectionModal from './ModelSelectionModal';
 import { createChatWebSocket, closeWebSocket, ChatCompletionRequest } from '@/utils/websocketClient';
+import MultiRepositorySelector from './MultiRepositorySelector';
 
 interface Model {
   id: string;
@@ -33,8 +34,19 @@ interface ResearchStage {
   type: 'plan' | 'update' | 'conclusion';
 }
 
+interface ProcessedProject {
+  id: string;
+  owner: string;
+  repo: string;
+  name: string;
+  repo_type: string;
+  submittedAt: number;
+  language: string;
+}
+
 interface AskProps {
-  repoInfo: RepoInfo;
+  repoInfo: RepoInfo | RepoInfo[];
+  projects?: ProcessedProject[];
   provider?: string;
   model?: string;
   isCustomModel?: boolean;
@@ -45,6 +57,7 @@ interface AskProps {
 
 const Ask: React.FC<AskProps> = ({
   repoInfo,
+  projects = [],
   provider = '',
   model = '',
   isCustomModel = false,
@@ -56,6 +69,53 @@ const Ask: React.FC<AskProps> = ({
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [deepResearch, setDeepResearch] = useState(false);
+
+  // Multi-repository state
+  const [currentRepoInfo, setCurrentRepoInfo] = useState(repoInfo);
+  const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
+
+  // Initialize selected repositories when repoInfo changes
+  useEffect(() => {
+    if (Array.isArray(repoInfo)) {
+      setSelectedRepositories(repoInfo.map(repo => getRepoUrl(repo)));
+    } else {
+      setSelectedRepositories([getRepoUrl(repoInfo)]);
+    }
+  }, [repoInfo]);
+
+  // Helper functions for URL parsing
+  const extractOwnerFromUrl = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/').filter(part => part);
+      return pathParts[0] || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  };
+
+  const extractRepoFromUrl = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/').filter(part => part);
+      return pathParts[1] || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  };
+
+  const extractTypeFromUrl = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname;
+      if (hostname.includes('github')) return 'github';
+      if (hostname.includes('gitlab')) return 'gitlab';
+      if (hostname.includes('bitbucket')) return 'bitbucket';
+      return 'github'; // default
+    } catch {
+      return 'github';
+    }
+  };
 
   // Model selection state
   const [selectedProvider, setSelectedProvider] = useState(provider);
@@ -315,17 +375,21 @@ const Ask: React.FC<AskProps> = ({
 
       // Prepare the request body
       const requestBody: ChatCompletionRequest = {
-        repo_url: getRepoUrl(repoInfo),
-        type: repoInfo.type,
+        repo_url: Array.isArray(currentRepoInfo) 
+          ? currentRepoInfo.map(repo => getRepoUrl(repo))
+          : getRepoUrl(currentRepoInfo),
+        type: Array.isArray(currentRepoInfo) ? currentRepoInfo[0]?.type || 'github' : currentRepoInfo.type,
         messages: newHistory.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })),
         provider: selectedProvider,
         model: isCustomSelectedModel ? customSelectedModel : selectedModel,
         language: language
       };
 
-      // Add tokens if available
-      if (repoInfo?.token) {
-        requestBody.token = repoInfo.token;
+      // Add tokens if available (use first token for multiple repos, or single token for single repo)
+      if (Array.isArray(currentRepoInfo) && currentRepoInfo.length > 0 && currentRepoInfo[0]?.token) {
+        requestBody.token = currentRepoInfo[0].token;
+      } else if (!Array.isArray(currentRepoInfo) && currentRepoInfo?.token) {
+        requestBody.token = currentRepoInfo.token;
       }
 
       // Close any existing WebSocket connection
@@ -557,17 +621,21 @@ const Ask: React.FC<AskProps> = ({
 
       // Prepare request body
       const requestBody: ChatCompletionRequest = {
-        repo_url: getRepoUrl(repoInfo),
-        type: repoInfo.type,
+        repo_url: Array.isArray(currentRepoInfo) 
+          ? currentRepoInfo.map(repo => getRepoUrl(repo))
+          : getRepoUrl(currentRepoInfo),
+        type: Array.isArray(currentRepoInfo) ? currentRepoInfo[0]?.type || 'github' : currentRepoInfo.type,
         messages: newHistory.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })),
         provider: selectedProvider,
         model: isCustomSelectedModel ? customSelectedModel : selectedModel,
         language: language
       };
 
-      // Add tokens if available
-      if (repoInfo?.token) {
-        requestBody.token = repoInfo.token;
+      // Add tokens if available (use first token for multiple repos, or single token for single repo)
+      if (Array.isArray(currentRepoInfo) && currentRepoInfo.length > 0 && currentRepoInfo[0]?.token) {
+        requestBody.token = currentRepoInfo[0].token;
+      } else if (!Array.isArray(currentRepoInfo) && currentRepoInfo?.token) {
+        requestBody.token = currentRepoInfo.token;
       }
 
       // Close any existing WebSocket connection
@@ -729,6 +797,75 @@ const Ask: React.FC<AskProps> = ({
               </div>
             )}
           </div>
+
+          {/* Multi-Repository toggle and input */}
+          <div className="flex items-center mt-2 justify-between">
+            <div className="group relative">
+              <label className="flex items-center cursor-pointer">
+                <span className="text-xs text-gray-600 dark:text-gray-400 mr-2">Multi-Repository</span>
+                <div className="relative">
+                                  <input
+                  type="checkbox"
+                  checked={Array.isArray(currentRepoInfo)}
+                  onChange={() => {
+                    if (Array.isArray(currentRepoInfo)) {
+                      // Switch to single repository mode
+                      setCurrentRepoInfo(currentRepoInfo[0] || currentRepoInfo);
+                    } else {
+                      // Switch to multi-repository mode
+                      setCurrentRepoInfo([currentRepoInfo]);
+                    }
+                  }}
+                    className="sr-only"
+                  />
+                  <div className={`w-10 h-5 rounded-full transition-colors ${Array.isArray(currentRepoInfo) ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                  <div className={`absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white transition-transform transform ${Array.isArray(currentRepoInfo) ? 'translate-x-5' : ''}`}></div>
+                </div>
+              </label>
+              <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 w-72 z-10">
+                <div className="relative">
+                  <div className="absolute -bottom-2 left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                  <p className="mb-1">Multi-Repository mode allows you to query multiple repositories simultaneously:</p>
+                  <ul className="list-disc pl-4 text-xs">
+                    <li><strong>Single Mode:</strong> Query one repository at a time</li>
+                    <li><strong>Multi Mode:</strong> Query multiple repositories and get combined results</li>
+                    <li><strong>Smart Merging:</strong> Results are intelligently combined from all repositories</li>
+                  </ul>
+                  <p className="mt-1 text-xs italic">Toggle to switch between single and multiple repository modes</p>
+                </div>
+              </div>
+            </div>
+            {Array.isArray(currentRepoInfo) && (
+              <div className="text-xs text-blue-600 dark:text-blue-400">
+                Multi-repository mode enabled ({currentRepoInfo.length} repos)
+              </div>
+            )}
+          </div>
+
+          {/* Multi-repository input fields */}
+          {Array.isArray(currentRepoInfo) && (
+            <div className="mt-3 space-y-2">
+              <MultiRepositorySelector
+                projects={projects}
+                selectedRepositories={selectedRepositories}
+                onRepositoriesChange={(repos) => {
+                  setSelectedRepositories(repos);
+                  // Convert URLs back to RepoInfo objects for the existing logic
+                  const newRepos = repos.map(url => ({
+                    owner: extractOwnerFromUrl(url),
+                    repo: extractRepoFromUrl(url),
+                    type: extractTypeFromUrl(url),
+                    token: currentRepoInfo[0]?.token || null,
+                    localPath: null,
+                    repoUrl: url.trim()
+                  }));
+                  setCurrentRepoInfo(newRepos);
+                }}
+                placeholder="Search and select repositories..."
+                disabled={isLoading}
+              />
+            </div>
+          )}
         </form>
 
         {/* Response area */}

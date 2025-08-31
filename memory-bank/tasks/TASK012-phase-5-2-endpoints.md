@@ -100,7 +100,7 @@ api/
 - **Core Endpoints**: `/health`, `/`
 - **Configuration Endpoints**: `/lang/config`, `/auth/status`, `/auth/validate`, `/models/config`
 - **Chat Endpoints**: `/chat/completions/stream`, `/ws/chat`
-- **Wiki Endpoints**: `/export/wiki`, `/local_repo/structure`, `/api/wiki_cache` (GET/POST/DELETE)
+- **Wiki Endpoints**: `/export/wiki`, `/local_repo/structure`, `/wiki_cache` (GET/POST/DELETE)
 - **Project Endpoints**: `/api/processed_projects`
 
 ### Dependencies Extracted

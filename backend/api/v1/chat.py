@@ -17,10 +17,6 @@ from ...websocket.wiki_handler import handle_websocket_chat
 # Create router for chat endpoints
 router = APIRouter()
 
-# Re-export the models for consistency
-ChatMessage = ChatMessage
-ChatCompletionRequest = ChatCompletionRequest
-
 @router.post("/chat/completions/stream")
 async def chat_completions_stream_endpoint(request: ChatCompletionRequest):
     """Stream a chat completion response using the new chat service."""

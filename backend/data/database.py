@@ -6,7 +6,7 @@ Handles database operations including LocalDB management, document transformatio
 
 import os
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 from adalflow.core.types import Document
 from adalflow.core.db import LocalDB
 from adalflow.components.data_process import TextSplitter, ToEmbeddings
@@ -26,18 +26,15 @@ class DatabaseManager:
         self.repo_url_or_path = None
         self.repo_paths = None
 
-    def prepare_database(self, repo_url_or_path: str, type: str = "github", 
-                        access_token: Optional[str] = None, 
-                        is_ollama_embedder: Optional[bool] = None,
-                        excluded_dirs: Optional[List[str]] = None, 
-                        excluded_files: Optional[List[str]] = None,
-                        included_dirs: Optional[List[str]] = None, 
-                        included_files: Optional[List[str]] = None) -> List[Document]:
+    def prepare_database(self, repo_url_or_path: Union[str, List[str]], type: str = "github", 
+                        access_token: Optional[str] = None, is_ollama_embedder: Optional[bool] = None,
+                        excluded_dirs: Optional[List[str]] = None, excluded_files: Optional[List[str]] = None,
+                        included_dirs: Optional[List[str]] = None, included_files: Optional[List[str]] = None) -> List[Document]:
         """
-        Create a new database from the repository.
+        Prepare the database for a repository.
 
         Args:
-            repo_url_or_path (str): The URL or local path of the repository
+            repo_url_or_path (Union[str, List[str]]): The URL or local path of the repository, or list of URLs
             type (str): Repository type (github, gitlab, bitbucket)
             access_token (str, optional): Access token for private repositories
             is_ollama_embedder (bool, optional): Whether to use Ollama for embedding.
@@ -88,7 +85,7 @@ class DatabaseManager:
             repo_name = url_parts[-1].replace(".git", "")
         return repo_name
 
-    def _create_repo(self, repo_url_or_path: str, repo_type: str = "github", 
+    def _create_repo(self, repo_url_or_path: Union[str, List[str]], repo_type: str = "github", 
                      access_token: Optional[str] = None) -> None:
         """
         Download and prepare all paths.
@@ -97,10 +94,23 @@ class DatabaseManager:
         ~/.adalflow/databases/{owner}_{repo_name}.pkl
 
         Args:
-            repo_url_or_path (str): The URL or local path of the repository
+            repo_url_or_path (Union[str, List[str]]): The URL or local path of the repository, or list of URLs
             repo_type (str): Repository type
             access_token (str, optional): Access token for private repositories
         """
+        # Handle list input - for now, we'll use the first repository
+        # TODO: Implement multi-repository support
+        if isinstance(repo_url_or_path, list):
+            if not repo_url_or_path:
+                raise ValueError("Repository URL list cannot be empty")
+            if len(repo_url_or_path) > 1:
+                logger.warning(f"Multiple repositories provided: {repo_url_or_path}. Using first repository: {repo_url_or_path[0]}")
+            repo_url_or_path = repo_url_or_path[0]
+        
+        # Validate that we now have a string
+        if not isinstance(repo_url_or_path, str):
+            raise ValueError(f"Invalid repository URL type: {type(repo_url_or_path)}. Expected string or list of strings.")
+        
         logger.info(f"Preparing repo storage for {repo_url_or_path}...")
 
         try:
@@ -196,14 +206,14 @@ class DatabaseManager:
         logger.info(f"Total transformed documents: {len(transformed_docs)}")
         return transformed_docs
 
-    def prepare_retriever(self, repo_url_or_path: str, type: str = "github", 
+    def prepare_retriever(self, repo_url_or_path: Union[str, List[str]], type: str = "github", 
                          access_token: Optional[str] = None):
         """
         Prepare the retriever for a repository.
         This is a compatibility method for the isolated API.
 
         Args:
-            repo_url_or_path (str): The URL or local path of the repository
+            repo_url_or_path (Union[str, List[str]]): The URL or local path of the repository, or list of URLs
             type (str): Repository type
             access_token (str, optional): Access token for private repositories
 

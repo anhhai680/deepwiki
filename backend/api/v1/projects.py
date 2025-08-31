@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # Create router for project endpoints
 router = APIRouter()
 
-@router.get("/api/processed_projects", response_model=List[ProcessedProjectEntry])
+@router.get("/processed_projects", response_model=List[ProcessedProjectEntry])
 async def get_processed_projects():
     """
     Lists all processed projects found in the wiki cache directory.

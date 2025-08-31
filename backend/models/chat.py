@@ -6,7 +6,7 @@ extracted from the websocket handler during restructure.
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 class ChatMessage(BaseModel):
@@ -17,7 +17,7 @@ class ChatMessage(BaseModel):
 
 class ChatCompletionRequest(BaseModel):
     """Model for requesting a chat completion."""
-    repo_url: str = Field(..., description="URL of the repository to query")
+    repo_url: Union[str, List[str]] = Field(..., description="URL(s) of repository(ies) to query")
     messages: List[ChatMessage] = Field(..., description="List of chat messages")
     filePath: Optional[str] = Field(None, description="Optional path to a file in the repository to include in the prompt")
     token: Optional[str] = Field(None, description="Personal access token for private repositories")

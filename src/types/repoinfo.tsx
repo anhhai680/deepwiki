@@ -7,4 +7,10 @@ export interface RepoInfo {
     repoUrl: string | null;
 }
 
+export interface MultiRepoInfo {
+    repositories: RepoInfo[];
+    type: string;
+    token: string | null;
+}
+
 export default RepoInfo;

@@ -6,7 +6,7 @@ allowing existing code to work with the new pipeline architecture without change
 """
 
 import logging
-from typing import Any, List, Tuple, Optional
+from typing import Any, List, Tuple, Optional, Union
 
 from backend.pipelines.rag.rag_pipeline import RAGPipeline
 from backend.pipelines.rag.rag_context import RAGPipelineContext
@@ -45,7 +45,7 @@ class RAGCompatibility:
         
         logger.info(f"RAG Compatibility wrapper initialized with provider '{provider}' and model '{model}'")
     
-    def prepare_retriever(self, repo_url_or_path: str, type: str = "github", access_token: str = None,
+    def prepare_retriever(self, repo_url_or_path: Union[str, List[str]], type: str = "github", access_token: str = None,
                           excluded_dirs: List[str] = None, excluded_files: List[str] = None,
                           included_dirs: List[str] = None, included_files: List[str] = None):
         """
@@ -55,7 +55,7 @@ class RAGCompatibility:
         while using the new pipeline architecture.
         
         Args:
-            repo_url_or_path: URL or local path to the repository
+            repo_url_or_path: URL or local path to the repository, or list of URLs
             type: Type of repository (github, gitlab, bitbucket, local)
             access_token: Optional access token for private repositories
             excluded_dirs: Optional list of directories to exclude

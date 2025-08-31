@@ -8,9 +8,9 @@ and memory management.
 
 import logging
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from backend.pipelines.base import SequentialPipeline
+from backend.pipelines.base.base_pipeline import SequentialPipeline
 from backend.pipelines.rag.rag_context import RAGPipelineContext
 from backend.pipelines.rag.steps import (
     RepositoryPreparationStep,
@@ -68,7 +68,7 @@ class RAGPipeline(SequentialPipeline[str, Dict[str, str], RAGPipelineContext]):
         
         logger.info(f"Pipeline configured with {len(self.steps)} steps: {self.get_step_names()}")
     
-    def prepare_repository(self, repo_url_or_path: str, repo_type: str = "github", 
+    def prepare_repository(self, repo_url_or_path: Union[str, List[str]], repo_type: str = "github", 
                           access_token: str = None, excluded_dirs: List[str] = None,
                           excluded_files: List[str] = None, included_dirs: List[str] = None,
                           included_files: List[str] = None) -> 'RAGPipeline':
@@ -76,7 +76,7 @@ class RAGPipeline(SequentialPipeline[str, Dict[str, str], RAGPipelineContext]):
         Prepare the repository for RAG processing.
         
         Args:
-            repo_url_or_path: URL or local path to the repository
+            repo_url_or_path: URL or local path to the repository, or list of URLs
             repo_type: Type of repository (github, gitlab, bitbucket, local)
             access_token: Optional access token for private repositories
             excluded_dirs: Optional list of directories to exclude

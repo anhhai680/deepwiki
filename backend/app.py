@@ -61,14 +61,39 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     
+    # Add dedicated health endpoint for Docker and external health checks
+    @app.get("/health")
+    async def health_check():
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "service": "deepwiki-api"
+        }
+    
     # Include domain-specific routers
     try:
         from backend.api.v1 import core, config as config_router, chat, wiki, projects
-        app.include_router(core.router, tags=["core"])
-        app.include_router(config_router.router, tags=["configuration"])
-        app.include_router(chat.router, tags=["chat"])
-        app.include_router(wiki.router, tags=["wiki"])
-        app.include_router(projects.router, tags=["projects"])
+        logger.info("Including core router...")
+        app.include_router(core.router, prefix="/api", tags=["core"])
+        logger.info("Including config router...")
+        app.include_router(config_router.router, prefix="/api", tags=["configuration"])
+        logger.info("Including chat router...")
+        app.include_router(chat.router, prefix="/api", tags=["chat"])
+        logger.info("Including wiki router...")
+        app.include_router(wiki.router, prefix="/api", tags=["wiki"])
+        logger.info("Including projects router...")
+        app.include_router(projects.router, prefix="/api", tags=["projects"])
+        logger.info("All routers included successfully")
+        
+        # Log all registered routes for debugging
+        logger.info("Registered routes:")
+        for route in app.routes:
+            if hasattr(route, 'path'):
+                logger.info(f"  {route.path}")
+            elif hasattr(route, 'routes'):
+                for subroute in route.routes:
+                    if hasattr(subroute, 'path'):
+                        logger.info(f"  {subroute.path}")
     except Exception as import_error:
         logger.error(f"Error including routers: {import_error}")
         # Fallback minimal endpoints to keep app responsive
