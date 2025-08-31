@@ -1,6 +1,4 @@
-# DeepWiki-Open
-
-![DeepWiki Banner](screenshots/Deepwiki.png)
+# DeepWiki
 
 **DeepWiki** is my own implementation attempt of DeepWiki, automatically creates beautiful, interactive wikis for any GitHub, GitLab, or BitBucket repository! Just enter a repo name, and DeepWiki will:
 
@@ -8,13 +6,6 @@
 2. Generate comprehensive documentation
 3. Create visual diagrams to explain how everything works
 4. Organize it all into an easy-to-navigate wiki
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/sheing)
-[![Tip in Crypto](https://tip.md/badge.svg)](https://tip.md/sng-asyncfunc)
-[![Twitter/X](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://x.com/sashimikun_void)
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/VQMBGR8u5v)
-
-[English](./README.md) | [简体中文](./README.zh.md) | [繁體中文](./README.zh-tw.md) | [日本語](./README.ja.md) | [Español](./README.es.md) | [한국어](./README.kr.md) | [Tiếng Việt](./README.vi.md) | [Português Brasileiro](./README.pt-br.md) | [Français](./README.fr.md) | [Русский](./README.ru.md)
 
 ## ✨ Features
 
@@ -33,7 +24,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/AsyncFuncAI/deepwiki-open.git
+git clone https://github.com/anhhai680/deepwiki.git
 cd deepwiki-open
 
 # Create a .env file with your API keys
@@ -518,23 +509,6 @@ DeepResearch takes repository analysis to the next level with a multi-turn resea
 
 To use DeepResearch, simply toggle the "Deep Research" switch in the Ask interface before submitting your question.
 
-## 📱 Screenshots
-
-![DeepWiki Main Interface](screenshots/Interface.png)
-*The main interface of DeepWiki*
-
-![Private Repository Support](screenshots/privaterepo.png)
-*Access private repositories with personal access tokens*
-
-![DeepResearch Feature](screenshots/DeepResearch.png)
-*DeepResearch conducts multi-turn investigations for complex topics*
-
-### Demo Video
-
-[![DeepWiki Demo Video](https://img.youtube.com/vi/zGANs8US8B4/0.jpg)](https://youtu.be/zGANs8US8B4)
-
-*Watch DeepWiki in action!*
-
 ## ❓ Troubleshooting
 
 ### API Key Issues
@@ -568,7 +542,3 @@ Contributions are welcome! Feel free to:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## ⭐ Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=AsyncFuncAI/deepwiki-open&type=Date)](https://star-history.com/#AsyncFuncAI/deepwiki-open&Date)
