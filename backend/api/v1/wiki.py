@@ -126,7 +126,7 @@ async def get_local_repo_structure(path: str = Query(None, description="Path to 
             content={"error": f"Error processing local repository: {str(e)}"}
         )
 
-@router.get("/api/wiki_cache", response_model=Optional[WikiCacheData])
+@router.get("/wiki_cache", response_model=Optional[WikiCacheData])
 async def get_cached_wiki(
     owner: str = Query(..., description="Repository owner"),
     repo: str = Query(..., description="Repository name"),
@@ -149,7 +149,7 @@ async def get_cached_wiki(
         logger.info(f"Wiki cache not found for {owner}/{repo} ({repo_type}), lang: {language}")
         return None
 
-@router.post("/api/wiki_cache")
+@router.post("/wiki_cache")
 async def store_wiki_cache(request_data: WikiCacheRequest):
     """
     Stores generated wiki data (structure and pages) to the server-side cache.
@@ -164,7 +164,7 @@ async def store_wiki_cache(request_data: WikiCacheRequest):
     else:
         raise HTTPException(status_code=500, detail="Failed to save wiki cache")
 
-@router.delete("/api/wiki_cache")
+@router.delete("/wiki_cache")
 async def delete_wiki_cache(
     owner: str = Query(..., description="Repository owner"),
     repo: str = Query(..., description="Repository name"),
