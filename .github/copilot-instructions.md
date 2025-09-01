@@ -36,7 +36,7 @@ OLLAMA_HOST=http://localhost:11434
 PORT=8001
 SERVER_BASE_URL=http://localhost:8001
 LOG_LEVEL=INFO
-LOG_FILE_PATH=api/logs/application.log
+LOG_FILE_PATH=backend/logs/application.log
 ```
 
 ### Build Commands (Always run in this order)
@@ -44,7 +44,7 @@ LOG_FILE_PATH=api/logs/application.log
 #### 1. Install Dependencies
 ```bash
 # Install Python dependencies
-pip install -r api/requirements.txt
+pip install -r backend/requirements.txt
 
 # Install JavaScript dependencies
 npm install
@@ -62,7 +62,7 @@ yarn build
 #### 3. Start Backend
 ```bash
 # Start the FastAPI server
-python -m api.main
+python -m backend.main
 # or use the run script
 ./run.sh
 ```
@@ -87,7 +87,7 @@ docker run -p 8001:8001 -p 3000:3000 deepwiki-open
 ### Testing
 ```bash
 # Run Python tests
-cd api
+cd test
 python -m pytest
 
 # Run JavaScript linting
@@ -106,20 +106,26 @@ yarn lint
 ### Directory Structure
 ```
 deepwiki/
-├── api/                          # Python FastAPI backend
+├── backend/                      # Python FastAPI backend
 │   ├── main.py                   # Entry point (port 8001)
-│   ├── api.py                    # FastAPI app definition
-│   ├── rag.py                    # RAG implementation
+│   ├── app.py                    # FastAPI app definition
+│   ├── api/                      # API route handlers
 │   ├── config/                   # Configuration files
 │   │   ├── generator.json        # AI model configurations
 │   │   ├── embedder.json         # Embedding model settings
 │   │   └── repo.json             # Repository filters
+│   ├── core/                     # Core business logic
+│   ├── services/                 # Service layer
+│   ├── pipelines/                # Data processing pipelines
+│   ├── models/                   # Data models and schemas
+│   ├── utils/                    # Utility functions
 │   └── requirements.txt          # Python dependencies
 ├── src/                          # Next.js frontend
 │   ├── app/                      # App router pages
 │   ├── components/               # React components
 │   ├── contexts/                 # React contexts
 │   └── types/                    # TypeScript type definitions
+├── test/                         # Python test suite
 ├── public/                       # Static assets
 ├── package.json                  # Node.js dependencies
 ├── next.config.ts                # Next.js configuration
@@ -130,17 +136,17 @@ deepwiki/
 ```
 
 ### Key Configuration Files
-- **`api/config/generator.json`**: AI model provider configurations
-- **`api/config/embedder.json`**: Vector embedding settings
-- **`api/config/repo.json`**: Repository processing filters
+- **`backend/config/generator.json`**: AI model provider configurations
+- **`backend/config/embedder.json`**: Vector embedding settings
+- **`backend/config/repo.json`**: Repository processing filters
 - **`next.config.ts`**: Next.js build and proxy configuration
 - **`tailwind.config.js`**: CSS framework configuration
 - **`eslint.config.mjs`**: Code quality rules
 
 ### Main Entry Points
-- **Backend**: `api/main.py` (FastAPI server on port 8001)
+- **Backend**: `backend/main.py` (FastAPI server on port 8001)
 - **Frontend**: `src/app/page.tsx` (Next.js main page)
-- **API Routes**: `api/api.py` (FastAPI endpoints)
+- **API Routes**: `backend/api/` (FastAPI endpoints)
 
 ## Development Workflow
 
@@ -199,8 +205,8 @@ deepwiki/
 **Only search the codebase if the information above is incomplete or found to be in error.** These instructions have been validated and contain the correct build sequences, configuration details, and architectural information needed for efficient development.
 
 ### Quick Reference
-- **Backend**: `python -m api.main` (port 8001)
+- **Backend**: `python -m backend.main` (port 8001)
 - **Frontend**: `npm run dev` (port 3000)
 - **Docker**: `docker-compose up --build`
 - **Testing**: `python -m pytest` (Python), `npm run lint` (JS)
-- **Config**: `api/config/` directory for AI model settings
+- **Config**: `backend/config/` directory for AI model settings
