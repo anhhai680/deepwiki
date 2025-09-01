@@ -86,13 +86,13 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t deepwiki:test .    
+          docker build -t deepwiki:test . 
+
+      # - name: Create .env file from example
+      #   run: cp .env.example .env
 
       # - name: Test Docker Compose
       #   run: |
-      #     # Create environment setting
-      #     cp .env.example .env
-
       #     # Validate docker-compose.yml configuration
       #     docker-compose -f docker-compose.yml config
           
