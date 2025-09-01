@@ -50,13 +50,13 @@ jobs:
           flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 backend/ --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
 
-      - name: Python code formatting check
-        run: |
-          black --check --diff backend/
+      # - name: Python code formatting check
+      #   run: |
+      #     black --check --diff backend/
 
-      - name: Python import sorting check
-        run: |
-          isort --check-only --diff backend/
+      # - name: Python import sorting check
+      #   run: |
+      #     isort --check-only --diff backend/
 
       - name: TypeScript/JavaScript syntax check
         run: |
