@@ -134,12 +134,12 @@ jobs:
       - name: Run all tests
         run: |
           cd backend
-          python -m pytest test/ -v --tb=short
+          python -m pytest tests/ -v --tb=short
 
       - name: Test coverage report
         run: |
           cd backend
-          python -m pytest test/ --cov=. --cov-report=term-missing --cov-report=xml
+          python -m pytest tests/ --cov=. --cov-report=term-missing --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

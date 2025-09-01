@@ -116,6 +116,7 @@ deepwiki/
 │   │   └── repo.json             # Repository filters
 │   ├── core/                     # Core business logic
 │   ├── services/                 # Service layer
+│   ├── tests/                    # Python tests suite
 │   ├── pipelines/                # Data processing pipelines
 │   ├── models/                   # Data models and schemas
 │   ├── utils/                    # Utility functions
@@ -125,7 +126,6 @@ deepwiki/
 │   ├── components/               # React components
 │   ├── contexts/                 # React contexts
 │   └── types/                    # TypeScript type definitions
-├── test/                         # Python test suite
 ├── public/                       # Static assets
 ├── package.json                  # Node.js dependencies
 ├── next.config.ts                # Next.js configuration
