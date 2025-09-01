@@ -7,6 +7,7 @@ extracted from the existing dashscope_client.py implementation.
 
 import os
 import logging
+import re
 from typing import Dict, Optional, Any, Callable, Generator, Union, Literal, List, Sequence
 
 import backoff

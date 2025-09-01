@@ -5,11 +5,9 @@ This module contains the individual steps that make up the chat pipeline,
 each handling a specific aspect of the chat workflow.
 """
 
-import logging
-from typing import Any, Dict, List
 from urllib.parse import unquote
 
-from ..base.base_pipeline import PipelineStep, PipelineContext
+from ..base.base_pipeline import PipelineStep
 from .chat_context import ChatPipelineContext
 from backend.utils.token_utils import count_tokens
 from backend.core.config.settings import get_model_config
@@ -47,19 +45,31 @@ class RequestValidationStep(PipelineStep[ChatPipelineContext, ChatPipelineContex
         
         # Process file filtering parameters
         if context.excluded_dirs:
-            context.excluded_dirs = [unquote(dir_path) for dir_path in context.excluded_dirs.split('\n') if dir_path.strip()]
+            if isinstance(context.excluded_dirs, str):
+                context.excluded_dirs = [unquote(dir_path) for dir_path in context.excluded_dirs.split('\n') if dir_path.strip()]
+            elif isinstance(context.excluded_dirs, list):
+                context.excluded_dirs = [unquote(dir_path) for dir_path in context.excluded_dirs if dir_path.strip()]
             self.logger.info(f"Using custom excluded directories: {context.excluded_dirs}")
         
         if context.excluded_files:
-            context.excluded_files = [unquote(file_pattern) for file_pattern in context.excluded_files.split('\n') if file_pattern.strip()]
+            if isinstance(context.excluded_files, str):
+                context.excluded_files = [unquote(file_pattern) for file_pattern in context.excluded_files.split('\n') if file_pattern.strip()]
+            elif isinstance(context.excluded_files, list):
+                context.excluded_files = [unquote(file_pattern) for file_pattern in context.excluded_files if file_pattern.strip()]
             self.logger.info(f"Using custom excluded files: {context.excluded_files}")
         
         if context.included_dirs:
-            context.included_dirs = [unquote(dir_path) for dir_path in context.included_dirs.split('\n') if dir_path.strip()]
+            if isinstance(context.included_dirs, str):
+                context.included_dirs = [unquote(dir_path) for dir_path in context.included_dirs.split('\n') if dir_path.strip()]
+            elif isinstance(context.included_dirs, list):
+                context.included_dirs = [unquote(dir_path) for dir_path in context.included_dirs if dir_path.strip()]
             self.logger.info(f"Using custom included directories: {context.included_dirs}")
         
         if context.included_files:
-            context.included_files = [unquote(file_pattern) for file_pattern in context.included_files.split('\n') if file_pattern.strip()]
+            if isinstance(context.included_files, str):
+                context.included_files = [unquote(file_pattern) for file_pattern in context.included_files.split('\n') if file_pattern.strip()]
+            elif isinstance(context.included_files, list):
+                context.included_files = [unquote(file_pattern) for file_pattern in context.included_files if file_pattern.strip()]
             self.logger.info(f"Using custom included files: {context.included_files}")
         
         # Get model configuration

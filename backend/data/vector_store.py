@@ -9,12 +9,10 @@ operations, providing a clean separation between vector storage and retrieval lo
 """
 
 import logging
-import time
-from typing import List, Optional, Dict, Any, Union, Tuple
+from typing import List, Optional, Dict, Any, Union
 import numpy as np
 
 from adalflow.core.types import Document
-from adalflow.core.db import LocalDB
 
 logger = logging.getLogger(__name__)
 

@@ -7,9 +7,9 @@ defaults, and environment isolation.
 
 import os
 import asyncio
-import contextlib
 from typing import AsyncIterator, Iterator
 
+import httpx
 import pytest
 
 
@@ -32,7 +32,7 @@ def fastapi_app():
 
 
 @pytest.fixture()
-async def http_client(fastapi_app) -> AsyncIterator["httpx.AsyncClient"]:
+async def http_client(fastapi_app) -> AsyncIterator[httpx.AsyncClient]:
     """ASGI test client for the FastAPI app (no network)."""
     import httpx
 

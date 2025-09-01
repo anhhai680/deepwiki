@@ -7,10 +7,11 @@ components while maintaining existing functionality.
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Union
-import numpy as np
+from typing import List, Dict, Any
 
 from adalflow.core.types import Document
+
+from .vector_store import VectorStore
 
 from .vector_operations import VectorOperationsManager
 from .faiss_integration import FAISSCompatibilityWrapper
@@ -107,7 +108,7 @@ def validate_embeddings(documents: List[Document]) -> List[Document]:
 
 def create_vector_store_from_documents(documents: List[Document], 
                                     is_ollama_embedder: bool = False,
-                                    db_manager=None) -> 'VectorStore':
+                                    db_manager=None) -> VectorStore:
     """
     Create a vector store from a list of documents.
     

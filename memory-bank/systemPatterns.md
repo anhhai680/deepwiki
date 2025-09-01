@@ -257,7 +257,7 @@
 - Comprehensive test scenarios
 - Performance and integration testing
 
-**Files**: `test/`, organized by component type
+**Files**: `backend/tests/`, organized by component type
 
 ### 2. Import Validation Pattern
 **Pattern**: Automated import validation to prevent import errors
