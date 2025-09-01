@@ -156,11 +156,11 @@ class TestRequestValidationStep:
             repo_url="https://github.com/test/repo",
             provider="google",
             messages=[{"role": "user", "content": "test"}],
-            excluded_dirs="dir1\ndir2",
-            excluded_files="*.log\n*.tmp"
+            excluded_dirs=["dir1", "dir2"],
+            excluded_files=["*.log", "*.tmp"]
         )
         
-        with patch('backend.config.get_model_config') as mock_get_config:
+        with patch('backend.core.config.settings.get_model_config') as mock_get_config:
             mock_get_config.return_value = {
                 "model_kwargs": {"temperature": 0.7}
             }
@@ -252,7 +252,7 @@ class TestSystemPromptGenerationStep:
             is_deep_research=False
         )
         
-        with patch('backend.config.configs') as mock_configs:
+        with patch('backend.core.config.settings.configs') as mock_configs:
             mock_configs.return_value = {
                 "lang_config": {
                     "supported_languages": {"en": "English"}
@@ -276,7 +276,7 @@ class TestSystemPromptGenerationStep:
             research_iteration=1
         )
         
-        with patch('backend.config.configs') as mock_configs:
+        with patch('backend.core.config.settings.configs') as mock_configs:
             mock_configs.return_value = {
                 "lang_config": {
                     "supported_languages": {"en": "English"}
