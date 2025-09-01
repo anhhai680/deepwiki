@@ -263,6 +263,7 @@ IMPORTANT FORMATTING RULES:
                 "messages": [
                     {"role": "user", "content": prompt}
                 ],
+                "model": self.model,
                 "temperature": 0.7,
                 "max_tokens": 2000
             }

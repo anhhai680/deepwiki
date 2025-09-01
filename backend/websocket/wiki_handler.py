@@ -195,41 +195,56 @@ async def handle_single_repository(websocket: WebSocket, request: ChatCompletion
                 rag_query = f"Contexts related to {request.filePath}"
                 logger.info(f"Modified RAG query to focus on file: {request.filePath}")
 
-            # Try to perform RAG retrieval
-            try:
-                # This will use the actual RAG implementation
-                rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
+                            # Try to perform RAG retrieval
+                try:
+                    # This will use the actual RAG implementation
+                    rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
+                    
+                    # Debug: Log what the RAG pipeline returned
+                    logger.info(f"RAG pipeline returned: rag_answer={rag_answer}, type={type(rag_answer)}")
+                    if rag_answer:
+                        logger.info(f"RAG answer content: {str(rag_answer)[:200]}...")
+                    
+                    # Use the RAG answer directly instead of building a new prompt
+                    if rag_answer:
+                        logger.info("RAG pipeline generated response, streaming directly")
+                        # Stream the RAG answer directly to the WebSocket
+                        await websocket.send_text(str(rag_answer))
+                        await websocket.send_text("[DONE]")
+                        return
+                    else:
+                        logger.warning("RAG pipeline returned empty response")
 
-                if retrieved_documents and retrieved_documents[0].documents:
-                    # Format context for the prompt in a more structured way
-                    documents = retrieved_documents[0].documents
-                    logger.info(f"Retrieved {len(documents)} documents")
+                    if retrieved_documents and retrieved_documents[0].documents:
+                        # Format context for the prompt in a more structured way
+                        documents = retrieved_documents[0].documents
+                        logger.info(f"Retrieved {len(documents)} documents")
 
-                    # Group documents by file path
-                    docs_by_file = {}
-                    for doc in documents:
-                        file_path = doc.meta_data.get('file_path', 'unknown')
-                        if file_path not in docs_by_file:
-                            docs_by_file[file_path] = []
-                        docs_by_file[file_path].append(doc)
+                        # Group documents by file path
+                        docs_by_file = {}
+                        for doc in documents:
+                            file_path = doc.meta_data.get('file_path', 'unknown')
+                            if file_path not in docs_by_file:
+                                docs_by_file[file_path] = []
+                            docs_by_file[file_path].append(doc)
 
-                    # Format context text with file path grouping
-                    context_parts = []
-                    for file_path, docs in docs_by_file.items():
-                        # Add file header with metadata
-                        header = f"## File Path: {file_path}\n\n"
-                        # Add document content
-                        content = "\n\n".join([doc.text for doc in docs])
+                        # Format context text with file path grouping
+                        context_parts = []
+                        for file_path, docs in docs_by_file.items():
+                            # Add file header with metadata
+                            header = f"## File Path: {file_path}\n\n"
+                            # Add document content
+                            content = "\n\n".join([doc.text for doc in docs])
 
-                        context_parts.append(f"{header}{content}")
+                            context_parts.append(f"{header}{content}")
 
-                    # Join all parts with clear separation
-                    context_text = "\n\n" + "-" * 10 + "\n\n".join(context_parts)
-                else:
-                    logger.warning("No documents retrieved from RAG")
-            except Exception as e:
-                logger.error(f"Error in RAG retrieval: {str(e)}")
-                # Continue without RAG if there's an error
+                        # Join all parts with clear separation
+                        context_text = "\n\n" + "-" * 10 + "\n\n".join(context_parts)
+                    else:
+                        logger.warning("No documents retrieved from RAG")
+                except Exception as e:
+                    logger.error(f"Error in RAG retrieval: {str(e)}")
+                    # Continue without RAG if there's an error
 
         except Exception as e:
             logger.error(f"Error retrieving documents: {str(e)}")
@@ -430,8 +445,16 @@ This file contains...
 
     prompt += f"<query>\n{query}\n</query>\n\nAssistant: "
 
-    full_config = get_model_config(request.provider, request.model)
-    model_config = full_config["model_kwargs"]
+    try:
+        full_config = get_model_config(request.provider, request.model)
+        model_config = full_config["model_kwargs"]
+        logger.info(f"Model configuration loaded successfully for {request.provider}/{request.model}")
+    except Exception as e_config:
+        logger.error(f"Failed to load model configuration: {str(e_config)}")
+        error_msg = f"\nError: Failed to load model configuration for {request.provider}/{request.model}.\n\nError details: {str(e_config)}"
+        await websocket.send_text(error_msg)
+        await websocket.close()
+        return
 
     if request.provider == "ollama":
         prompt += " /no_think"
@@ -484,7 +507,14 @@ This file contains...
             # We'll let the OpenAIGenerator handle this and return an error message
 
         # Initialize Openai client
-        model = OpenAIGenerator()
+        try:
+            model = OpenAIGenerator()
+        except Exception as e_init:
+            logger.error(f"Failed to initialize OpenAIGenerator: {str(e_init)}")
+            error_msg = f"\nError: Failed to initialize OpenAI client. Please check that you have set the OPENAI_API_KEY environment variable with a valid API key.\n\nError details: {str(e_init)}"
+            await websocket.send_text(error_msg)
+            await websocket.close()
+            return
         model_kwargs = {
             "model": request.model,
             "stream": True,
@@ -503,7 +533,14 @@ This file contains...
         logger.info(f"Using Azure AI with model: {request.model}")
 
         # Initialize Azure AI client
-        model = AzureAIGenerator()
+        try:
+            model = AzureAIGenerator()
+        except Exception as e_init:
+            logger.error(f"Failed to initialize AzureAIGenerator: {str(e_init)}")
+            error_msg = f"\nError: Failed to initialize Azure AI client. Please check that you have set the required Azure environment variables.\n\nError details: {str(e_init)}"
+            await websocket.send_text(error_msg)
+            await websocket.close()
+            return
         model_kwargs = {
             "model": request.model,
             "stream": True,
@@ -577,16 +614,29 @@ This file contains...
             try:
                 # Get the response and handle it properly using the previously created api_kwargs
                 logger.info("Making Openai API call")
+                logger.info(f"API kwargs: {api_kwargs}")
                 response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+                logger.info("OpenAI API call completed, processing response...")
+                
+                chunk_count = 0
                 # Handle streaming response from Openai
                 async for chunk in response:
-                    choices = getattr(chunk, "choices", [])
-                    if len(choices) > 0:
-                        delta = getattr(chunk, "delta", None)
-                        if delta is not None:
-                            text = getattr(chunk, "content", None)
-                            if text is not None:
-                                await websocket.send_text(text)
+                    try:
+                        chunk_count += 1
+                        choices = getattr(chunk, "choices", [])
+                        if len(choices) > 0:
+                            choice = choices[0]
+                            delta = getattr(choice, "delta", None)
+                            if delta is not None:
+                                text = getattr(delta, "content", None)
+                                if text is not None:
+                                    await websocket.send_text(text)
+                    except Exception as e_chunk:
+                        logger.error(f"Error processing chunk {chunk_count}: {str(e_chunk)}")
+                        import traceback
+                        logger.error(f"Chunk processing traceback: {traceback.format_exc()}")
+                
+                logger.info(f"Total chunks processed: {chunk_count}")
                 # Send completion signal instead of closing connection
                 await websocket.send_text("[DONE]")
             except Exception as e_openai:

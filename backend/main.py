@@ -8,7 +8,11 @@ using the new modular app structure.
 import os
 import argparse
 import uvicorn
+from dotenv import load_dotenv
 from backend.app import create_app
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Create app instance for import compatibility
 app = create_app()
