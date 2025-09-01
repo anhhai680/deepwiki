@@ -16,13 +16,13 @@ from backend.components.retriever.base import RetrievalResult
 
 logger = logging.getLogger(__name__)
 
-class DocumentRetrievalStep(PipelineStep[Tuple[str, FAISSRetriever], List[Any]]):
+class DocumentRetrievalStep(PipelineStep[FAISSRetriever, List[Any]]):
     """Pipeline step for retrieving relevant documents."""
     
     def __init__(self):
         super().__init__("document_retrieval")
     
-    def execute(self, input_data: Tuple[str, FAISSRetriever], context: PipelineContext) -> List[Any]:
+    def execute(self, input_data: FAISSRetriever, context: PipelineContext) -> List[Any]:
         """Execute the document retrieval step."""
         if not isinstance(context, RAGPipelineContext):
             raise ValueError("Context must be RAGPipelineContext")
@@ -32,7 +32,8 @@ class DocumentRetrievalStep(PipelineStep[Tuple[str, FAISSRetriever], List[Any]])
         start_time = time.time()
         
         try:
-            query, retriever = input_data
+            retriever = input_data
+            query = rag_context.user_query
             self.logger.info(f"Retrieving documents for query: {query[:100]}...")
             
             # Validate query
@@ -46,7 +47,7 @@ class DocumentRetrievalStep(PipelineStep[Tuple[str, FAISSRetriever], List[Any]])
             processed_docs = self._process_retrieved_documents(retrieved_documents, rag_context)
             
             # Update context with retrieved documents
-            rag_context.retrieved_documents = retrieved_documents[0] if retrieved_documents else None
+            rag_context.retrieved_documents = retrieved_documents
             
             # Record timing
             duration = time.time() - start_time
@@ -62,28 +63,20 @@ class DocumentRetrievalStep(PipelineStep[Tuple[str, FAISSRetriever], List[Any]])
             self.logger.error(f"Document retrieval failed: {str(e)}")
             raise
     
-    def validate_input(self, input_data: Tuple[str, FAISSRetriever]) -> bool:
-        """Validate that input is a tuple of query string and retriever."""
-        if not isinstance(input_data, tuple) or len(input_data) != 2:
-            return False
-        
-        query, retriever = input_data
-        return (
-            isinstance(query, str) and 
-            len(query.strip()) > 0 and 
-            isinstance(retriever, FAISSRetriever)
-        )
+    def validate_input(self, input_data: FAISSRetriever) -> bool:
+        """Validate that input is a FAISS retriever."""
+        return isinstance(input_data, FAISSRetriever)
     
     def validate_output(self, output_data: List[Any]) -> bool:
         """Validate that output is a list of documents."""
         return isinstance(output_data, list)
     
-    def _process_retrieved_documents(self, retrieved_documents: List[RetrievalResult], context: RAGPipelineContext) -> List[Any]:
+    def _process_retrieved_documents(self, retrieved_documents: RetrievalResult, context: RAGPipelineContext) -> List[Any]:
         """
         Process the retrieved documents and fill in the document content.
         
         Args:
-            retrieved_documents: List of retrieval results from the retriever
+            retrieved_documents: Retrieval result from the retriever
             context: RAG pipeline context
             
         Returns:
@@ -94,18 +87,15 @@ class DocumentRetrievalStep(PipelineStep[Tuple[str, FAISSRetriever], List[Any]])
             return []
         
         try:
-            # Get the first retrieval result (assuming single query)
-            retrieval_result = retrieved_documents[0]
-            
             # Fill in the document content from the transformed docs
-            if hasattr(retrieval_result, 'doc_indices') and hasattr(retrieval_result, 'documents'):
-                retrieval_result.documents = [
+            if hasattr(retrieved_documents, 'doc_indices') and hasattr(retrieved_documents, 'documents'):
+                retrieved_documents.documents = [
                     context.transformed_docs[doc_index]
-                    for doc_index in retrieval_result.doc_indices
+                    for doc_index in retrieved_documents.doc_indices
                 ]
                 
-                context.logger.info(f"Processed {len(retrieval_result.documents)} retrieved documents")
-                return retrieval_result.documents
+                context.logger.info(f"Processed {len(retrieved_documents.documents)} retrieved documents")
+                return retrieved_documents.documents
             else:
                 context.add_warning("Retrieval result missing doc_indices or documents attribute")
                 return []

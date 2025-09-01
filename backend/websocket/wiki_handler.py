@@ -198,7 +198,7 @@ async def handle_single_repository(websocket: WebSocket, request: ChatCompletion
             # Try to perform RAG retrieval
             try:
                 # This will use the actual RAG implementation
-                retrieved_documents = request_rag(rag_query, language=request.language)
+                rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
 
                 if retrieved_documents and retrieved_documents[0].documents:
                     # Format context for the prompt in a more structured way
@@ -403,7 +403,7 @@ This file contains...
 
     # Format conversation history
     conversation_history = ""
-    for turn_id, turn in request_rag.memory().items():
+    for turn_id, turn in request_rag.memory.call().items():
         if not isinstance(turn_id, int) and hasattr(turn, 'user_query') and hasattr(turn, 'assistant_response'):
             conversation_history += f"<turn>\n<user>{turn.user_query.query_str}</user>\n<assistant>{turn.assistant_response.response_str}</assistant>\n</turn>\n"
 
@@ -430,19 +430,20 @@ This file contains...
 
     prompt += f"<query>\n{query}\n</query>\n\nAssistant: "
 
-    model_config = get_model_config(request.provider, request.model)["model_kwargs"]
+    full_config = get_model_config(request.provider, request.model)
+    model_config = full_config["model_kwargs"]
 
     if request.provider == "ollama":
         prompt += " /no_think"
 
         model = OllamaClient()
         model_kwargs = {
-            "model": model_config["model"],
+            "model": full_config["model"],
             "stream": True,
             "options": {
                 "temperature": model_config["temperature"],
                 "top_p": model_config["top_p"],
-                "num_ctx": model_config["num_ctx"]
+                "num_ctx": model_config.get("num_ctx", 4096)
             }
         }
 
@@ -554,8 +555,8 @@ This file contains...
                 if text and not text.startswith('model=') and not text.startswith('created_at='):
                     text = text.replace('<think>', '').replace('</think>', '')
                     await websocket.send_text(text)
-            # Explicitly close the WebSocket connection after the response is complete
-            await websocket.close()
+            # Send completion signal instead of closing connection
+            await websocket.send_text("[DONE]")
         elif request.provider == "openrouter":
             try:
                 # Get the response and handle it properly using the previously created api_kwargs
@@ -564,8 +565,8 @@ This file contains...
                 # Handle streaming response from OpenRouter
                 async for chunk in response:
                     await websocket.send_text(chunk)
-                # Explicitly close the WebSocket connection after the response is complete
-                await websocket.close()
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
             except Exception as e_openrouter:
                 logger.error(f"Error with OpenRouter API: {str(e_openrouter)}")
                 error_msg = f"\nError with OpenRouter API: {str(e_openrouter)}\n\nPlease check that you have set the OPENROUTER_API_KEY environment variable with a valid API key."
@@ -586,8 +587,8 @@ This file contains...
                             text = getattr(chunk, "content", None)
                             if text is not None:
                                 await websocket.send_text(text)
-                # Explicitly close the WebSocket connection after the response is complete
-                await websocket.close()
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
             except Exception as e_openai:
                 logger.error(f"Error with Openai API: {str(e_openai)}")
                 error_msg = f"\nError with Openai API: {str(e_openai)}\n\nPlease check that you have set the OPENAI_API_KEY environment variable with a valid API key."
@@ -608,8 +609,8 @@ This file contains...
                             text = getattr(delta, "content", None)
                             if text is not None:
                                 await websocket.send_text(text)
-                    # Explicitly close the WebSocket connection after the response is complete
-                    await websocket.close()
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
             except Exception as e_azure:
                 logger.error(f"Error with Azure AI API: {str(e_azure)}")
                 error_msg = f"\nError with Azure AI API: {str(e_azure)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
@@ -623,8 +624,8 @@ This file contains...
             for chunk in response:
                 if hasattr(chunk, 'text'):
                     await websocket.send_text(chunk.text)
-            # Explicitly close the WebSocket connection after the response is complete
-            await websocket.close()
+            # Send completion signal instead of closing connection
+            await websocket.send_text("[DONE]")
 
     except Exception as e_outer:
         logger.error(f"Error in streaming response: {str(e_outer)}")
@@ -651,9 +652,18 @@ This file contains...
                     simplified_prompt += " /no_think"
 
                     # Create new api_kwargs with the simplified prompt
+                    fallback_model_kwargs = {
+                        "model": full_config["model"],
+                        "stream": True,
+                        "options": {
+                            "temperature": model_config["temperature"],
+                            "top_p": model_config["top_p"],
+                            "num_ctx": model_config.get("num_ctx", 4096)
+                        }
+                    }
                     fallback_api_kwargs = model.convert_inputs_to_api_kwargs(
                         input=simplified_prompt,
-                        model_kwargs=model_kwargs,
+                        model_kwargs=fallback_model_kwargs,
                         model_type=ModelType.LLM
                     )
 
@@ -666,6 +676,8 @@ This file contains...
                         if text and not text.startswith('model=') and not text.startswith('created_at='):
                             text = text.replace('<think>', '').replace('</think>', '')
                             await websocket.send_text(text)
+                    # Send completion signal instead of closing connection
+                    await websocket.send_text("[DONE]")
                 elif request.provider == "openrouter":
                     try:
                         # Create new api_kwargs with the simplified prompt
@@ -682,6 +694,8 @@ This file contains...
                         # Handle streaming fallback_response from OpenRouter
                         async for chunk in fallback_response:
                             await websocket.send_text(chunk)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
                     except Exception as e_fallback:
                         logger.error(f"Error with OpenRouter API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with OpenRouter API fallback: {str(e_fallback)}\n\nPlease check that you have set the OPENROUTER_API_KEY environment variable with a valid API key."
@@ -703,6 +717,8 @@ This file contains...
                         async for chunk in fallback_response:
                             text = chunk if isinstance(chunk, str) else getattr(chunk, 'text', str(chunk))
                             await websocket.send_text(text)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
                     except Exception as e_fallback:
                         logger.error(f"Error with Openai API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with Openai API fallback: {str(e_fallback)}\n\nPlease check that you have set the OPENAI_API_KEY environment variable with a valid API key."
@@ -729,6 +745,8 @@ This file contains...
                                     text = getattr(delta, "content", None)
                                     if text is not None:
                                         await websocket.send_text(text)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
                     except Exception as e_fallback:
                         logger.error(f"Error with Azure AI API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with Azure AI API fallback: {str(e_fallback)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
@@ -751,6 +769,8 @@ This file contains...
                     for chunk in fallback_response:
                         if hasattr(chunk, 'text'):
                             await websocket.send_text(chunk.text)
+                    # Send completion signal instead of closing connection
+                    await websocket.send_text("[DONE]")
             except Exception as e2:
                 logger.error(f"Error in fallback streaming response: {str(e2)}")
                 await websocket.send_text(f"\nI apologize, but your request is too large for me to process. Please try a shorter query or break it into smaller parts.")
@@ -836,6 +856,8 @@ async def handle_websocket_chat(websocket: WebSocket):
     await websocket.accept()
 
     try:
+        logger.info("WebSocket connection accepted")
+
         # Receive and parse the request data
         request_data = await websocket.receive_json()
         request = ChatCompletionRequest(**request_data)
@@ -859,8 +881,8 @@ async def handle_websocket_chat(websocket: WebSocket):
             # Single repository - use existing logic unchanged
             await handle_single_repository(websocket, request, input_too_large)
 
-    except WebSocketDisconnect:
-        logger.info("WebSocket disconnected")
+    except WebSocketDisconnect as e:
+        logger.error(f"WebSocket disconnected: {str(e)}")
     except Exception as e:
         logger.error(f"Error in WebSocket handler: {str(e)}")
         try:

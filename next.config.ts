@@ -63,6 +63,14 @@ const nextConfig: NextConfig = {
         source: '/api/lang/config',
         destination: `${TARGET_SERVER_BASE_URL}/lang/config`,
       },
+      {
+        source: '/api/ws/chat',
+        destination: `${TARGET_SERVER_BASE_URL}/api/ws/chat`,
+      },
+      {
+        source: '/api/chat/:path*',
+        destination: `${TARGET_SERVER_BASE_URL}/api/chat/:path*`,
+      },
     ];
   },
 };

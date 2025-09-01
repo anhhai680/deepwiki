@@ -225,7 +225,7 @@ def get_model_config(provider: str = "google", model: str = None) -> Dict[str, A
             }
         },
         "google": {
-            "model": "gemini-1.5-pro",
+            "model": "gemini-2.5-flash",
             "model_kwargs": {
                 "temperature": 0.7,
                 "top_p": 0.9,

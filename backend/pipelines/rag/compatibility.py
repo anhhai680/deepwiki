@@ -10,6 +10,7 @@ from typing import Any, List, Tuple, Optional, Union
 
 from backend.pipelines.rag.rag_pipeline import RAGPipeline
 from backend.pipelines.rag.rag_context import RAGPipelineContext
+from backend.components.memory.conversation_memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,8 @@ class RAGCompatibility:
         self.repo_url_or_path = None
         self.transformed_docs = []
         self.retriever = None
-        self.memory = self.pipeline.context
+        # Initialize a proper ConversationMemory object for backward compatibility
+        self.memory = ConversationMemory()
         
         logger.info(f"RAG Compatibility wrapper initialized with provider '{provider}' and model '{model}'")
     
@@ -159,9 +161,10 @@ class RAGCompatibility:
     
     def _get_retrieved_documents(self) -> List:
         """Get retrieved documents for compatibility."""
-        # Return the documents from the pipeline context
+        # Return the documents from the pipeline context in the expected format
         if hasattr(self.pipeline.context, 'retrieved_documents') and self.pipeline.context.retrieved_documents:
-            return self.pipeline.context.retrieved_documents.documents
+            # Return as a list containing the RetrievalResult object for backward compatibility
+            return [self.pipeline.context.retrieved_documents]
         return []
 
 # Create a compatibility function that mimics the original RAG class

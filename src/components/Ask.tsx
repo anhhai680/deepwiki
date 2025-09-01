@@ -456,6 +456,8 @@ const Ask: React.FC<AskProps> = ({
           }
 
           setIsLoading(false);
+          // Close the WebSocket connection after processing is complete
+          closeWebSocket(webSocketRef.current);
         }
       );
     } catch (error) {
@@ -684,6 +686,8 @@ const Ask: React.FC<AskProps> = ({
           }
 
           setIsLoading(false);
+          // Close the WebSocket connection after processing is complete
+          closeWebSocket(webSocketRef.current);
         }
       );
     } catch (error) {

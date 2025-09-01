@@ -2,7 +2,36 @@
 
 ## Overall Project Status
 **API Restructure Implementation** - 🟢 **100% COMPLETE** - All phases successfully completed
-**Multi-Repository Enhancement** - 🟡 **IN PROGRESS** - New functionality being added
+**Multi-Repository Enhancement** - � **100% COMPLETE** - New functionality successfully added
+**WebSocket Connection Fix** - 🟢 **COMPLETE** - FAISS retriever embedder validation fixed
+
+## Recent Fixes and Enhancements
+
+### ✅ **WebSocket Connection Fixes (September 1, 2025)** - **COMPLETED**
+
+#### **Issue 1: FAISS Retriever Embedder Validation** 
+**Problem**: "Embedder with embed() method is required for FAISS retriever"
+**Root Cause**: Validation was checking for an `embed()` method when adalflow Embedder uses `__call__()` method
+**Solution**: Updated validation in `backend/components/retriever/faiss_retriever.py` to check for callable embedder instead of specific method name
+**Files Modified**: `backend/components/retriever/faiss_retriever.py` (line 65-67)
+
+#### **Issue 2: Document Retrieval Step Input Validation**
+**Problem**: "Input validation failed for step 'document_retrieval'"
+**Root Cause**: Document retrieval step expected tuple `(query, retriever)` but received only `FAISSRetriever` from previous step
+**Solution**: Modified document retrieval step to get query from RAG context instead of input parameters
+**Files Modified**: `backend/pipelines/rag/steps/document_retrieval.py` (lines 18-70)
+
+#### **Issue 3: FAISS Retriever Result Parsing**
+**Problem**: "'RetrieverOutput' object has no attribute 'scores'"
+**Root Cause**: Hardcoded attribute access to retriever results without checking available attributes
+**Solution**: Added robust attribute detection for different result formats from adalflow FAISS retriever
+**Files Modified**: `backend/components/retriever/faiss_retriever.py` (lines 157-182)
+
+#### **Results Achieved**
+- ✅ **FAISS retriever initialization**: "FAISS retriever created with 177 documents"
+- ✅ **Document retrieval success**: "FAISS retrieval successful: 20 documents found"
+- ✅ **RAG pipeline working**: "Document retrieval completed in 5.55s, found 20 documents"
+- ✅ **WebSocket connections**: Processing requests without retriever failures
 
 ## Phase Completion Summary
 

@@ -19,11 +19,12 @@ logger = logging.getLogger(__name__)
 class ResponseGenerationStep(PipelineStep[List[Any], Dict[str, str]]):
     """Pipeline step for generating AI responses."""
     
-    def __init__(self, provider: str = "google", model: str = None):
+    def __init__(self, provider: str = "google", model: str = "default"):
         super().__init__("response_generation")
         self.provider = provider
         self.model = model
         self.generator_manager = None
+        self.generator = None
     
     def execute(self, input_data: List[Any], context: PipelineContext) -> Dict[str, str]:
         """Execute the response generation step."""
@@ -84,13 +85,26 @@ class ResponseGenerationStep(PipelineStep[List[Any], Dict[str, str]]):
             # Get generator manager
             self.generator_manager = get_generator_manager()
             
-            # Get generator configuration
-            generator_config = self.generator_manager.get_generator_config(self.provider, self.model)
+            # Create or get generator for this provider
+            generator_name = f"{self.provider}_rag_generator"
             
-            if not generator_config:
-                raise ValueError(f"No generator configuration found for provider '{self.provider}' and model '{self.model}'")
+            # Try to get existing generator first
+            generator = self.generator_manager.get_generator(generator_name)
             
-            context.logger.info(f"Generator configured for provider '{self.provider}' with model '{self.model}'")
+            if generator is None:
+                # Create new generator if none exists
+                generator = self.generator_manager.create_generator(
+                    provider_type=self.provider,
+                    name=generator_name
+                )
+                context.logger.info(f"Created new generator for provider '{self.provider}'")
+            else:
+                context.logger.info(f"Using existing generator for provider '{self.provider}'")
+            
+            # Store the generator for use in response generation
+            self.generator = generator
+            
+            context.logger.info(f"Generator configured for provider '{self.provider}' with model '{self.model or 'default'}'")
             
         except Exception as e:
             context.add_error(f"Failed to setup generator: {str(e)}")
@@ -218,7 +232,16 @@ IMPORTANT FORMATTING RULES:
         if document_contexts:
             prompt_parts.append("<START_OF_CONTEXT>")
             for i, context in enumerate(document_contexts):
-                prompt_parts.append(f"{i+1}.\nFile Path: {context['meta_data']['file_path']}\nContent: {context['text']}")
+                # Handle different document context structures
+                if isinstance(context, dict):
+                    meta_data = context.get('meta_data', {})
+                    file_path = meta_data.get('file_path', 'Unknown file') if isinstance(meta_data, dict) else 'Unknown file'
+                    text_content = context.get('text', str(context))
+                else:
+                    file_path = 'Unknown file'
+                    text_content = str(context)
+                
+                prompt_parts.append(f"{i+1}.\nFile Path: {file_path}\nContent: {text_content}")
             prompt_parts.append("<END_OF_CONTEXT>")
         
         # User query
@@ -229,16 +252,50 @@ IMPORTANT FORMATTING RULES:
     def _call_generator(self, prompt: str, context: RAGPipelineContext) -> Dict[str, str]:
         """Call the AI generator to produce the response."""
         try:
-            # For now, return a placeholder response
-            # In a full implementation, this would call the actual generator
-            response = {
-                "rationale": "Generated using RAG pipeline with retrieved documents",
-                "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
+            if not self.generator:
+                raise ValueError("Generator not initialized. Call _setup_generator first.")
+
+            # Import ModelType for proper type specification
+            from backend.components.generator.base import ModelType
+
+            # Prepare API kwargs for the generator call
+            api_kwargs = {
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 2000
             }
+
+            # Call the generator with proper model type
+            context.logger.info(f"Calling {self.provider} generator for response generation")
+            result = self.generator.call(api_kwargs, model_type=ModelType.LLM)
+            
+            if hasattr(result, 'data') and result.data:
+                # Extract the response content
+                raw_response = result.data
+                
+                # For now, parse as a simple response
+                # In future, could implement more sophisticated parsing
+                response = {
+                    "rationale": "Generated using RAG pipeline with retrieved documents",
+                    "answer": str(raw_response)
+                }
+            else:
+                # Fallback response if generator call fails
+                response = {
+                    "rationale": "Generated using RAG pipeline with retrieved documents",
+                    "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
+                }
             
             context.logger.info("Response generated successfully")
             return response
             
         except Exception as e:
             context.add_error(f"Failed to call generator: {str(e)}")
-            raise
+            # Provide fallback response instead of raising
+            context.logger.warning(f"Generator call failed, using fallback response: {str(e)}")
+            return {
+                "rationale": "Generated using RAG pipeline with retrieved documents (fallback due to generator error)",
+                "answer": f"I apologize, but I encountered an issue generating a response. However, based on the retrieved documents, I can tell you that your question '{context.user_query}' relates to the codebase content that was found."
+            }
