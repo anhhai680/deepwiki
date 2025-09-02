@@ -7,7 +7,7 @@ documents for the RAG pipeline.
 
 import logging
 import time
-from typing import Any, List, Tuple
+from typing import Any, List
 
 from backend.pipelines.base import PipelineStep, PipelineContext
 from backend.pipelines.rag.rag_context import RAGPipelineContext

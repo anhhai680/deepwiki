@@ -70,6 +70,7 @@ export const createChatWebSocket = (
     // Check if this is a completion signal
     if (event.data === '[DONE]') {
       // Call the close handler to indicate completion
+      ws.close();
       onClose();
       return;
     }
