@@ -67,11 +67,11 @@ class ResponseGenerationStep(PipelineStep[List[Any], Dict[str, str]]):
             self.logger.error(f"Response generation failed: {str(e)}")
             raise
     
-    def validate_input(self, input_data: List[Any]) -> bool:
+    def validate_input(self, input_data: Any) -> bool:
         """Validate that input is a list of documents."""
         return isinstance(input_data, list) and len(input_data) > 0
     
-    def validate_output(self, output_data: Dict[str, str]) -> bool:
+    def validate_output(self, output_data: Any) -> bool:
         """Validate that output is a dictionary with answer and rationale."""
         return (
             isinstance(output_data, dict) and

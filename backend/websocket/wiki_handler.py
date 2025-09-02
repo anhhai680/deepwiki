@@ -870,11 +870,11 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
             logger.info(f"Modified RAG query to focus on file: {request.filePath}")
         
         # Perform RAG retrieval (existing logic)
-        retrieved_documents = request_rag(rag_query, language=request.language)
+        rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
         
         # Generate response (existing logic)
-        if retrieved_documents and retrieved_documents.answer:
-            response = retrieved_documents.answer
+        if rag_answer:
+            response = rag_answer.answer if hasattr(rag_answer, 'answer') else str(rag_answer)
         else:
             response = "I couldn't find relevant information in the repository to answer your question."
         
@@ -882,7 +882,7 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
             "content": response,
             "repo_url": request.repo_url,
             "tokens_used": len(response.split()) if response else 0,
-            "documents_retrieved": len(retrieved_documents.documents) if retrieved_documents else 0
+            "documents_retrieved": len(retrieved_documents[0].documents) if retrieved_documents and len(retrieved_documents) > 0 and hasattr(retrieved_documents[0], 'documents') else 0
         }
         
     except Exception as e:

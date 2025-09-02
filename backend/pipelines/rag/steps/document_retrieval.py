@@ -63,11 +63,11 @@ class DocumentRetrievalStep(PipelineStep[FAISSRetriever, List[Any]]):
             self.logger.error(f"Document retrieval failed: {str(e)}")
             raise
     
-    def validate_input(self, input_data: FAISSRetriever) -> bool:
+    def validate_input(self, input_data: Any) -> bool:
         """Validate that input is a FAISS retriever."""
         return isinstance(input_data, FAISSRetriever)
     
-    def validate_output(self, output_data: List[Any]) -> bool:
+    def validate_output(self, output_data: Any) -> bool:
         """Validate that output is a list of documents."""
         return isinstance(output_data, list)
     

@@ -58,7 +58,7 @@ class MemoryUpdateStep(PipelineStep[Dict[str, str], Dict[str, str]]):
             self.logger.error(f"Memory update failed: {str(e)}")
             raise
     
-    def validate_input(self, input_data: Dict[str, str]) -> bool:
+    def validate_input(self, input_data: Any) -> bool:
         """Validate that input is a dictionary with answer and rationale."""
         return (
             isinstance(input_data, dict) and
@@ -66,7 +66,7 @@ class MemoryUpdateStep(PipelineStep[Dict[str, str], Dict[str, str]]):
             "rationale" in input_data
         )
     
-    def validate_output(self, output_data: Dict[str, str]) -> bool:
+    def validate_output(self, output_data: Any) -> bool:
         """Validate that output is a dictionary with answer and rationale."""
         return (
             isinstance(output_data, dict) and
