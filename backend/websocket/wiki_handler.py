@@ -79,7 +79,11 @@ async def handle_multiple_repositories(websocket: WebSocket, request: ChatComple
             })
         
         # Merge results from all repositories
-        merged_response = merge_repository_results(all_results)
+        # The results already contain repo_url, just pass them directly
+        logger.info(f"All results before merge: {[{k: v for k, v in item['result'].items() if k != 'content'} for item in all_results]}")
+        actual_results = [item["result"] for item in all_results]
+        merged_response = merge_repository_results(actual_results)
+        logger.info(f"Merged response: {merged_response}")
         
         # Send final merged response
         await websocket.send_json({
