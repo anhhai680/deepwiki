@@ -85,11 +85,11 @@ async def handle_multiple_repositories(websocket: WebSocket, request: ChatComple
         merged_response = merge_repository_results(actual_results)
         logger.info(f"Merged response: {merged_response}")
         
-        # Send final merged response
-        await websocket.send_json({
-            "type": "response",
-            "data": merged_response
-        })
+        # Send final merged response as text (like single repository)
+        # Extract the content from the merged response
+        response_content = merged_response.get("content", "No content available")
+        await websocket.send_text(response_content)
+        await websocket.send_text("[DONE]")
         
     except Exception as e:
         logger.error(f"Error processing multiple repositories: {e}")
@@ -875,6 +875,15 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
         
         # Perform RAG retrieval (existing logic)
         rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
+        
+        # Debug: Log the RAG answer details
+        logger.info(f"RAG answer type: {type(rag_answer)}")
+        logger.info(f"RAG answer attributes: {dir(rag_answer) if rag_answer else 'None'}")
+        if rag_answer:
+            if hasattr(rag_answer, 'answer'):
+                logger.info(f"RAG answer.answer: {rag_answer.answer[:200]}...")
+            else:
+                logger.info(f"RAG answer content: {str(rag_answer)[:200]}...")
         
         # Generate response (existing logic)
         if rag_answer:

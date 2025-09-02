@@ -272,22 +272,80 @@ IMPORTANT FORMATTING RULES:
             context.logger.info(f"Calling {self.provider} generator for response generation")
             result = self.generator.call(api_kwargs, model_type=ModelType.LLM)
             
-            if hasattr(result, 'data') and result.data:
-                # Extract the response content
-                raw_response = result.data
-                
-                # For now, parse as a simple response
-                # In future, could implement more sophisticated parsing
-                response = {
-                    "rationale": "Generated using RAG pipeline with retrieved documents",
-                    "answer": str(raw_response)
-                }
+            # Debug the response format
+            context.logger.info(f"Generator result type: {type(result)}")
+            context.logger.info(f"Generator result attributes: {dir(result) if hasattr(result, '__dict__') else 'No attributes'}")
+            
+            # Check for OpenAI ChatCompletion format first
+            if hasattr(result, 'choices'):
+                context.logger.info(f"Result has choices: {result.choices}")
+                context.logger.info(f"Choices length: {len(result.choices) if result.choices else 0}")
+                if result.choices and len(result.choices) > 0:
+                    message = result.choices[0].message
+                    context.logger.info(f"Message: {message}")
+                    context.logger.info(f"Message attributes: {dir(message)}")
+                    if hasattr(message, 'content'):
+                        context.logger.info(f"Message content: {message.content}")
+                        if message.content:
+                            raw_response = message.content
+                            context.logger.info(f"Found ChatCompletion content: {str(raw_response)[:200]}...")
+                            response = {
+                                "rationale": "Generated using RAG pipeline with retrieved documents",
+                                "answer": str(raw_response)
+                            }
+                        else:
+                            context.logger.warning(f"ChatCompletion message content is None or empty")
+                            # Fallback response
+                            response = {
+                                "rationale": "Generated using RAG pipeline with retrieved documents",
+                                "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
+                            }
+                    else:
+                        context.logger.warning(f"ChatCompletion message has no content attribute")
+                        # Fallback response
+                        response = {
+                            "rationale": "Generated using RAG pipeline with retrieved documents",
+                            "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
+                        }
+                else:
+                    context.logger.warning(f"ChatCompletion has empty or no choices")
+                    # Fallback response
+                    response = {
+                        "rationale": "Generated using RAG pipeline with retrieved documents",
+                        "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
+                    }
             else:
-                # Fallback response if generator call fails
-                response = {
-                    "rationale": "Generated using RAG pipeline with retrieved documents",
-                    "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
-                }
+                context.logger.warning(f"Result has no choices attribute")
+                # Check for GeneratorOutput format (has raw_response)
+                if hasattr(result, 'raw_response') and result.raw_response:
+                    raw_response = result.raw_response
+                    context.logger.info(f"Found raw_response: {str(raw_response)[:200]}...")
+                    response = {
+                        "rationale": "Generated using RAG pipeline with retrieved documents",
+                        "answer": str(raw_response)
+                    }
+                # Check for direct data format
+                elif hasattr(result, 'data') and result.data:
+                    raw_response = result.data
+                    context.logger.info(f"Found data: {str(raw_response)[:200]}...")
+                    response = {
+                        "rationale": "Generated using RAG pipeline with retrieved documents",
+                        "answer": str(raw_response)
+                    }
+                # Check if result is the response itself
+                elif isinstance(result, str):
+                    context.logger.info(f"Result is string: {result[:200]}...")
+                    response = {
+                        "rationale": "Generated using RAG pipeline with retrieved documents",
+                        "answer": result
+                    }
+                else:
+                    context.logger.warning(f"Unexpected result format: {type(result)} - {str(result)[:200]}...")
+                    # Fallback response if generator call fails
+                    response = {
+                        "rationale": "Generated using RAG pipeline with retrieved documents",
+                        "answer": f"Based on the retrieved documents, here is the answer to your question: {context.user_query}"
+                    }
             
             context.logger.info("Response generated successfully")
             return response
