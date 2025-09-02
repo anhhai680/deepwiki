@@ -141,16 +141,7 @@ configs = {
     "lang_config": {
         "default": "en",
         "supported_languages": {
-            "en": "English",
-            "ja": "Japanese",
-            "zh": "Chinese",
-            "es": "Spanish",
-            "kr": "Korean",
-            "vi": "Vietnamese",
-            "fr": "French",
-            "pt-br": "Portuguese (Brazil)",
-            "ru": "Russian",
-            "zh-tw": "Chinese (Traditional)"
+            "en": "English"
         }
     },
     "file_filters": {
@@ -217,7 +208,7 @@ def get_model_config(provider: str = "google", model: str = None) -> Dict[str, A
     # Provider-specific configurations
     provider_configs = {
         "openai": {
-            "model": "gpt-4o-mini",
+            "model": "gpt-4.1-mini",
             "model_kwargs": {
                 "temperature": 0.7,
                 "top_p": 0.9,
@@ -234,7 +225,7 @@ def get_model_config(provider: str = "google", model: str = None) -> Dict[str, A
             }
         },
         "azure": {
-            "model": "gpt-4o-mini",
+            "model": "gpt-4.1-mini",
             "model_kwargs": {
                 "temperature": 0.7,
                 "top_p": 0.9,
@@ -242,7 +233,7 @@ def get_model_config(provider: str = "google", model: str = None) -> Dict[str, A
             }
         },
         "openrouter": {
-            "model": "openai/gpt-4o-mini",
+            "model": "openai/gpt-4.1-mini",
             "model_kwargs": {
                 "temperature": 0.7,
                 "top_p": 0.9,
