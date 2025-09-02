@@ -73,8 +73,31 @@ export const createChatWebSocket = (
       onClose();
       return;
     }
-    // Call the message handler with the received text
-    onMessage(event.data);
+    // Try to parse JSON control messages (e.g., progress/error) and ignore them
+    const data = event.data as string;
+
+    // Remove any concatenated JSON control objects embedded in the chunk
+    // Matches objects like {"type":"progress", ...} or {"type":"error", ...}
+    const controlJsonRegex = /\{\s*"type"\s*:\s*"(?:progress|error)"[\s\S]*?\}/g;
+    const sanitized = data.replace(controlJsonRegex, "");
+    try {
+      const maybeJson = JSON.parse(sanitized);
+      if (maybeJson && typeof maybeJson === 'object' && 'type' in maybeJson) {
+        const msgType = String(maybeJson.type);
+        // Ignore progress updates and structured errors for UI output
+        if (msgType === 'progress' || msgType === 'error') {
+          return;
+        }
+      }
+      // If it's JSON but not a known control type, fall through to display raw
+    } catch {
+      // Not JSON, treat as normal streamed text
+    }
+    // Forward plain text to the consumer
+    const output = sanitized;
+    if (output && output.trim().length > 0) {
+      onMessage(output);
+    }
   };
   
   ws.onerror = (error) => {

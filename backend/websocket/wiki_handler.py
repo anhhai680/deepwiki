@@ -53,7 +53,7 @@ async def handle_multiple_repositories(websocket: WebSocket, request: ChatComple
                 type=request.type,
                 provider=request.provider,
                 model=request.model,
-                language=request.language,
+                language="en",
                 excluded_dirs=request.excluded_dirs,
                 excluded_files=request.excluded_files,
                 included_dirs=request.included_dirs,
@@ -68,15 +68,10 @@ async def handle_multiple_repositories(websocket: WebSocket, request: ChatComple
                 "index": i
             })
             
-            # Update progress
-            await websocket.send_json({
-                "type": "progress",
-                "data": {
-                    "message": f"Processed repository {i+1}/{len(request.repo_url)}",
-                    "current": i + 1,
-                    "total": len(request.repo_url)
-                }
-            })
+            # Progress updates are now logged only to avoid leaking JSON into client output
+            logger.info(
+                f"Progress: Processed repository {i+1}/{len(request.repo_url)}"
+            )
         
         # Merge results from all repositories
         # The results already contain repo_url, just pass them directly
@@ -262,7 +257,8 @@ async def handle_single_repository(websocket: WebSocket, request: ChatCompletion
     repo_type = request.type
 
     # Get language information
-    language_code = request.language or configs["lang_config"]["default"]
+    # Force English for DeepWiki chat responses
+    language_code = "en"
     supported_langs = configs["lang_config"]["supported_languages"]
     language_name = supported_langs.get(language_code, "English")
 
@@ -400,7 +396,7 @@ This file contains...
 - Think step by step and structure your answer logically
 - Start with the most relevant information that directly addresses the user's query
 - Be precise and technical when discussing code
-- Your response language should be in the same language as the user's query
+- Always respond strictly in the configured language (do not mirror the user's query language)
 </guidelines>
 
 <style>
@@ -447,6 +443,8 @@ This file contains...
         logger.info("No context available from RAG")
         prompt += "<note>Answering without retrieval augmentation.</note>\n\n"
 
+    # Strong language enforcement: English only
+    prompt += "<language_policy>All output MUST be in English only. Do not mirror user's language. If any non-English appears, rewrite it to English before sending.</language_policy>\n\n"
     prompt += f"<query>\n{query}\n</query>\n\nAssistant: "
 
     try:
@@ -874,7 +872,7 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
             logger.info(f"Modified RAG query to focus on file: {request.filePath}")
         
         # Perform RAG retrieval (existing logic)
-        rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
+        rag_answer, retrieved_documents = request_rag.call(rag_query, language="en")
         
         # Debug: Log the RAG answer details
         logger.info(f"RAG answer type: {type(rag_answer)}")
