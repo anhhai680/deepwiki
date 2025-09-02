@@ -4,7 +4,7 @@ Chat API endpoints.
 This module contains all chat-related API endpoints extracted from the main api.py file.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -45,6 +45,6 @@ async def chat_completions_stream_endpoint(request: ChatCompletionRequest):
     return StreamingResponse(stream, media_type="text/plain; charset=utf-8")
 
 @router.websocket("/ws/chat")
-async def websocket_endpoint(websocket):
+async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for chat using the existing websocket implementation."""
     await handle_websocket_chat(websocket)

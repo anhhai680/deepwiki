@@ -402,7 +402,23 @@ const Ask: React.FC<AskProps> = ({
         requestBody,
         // Message handler
         (message: string) => {
-          fullResponse += message;
+          // Filter out progress/error JSON control messages just in case
+          const controlRegex = /\{\s*"type"\s*:\s*"(?:progress|error)"[\s\S]*?\}/g;
+          const cleaned = (message || '').replace(controlRegex, '');
+          try {
+            const maybeJson = JSON.parse(cleaned);
+            if (maybeJson && typeof maybeJson === 'object' && 'type' in maybeJson) {
+              const t = String(maybeJson.type);
+              if (t === 'progress' || t === 'error') {
+                return; // ignore control frames
+              }
+            }
+          } catch {
+            // not JSON, proceed
+          }
+          if (cleaned && cleaned.trim().length > 0) {
+            fullResponse += cleaned;
+          }
           setResponse(fullResponse);
 
           // Extract research stage if this is a deep research response
@@ -456,6 +472,8 @@ const Ask: React.FC<AskProps> = ({
           }
 
           setIsLoading(false);
+          // Close the WebSocket connection after processing is complete
+          closeWebSocket(webSocketRef.current);
         }
       );
     } catch (error) {
@@ -648,7 +666,20 @@ const Ask: React.FC<AskProps> = ({
         requestBody,
         // Message handler
         (message: string) => {
-          fullResponse += message;
+          const controlRegex = /\{\s*"type"\s*:\s*"(?:progress|error)"[\s\S]*?\}/g;
+          const cleaned = (message || '').replace(controlRegex, '');
+          try {
+            const maybeJson = JSON.parse(cleaned);
+            if (maybeJson && typeof maybeJson === 'object' && 'type' in maybeJson) {
+              const t = String(maybeJson.type);
+              if (t === 'progress' || t === 'error') {
+                return;
+              }
+            }
+          } catch {}
+          if (cleaned && cleaned.trim().length > 0) {
+            fullResponse += cleaned;
+          }
           setResponse(fullResponse);
 
           // Extract research stage if this is a deep research response
@@ -684,6 +715,8 @@ const Ask: React.FC<AskProps> = ({
           }
 
           setIsLoading(false);
+          // Close the WebSocket connection after processing is complete
+          closeWebSocket(webSocketRef.current);
         }
       );
     } catch (error) {

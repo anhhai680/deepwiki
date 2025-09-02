@@ -139,23 +139,27 @@ def merge_repository_results(results: List[Dict]) -> Dict:
             "error": error
         })
         
-        # Add content with repository identifier
+        # Append content only; omit repo banner in the final answer
         if content and not error:
-            merged["content"] += f"\n\n--- Repository {i+1}: {repo_url} ---\n{content}"
+            # Separate multiple repos with a blank line
+            if merged["content"]:
+                merged["content"] += "\n\n"
+            merged["content"] += content
             merged["total_tokens"] += tokens
             merged["total_documents"] += documents
             merged["successful_repos"] += 1
         else:
             merged["failed_repos"] += 1
     
-    # Add summary at the beginning
-    summary = f"Processed {len(results)} repositories:\n"
-    summary += f"✅ Successful: {merged['successful_repos']}\n"
-    summary += f"❌ Failed: {merged['failed_repos']}\n"
-    summary += f"📄 Total documents: {merged['total_documents']}\n"
-    summary += f"🔤 Total tokens: {merged['total_tokens']}\n\n"
-    
-    merged["content"] = summary + merged["content"]
+    # Provide a summary separately (do not inject into content shown to users)
+    summary = (
+        f"Processed {len(results)} repositories:\n"
+        f"✅ Successful: {merged['successful_repos']}\n"
+        f"❌ Failed: {merged['failed_repos']}\n"
+        f"📄 Total documents: {merged['total_documents']}\n"
+        f"🔤 Total tokens: {merged['total_tokens']}\n"
+    )
+    merged["summary"] = summary
     
     return merged
 

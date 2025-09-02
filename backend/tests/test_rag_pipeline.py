@@ -7,8 +7,7 @@ context management, and compatibility layer.
 
 import pytest
 import logging
-from unittest.mock import Mock, patch, MagicMock
-from typing import List, Dict, Any
+from unittest.mock import Mock, patch
 
 from backend.pipelines.rag.rag_pipeline import RAGPipeline
 from backend.pipelines.rag.rag_context import RAGPipelineContext
@@ -20,7 +19,6 @@ from backend.pipelines.rag.steps import (
     MemoryUpdateStep
 )
 from backend.pipelines.rag.compatibility import RAGCompatibility, create_rag
-from backend.pipelines.base import PipelineStep, PipelineContext
 
 # Configure logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -196,11 +194,12 @@ class TestRAGPipelineSteps:
         # Test validation
         from backend.components.retriever.faiss_retriever import FAISSRetriever
         mock_retriever = Mock(spec=FAISSRetriever)
-        valid_input = ("test query", mock_retriever)
-        assert step.validate_input(valid_input)
-        assert not step.validate_input(("", mock_retriever))
-        assert not step.validate_input(("query", None))
+        
+        # DocumentRetrievalStep only takes the retriever as input, not a tuple
+        assert step.validate_input(mock_retriever)
+        assert not step.validate_input(None)
         assert not step.validate_input("invalid")
+        assert not step.validate_input(("query", mock_retriever))  # Should fail for tuple
         
         # Test output validation
         mock_docs = [Mock(), Mock()]

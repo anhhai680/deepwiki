@@ -181,10 +181,14 @@
     },
     "azure": {
       "client_class": "AzureAIClient",
-      "default_model": "gpt-4o",
+      "default_model": "gpt-4.1-mini",
       "supportsCustomModel": true,
       "models": {
         "gpt-4o": {
+          "temperature": 0.7,
+          "top_p": 0.8
+        },
+        "gpt-4o-mini": {
           "temperature": 0.7,
           "top_p": 0.8
         },

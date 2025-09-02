@@ -64,8 +64,8 @@ class FAISSRetriever(BaseRetriever):
                 return False
             
             # Validate embedder interface before creating FAISS retriever
-            if not self._embedder or not callable(getattr(self._embedder, "embed", None)):
-                raise ValueError("Embedder with embed() method is required for FAISS retriever")
+            if not self._embedder or not callable(self._embedder):
+                raise ValueError("Callable embedder is required for FAISS retriever")
             # If running in tests with a Mock embedder, treat as not properly configured
             if _UMock is not None and isinstance(self._embedder, _UMock) and not self._allow_mock_embedder:
                 raise ValueError("Mock embedder is not a valid FAISS embedder configuration")
@@ -156,9 +156,30 @@ class FAISSRetriever(BaseRetriever):
             # Perform retrieval using the underlying FAISS retriever
             result = self._faiss_retriever(query)
             
-            # Extract document indices and scores
-            doc_indices = result[0].doc_indices if result and len(result) > 0 else []
-            scores = result[0].scores if result and len(result) > 0 else []
+            # Extract document indices and scores - handle different result formats
+            doc_indices = []
+            scores = []
+            
+            if result:
+                # Check if result is a list or single result
+                if isinstance(result, list) and len(result) > 0:
+                    first_result = result[0]
+                else:
+                    first_result = result
+                
+                # Extract indices and scores based on available attributes
+                if hasattr(first_result, 'doc_indices'):
+                    doc_indices = first_result.doc_indices
+                elif hasattr(first_result, 'doc_ids'):
+                    doc_indices = first_result.doc_ids
+                
+                if hasattr(first_result, 'scores'):
+                    scores = first_result.scores
+                elif hasattr(first_result, 'similarities'):
+                    scores = first_result.similarities
+                else:
+                    # If no scores available, use placeholder scores
+                    scores = [1.0] * len(doc_indices)
             
             # Get actual documents
             retrieved_documents = [

@@ -53,7 +53,7 @@ async def handle_multiple_repositories(websocket: WebSocket, request: ChatComple
                 type=request.type,
                 provider=request.provider,
                 model=request.model,
-                language=request.language,
+                language="en",
                 excluded_dirs=request.excluded_dirs,
                 excluded_files=request.excluded_files,
                 included_dirs=request.included_dirs,
@@ -68,24 +68,23 @@ async def handle_multiple_repositories(websocket: WebSocket, request: ChatComple
                 "index": i
             })
             
-            # Update progress
-            await websocket.send_json({
-                "type": "progress",
-                "data": {
-                    "message": f"Processed repository {i+1}/{len(request.repo_url)}",
-                    "current": i + 1,
-                    "total": len(request.repo_url)
-                }
-            })
+            # Progress updates are now logged only to avoid leaking JSON into client output
+            logger.info(
+                f"Progress: Processed repository {i+1}/{len(request.repo_url)}"
+            )
         
         # Merge results from all repositories
-        merged_response = merge_repository_results(all_results)
+        # The results already contain repo_url, just pass them directly
+        logger.info(f"All results before merge: {[{k: v for k, v in item['result'].items() if k != 'content'} for item in all_results]}")
+        actual_results = [item["result"] for item in all_results]
+        merged_response = merge_repository_results(actual_results)
+        logger.info(f"Merged response: {merged_response}")
         
-        # Send final merged response
-        await websocket.send_json({
-            "type": "response",
-            "data": merged_response
-        })
+        # Send final merged response as text (like single repository)
+        # Extract the content from the merged response
+        response_content = merged_response.get("content", "No content available")
+        await websocket.send_text(response_content)
+        await websocket.send_text("[DONE]")
         
     except Exception as e:
         logger.error(f"Error processing multiple repositories: {e}")
@@ -195,41 +194,56 @@ async def handle_single_repository(websocket: WebSocket, request: ChatCompletion
                 rag_query = f"Contexts related to {request.filePath}"
                 logger.info(f"Modified RAG query to focus on file: {request.filePath}")
 
-            # Try to perform RAG retrieval
-            try:
-                # This will use the actual RAG implementation
-                retrieved_documents = request_rag(rag_query, language=request.language)
+                            # Try to perform RAG retrieval
+                try:
+                    # This will use the actual RAG implementation
+                    rag_answer, retrieved_documents = request_rag.call(rag_query, language=request.language or "en")
+                    
+                    # Debug: Log what the RAG pipeline returned
+                    logger.info(f"RAG pipeline returned: rag_answer={rag_answer}, type={type(rag_answer)}")
+                    if rag_answer:
+                        logger.info(f"RAG answer content: {str(rag_answer)[:200]}...")
+                    
+                    # Use the RAG answer directly instead of building a new prompt
+                    if rag_answer:
+                        logger.info("RAG pipeline generated response, streaming directly")
+                        # Stream the RAG answer directly to the WebSocket
+                        await websocket.send_text(str(rag_answer))
+                        await websocket.send_text("[DONE]")
+                        return
+                    else:
+                        logger.warning("RAG pipeline returned empty response")
 
-                if retrieved_documents and retrieved_documents[0].documents:
-                    # Format context for the prompt in a more structured way
-                    documents = retrieved_documents[0].documents
-                    logger.info(f"Retrieved {len(documents)} documents")
+                    if retrieved_documents and retrieved_documents[0].documents:
+                        # Format context for the prompt in a more structured way
+                        documents = retrieved_documents[0].documents
+                        logger.info(f"Retrieved {len(documents)} documents")
 
-                    # Group documents by file path
-                    docs_by_file = {}
-                    for doc in documents:
-                        file_path = doc.meta_data.get('file_path', 'unknown')
-                        if file_path not in docs_by_file:
-                            docs_by_file[file_path] = []
-                        docs_by_file[file_path].append(doc)
+                        # Group documents by file path
+                        docs_by_file = {}
+                        for doc in documents:
+                            file_path = doc.meta_data.get('file_path', 'unknown')
+                            if file_path not in docs_by_file:
+                                docs_by_file[file_path] = []
+                            docs_by_file[file_path].append(doc)
 
-                    # Format context text with file path grouping
-                    context_parts = []
-                    for file_path, docs in docs_by_file.items():
-                        # Add file header with metadata
-                        header = f"## File Path: {file_path}\n\n"
-                        # Add document content
-                        content = "\n\n".join([doc.text for doc in docs])
+                        # Format context text with file path grouping
+                        context_parts = []
+                        for file_path, docs in docs_by_file.items():
+                            # Add file header with metadata
+                            header = f"## File Path: {file_path}\n\n"
+                            # Add document content
+                            content = "\n\n".join([doc.text for doc in docs])
 
-                        context_parts.append(f"{header}{content}")
+                            context_parts.append(f"{header}{content}")
 
-                    # Join all parts with clear separation
-                    context_text = "\n\n" + "-" * 10 + "\n\n".join(context_parts)
-                else:
-                    logger.warning("No documents retrieved from RAG")
-            except Exception as e:
-                logger.error(f"Error in RAG retrieval: {str(e)}")
-                # Continue without RAG if there's an error
+                        # Join all parts with clear separation
+                        context_text = "\n\n" + "-" * 10 + "\n\n".join(context_parts)
+                    else:
+                        logger.warning("No documents retrieved from RAG")
+                except Exception as e:
+                    logger.error(f"Error in RAG retrieval: {str(e)}")
+                    # Continue without RAG if there's an error
 
         except Exception as e:
             logger.error(f"Error retrieving documents: {str(e)}")
@@ -243,7 +257,8 @@ async def handle_single_repository(websocket: WebSocket, request: ChatCompletion
     repo_type = request.type
 
     # Get language information
-    language_code = request.language or configs["lang_config"]["default"]
+    # Force English for DeepWiki chat responses
+    language_code = "en"
     supported_langs = configs["lang_config"]["supported_languages"]
     language_name = supported_langs.get(language_code, "English")
 
@@ -381,7 +396,7 @@ This file contains...
 - Think step by step and structure your answer logically
 - Start with the most relevant information that directly addresses the user's query
 - Be precise and technical when discussing code
-- Your response language should be in the same language as the user's query
+- Always respond strictly in the configured language (do not mirror the user's query language)
 </guidelines>
 
 <style>
@@ -403,7 +418,7 @@ This file contains...
 
     # Format conversation history
     conversation_history = ""
-    for turn_id, turn in request_rag.memory().items():
+    for turn_id, turn in request_rag.memory.call().items():
         if not isinstance(turn_id, int) and hasattr(turn, 'user_query') and hasattr(turn, 'assistant_response'):
             conversation_history += f"<turn>\n<user>{turn.user_query.query_str}</user>\n<assistant>{turn.assistant_response.response_str}</assistant>\n</turn>\n"
 
@@ -428,21 +443,32 @@ This file contains...
         logger.info("No context available from RAG")
         prompt += "<note>Answering without retrieval augmentation.</note>\n\n"
 
+    # Strong language enforcement: English only
+    prompt += "<language_policy>All output MUST be in English only. Do not mirror user's language. If any non-English appears, rewrite it to English before sending.</language_policy>\n\n"
     prompt += f"<query>\n{query}\n</query>\n\nAssistant: "
 
-    model_config = get_model_config(request.provider, request.model)["model_kwargs"]
+    try:
+        full_config = get_model_config(request.provider, request.model)
+        model_config = full_config["model_kwargs"]
+        logger.info(f"Model configuration loaded successfully for {request.provider}/{request.model}")
+    except Exception as e_config:
+        logger.error(f"Failed to load model configuration: {str(e_config)}")
+        error_msg = f"\nError: Failed to load model configuration for {request.provider}/{request.model}.\n\nError details: {str(e_config)}"
+        await websocket.send_text(error_msg)
+        await websocket.close()
+        return
 
     if request.provider == "ollama":
         prompt += " /no_think"
 
         model = OllamaClient()
         model_kwargs = {
-            "model": model_config["model"],
+            "model": full_config["model"],
             "stream": True,
             "options": {
                 "temperature": model_config["temperature"],
                 "top_p": model_config["top_p"],
-                "num_ctx": model_config["num_ctx"]
+                "num_ctx": model_config.get("num_ctx", 4096)
             }
         }
 
@@ -483,7 +509,14 @@ This file contains...
             # We'll let the OpenAIGenerator handle this and return an error message
 
         # Initialize Openai client
-        model = OpenAIGenerator()
+        try:
+            model = OpenAIGenerator()
+        except Exception as e_init:
+            logger.error(f"Failed to initialize OpenAIGenerator: {str(e_init)}")
+            error_msg = f"\nError: Failed to initialize OpenAI client. Please check that you have set the OPENAI_API_KEY environment variable with a valid API key.\n\nError details: {str(e_init)}"
+            await websocket.send_text(error_msg)
+            await websocket.close()
+            return
         model_kwargs = {
             "model": request.model,
             "stream": True,
@@ -502,7 +535,14 @@ This file contains...
         logger.info(f"Using Azure AI with model: {request.model}")
 
         # Initialize Azure AI client
-        model = AzureAIGenerator()
+        try:
+            model = AzureAIGenerator()
+        except Exception as e_init:
+            logger.error(f"Failed to initialize AzureAIGenerator: {str(e_init)}")
+            error_msg = f"\nError: Failed to initialize Azure AI client. Please check that you have set the required Azure environment variables.\n\nError details: {str(e_init)}"
+            await websocket.send_text(error_msg)
+            await websocket.close()
+            return
         model_kwargs = {
             "model": request.model,
             "stream": True,
@@ -554,8 +594,8 @@ This file contains...
                 if text and not text.startswith('model=') and not text.startswith('created_at='):
                     text = text.replace('<think>', '').replace('</think>', '')
                     await websocket.send_text(text)
-            # Explicitly close the WebSocket connection after the response is complete
-            await websocket.close()
+            # Send completion signal instead of closing connection
+            await websocket.send_text("[DONE]")
         elif request.provider == "openrouter":
             try:
                 # Get the response and handle it properly using the previously created api_kwargs
@@ -564,8 +604,8 @@ This file contains...
                 # Handle streaming response from OpenRouter
                 async for chunk in response:
                     await websocket.send_text(chunk)
-                # Explicitly close the WebSocket connection after the response is complete
-                await websocket.close()
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
             except Exception as e_openrouter:
                 logger.error(f"Error with OpenRouter API: {str(e_openrouter)}")
                 error_msg = f"\nError with OpenRouter API: {str(e_openrouter)}\n\nPlease check that you have set the OPENROUTER_API_KEY environment variable with a valid API key."
@@ -576,18 +616,31 @@ This file contains...
             try:
                 # Get the response and handle it properly using the previously created api_kwargs
                 logger.info("Making Openai API call")
+                logger.info(f"API kwargs: {api_kwargs}")
                 response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+                logger.info("OpenAI API call completed, processing response...")
+                
+                chunk_count = 0
                 # Handle streaming response from Openai
                 async for chunk in response:
-                    choices = getattr(chunk, "choices", [])
-                    if len(choices) > 0:
-                        delta = getattr(chunk, "delta", None)
-                        if delta is not None:
-                            text = getattr(chunk, "content", None)
-                            if text is not None:
-                                await websocket.send_text(text)
-                # Explicitly close the WebSocket connection after the response is complete
-                await websocket.close()
+                    try:
+                        chunk_count += 1
+                        choices = getattr(chunk, "choices", [])
+                        if len(choices) > 0:
+                            choice = choices[0]
+                            delta = getattr(choice, "delta", None)
+                            if delta is not None:
+                                text = getattr(delta, "content", None)
+                                if text is not None:
+                                    await websocket.send_text(text)
+                    except Exception as e_chunk:
+                        logger.error(f"Error processing chunk {chunk_count}: {str(e_chunk)}")
+                        import traceback
+                        logger.error(f"Chunk processing traceback: {traceback.format_exc()}")
+                
+                logger.info(f"Total chunks processed: {chunk_count}")
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
             except Exception as e_openai:
                 logger.error(f"Error with Openai API: {str(e_openai)}")
                 error_msg = f"\nError with Openai API: {str(e_openai)}\n\nPlease check that you have set the OPENAI_API_KEY environment variable with a valid API key."
@@ -608,8 +661,8 @@ This file contains...
                             text = getattr(delta, "content", None)
                             if text is not None:
                                 await websocket.send_text(text)
-                    # Explicitly close the WebSocket connection after the response is complete
-                    await websocket.close()
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
             except Exception as e_azure:
                 logger.error(f"Error with Azure AI API: {str(e_azure)}")
                 error_msg = f"\nError with Azure AI API: {str(e_azure)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
@@ -623,8 +676,8 @@ This file contains...
             for chunk in response:
                 if hasattr(chunk, 'text'):
                     await websocket.send_text(chunk.text)
-            # Explicitly close the WebSocket connection after the response is complete
-            await websocket.close()
+            # Send completion signal instead of closing connection
+            await websocket.send_text("[DONE]")
 
     except Exception as e_outer:
         logger.error(f"Error in streaming response: {str(e_outer)}")
@@ -651,9 +704,18 @@ This file contains...
                     simplified_prompt += " /no_think"
 
                     # Create new api_kwargs with the simplified prompt
+                    fallback_model_kwargs = {
+                        "model": full_config["model"],
+                        "stream": True,
+                        "options": {
+                            "temperature": model_config["temperature"],
+                            "top_p": model_config["top_p"],
+                            "num_ctx": model_config.get("num_ctx", 4096)
+                        }
+                    }
                     fallback_api_kwargs = model.convert_inputs_to_api_kwargs(
                         input=simplified_prompt,
-                        model_kwargs=model_kwargs,
+                        model_kwargs=fallback_model_kwargs,
                         model_type=ModelType.LLM
                     )
 
@@ -666,6 +728,8 @@ This file contains...
                         if text and not text.startswith('model=') and not text.startswith('created_at='):
                             text = text.replace('<think>', '').replace('</think>', '')
                             await websocket.send_text(text)
+                    # Send completion signal instead of closing connection
+                    await websocket.send_text("[DONE]")
                 elif request.provider == "openrouter":
                     try:
                         # Create new api_kwargs with the simplified prompt
@@ -682,6 +746,8 @@ This file contains...
                         # Handle streaming fallback_response from OpenRouter
                         async for chunk in fallback_response:
                             await websocket.send_text(chunk)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
                     except Exception as e_fallback:
                         logger.error(f"Error with OpenRouter API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with OpenRouter API fallback: {str(e_fallback)}\n\nPlease check that you have set the OPENROUTER_API_KEY environment variable with a valid API key."
@@ -703,6 +769,8 @@ This file contains...
                         async for chunk in fallback_response:
                             text = chunk if isinstance(chunk, str) else getattr(chunk, 'text', str(chunk))
                             await websocket.send_text(text)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
                     except Exception as e_fallback:
                         logger.error(f"Error with Openai API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with Openai API fallback: {str(e_fallback)}\n\nPlease check that you have set the OPENAI_API_KEY environment variable with a valid API key."
@@ -729,6 +797,8 @@ This file contains...
                                     text = getattr(delta, "content", None)
                                     if text is not None:
                                         await websocket.send_text(text)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
                     except Exception as e_fallback:
                         logger.error(f"Error with Azure AI API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with Azure AI API fallback: {str(e_fallback)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
@@ -751,6 +821,8 @@ This file contains...
                     for chunk in fallback_response:
                         if hasattr(chunk, 'text'):
                             await websocket.send_text(chunk.text)
+                    # Send completion signal instead of closing connection
+                    await websocket.send_text("[DONE]")
             except Exception as e2:
                 logger.error(f"Error in fallback streaming response: {str(e2)}")
                 await websocket.send_text(f"\nI apologize, but your request is too large for me to process. Please try a shorter query or break it into smaller parts.")
@@ -800,11 +872,20 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
             logger.info(f"Modified RAG query to focus on file: {request.filePath}")
         
         # Perform RAG retrieval (existing logic)
-        retrieved_documents = request_rag(rag_query, language=request.language)
+        rag_answer, retrieved_documents = request_rag.call(rag_query, language="en")
+        
+        # Debug: Log the RAG answer details
+        logger.info(f"RAG answer type: {type(rag_answer)}")
+        logger.info(f"RAG answer attributes: {dir(rag_answer) if rag_answer else 'None'}")
+        if rag_answer:
+            if hasattr(rag_answer, 'answer'):
+                logger.info(f"RAG answer.answer: {rag_answer.answer[:200]}...")
+            else:
+                logger.info(f"RAG answer content: {str(rag_answer)[:200]}...")
         
         # Generate response (existing logic)
-        if retrieved_documents and retrieved_documents.answer:
-            response = retrieved_documents.answer
+        if rag_answer:
+            response = rag_answer.answer if hasattr(rag_answer, 'answer') else str(rag_answer)
         else:
             response = "I couldn't find relevant information in the repository to answer your question."
         
@@ -812,7 +893,7 @@ async def process_single_repository_request(request: ChatCompletionRequest, inpu
             "content": response,
             "repo_url": request.repo_url,
             "tokens_used": len(response.split()) if response else 0,
-            "documents_retrieved": len(retrieved_documents.documents) if retrieved_documents else 0
+            "documents_retrieved": len(retrieved_documents[0].documents) if retrieved_documents and len(retrieved_documents) > 0 and hasattr(retrieved_documents[0], 'documents') else 0
         }
         
     except Exception as e:
@@ -836,6 +917,8 @@ async def handle_websocket_chat(websocket: WebSocket):
     await websocket.accept()
 
     try:
+        logger.info("WebSocket connection accepted")
+
         # Receive and parse the request data
         request_data = await websocket.receive_json()
         request = ChatCompletionRequest(**request_data)
@@ -859,8 +942,8 @@ async def handle_websocket_chat(websocket: WebSocket):
             # Single repository - use existing logic unchanged
             await handle_single_repository(websocket, request, input_too_large)
 
-    except WebSocketDisconnect:
-        logger.info("WebSocket disconnected")
+    except WebSocketDisconnect as e:
+        logger.error(f"WebSocket disconnected: {str(e)}")
     except Exception as e:
         logger.error(f"Error in WebSocket handler: {str(e)}")
         try:

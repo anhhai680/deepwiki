@@ -11,7 +11,7 @@ const getWebSocketUrl = () => {
   const baseUrl = SERVER_BASE_URL;
   // Replace http:// with ws:// or https:// with wss://
   const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
-  return `${wsBaseUrl}/ws/chat`;
+  return `${wsBaseUrl}/api/ws/chat`;
 };
 
 export interface ChatMessage {
@@ -49,24 +49,66 @@ export const createChatWebSocket = (
   // Create WebSocket connection
   const ws = new WebSocket(getWebSocketUrl());
   
+  // Add timeout to detect connection failures faster
+  const connectionTimeout = setTimeout(() => {
+    if (ws.readyState === WebSocket.CONNECTING) {
+      console.error('WebSocket connection timeout');
+      ws.close();
+      onError(new Event('timeout'));
+    }
+  }, 2000); // 2 second timeout
+  
   // Set up event handlers
   ws.onopen = () => {
+    clearTimeout(connectionTimeout);
     console.log('WebSocket connection established');
     // Send the request as JSON
     ws.send(JSON.stringify(request));
   };
   
   ws.onmessage = (event) => {
-    // Call the message handler with the received text
-    onMessage(event.data);
+    // Check if this is a completion signal
+    if (event.data === '[DONE]') {
+      // Call the close handler to indicate completion
+      ws.close();
+      onClose();
+      return;
+    }
+    // Try to parse JSON control messages (e.g., progress/error) and ignore them
+    const data = event.data as string;
+
+    // Remove any concatenated JSON control objects embedded in the chunk
+    // Matches objects like {"type":"progress", ...} or {"type":"error", ...}
+    const controlJsonRegex = /\{\s*"type"\s*:\s*"(?:progress|error)"[\s\S]*?\}/g;
+    const sanitized = data.replace(controlJsonRegex, "");
+    try {
+      const maybeJson = JSON.parse(sanitized);
+      if (maybeJson && typeof maybeJson === 'object' && 'type' in maybeJson) {
+        const msgType = String(maybeJson.type);
+        // Ignore progress updates and structured errors for UI output
+        if (msgType === 'progress' || msgType === 'error') {
+          return;
+        }
+      }
+      // If it's JSON but not a known control type, fall through to display raw
+    } catch {
+      // Not JSON, treat as normal streamed text
+    }
+    // Forward plain text to the consumer
+    const output = sanitized;
+    if (output && output.trim().length > 0) {
+      onMessage(output);
+    }
   };
   
   ws.onerror = (error) => {
+    clearTimeout(connectionTimeout);
     console.error('WebSocket error:', error);
     onError(error);
   };
   
   ws.onclose = () => {
+    clearTimeout(connectionTimeout);
     console.log('WebSocket connection closed');
     onClose();
   };
