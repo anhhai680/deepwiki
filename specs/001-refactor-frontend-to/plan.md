@@ -105,42 +105,54 @@ specs/[###-feature]/
 
 ### Source Code (repository root)
 ```
-# Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure]
+# DeepWiki Actual Structure (Full-Stack Application)
+deepwiki/
+├── backend/                   # Python FastAPI backend
+│   ├── __init__.py
+│   ├── main.py               # Server entry point (port 8001)
+│   ├── app.py                # FastAPI app configuration
+│   ├── api/                  # API route handlers
+│   │   ├── v1/
+│   │   │   ├── chat.py       # Chat endpoints (/api/chat/*, /api/ws/chat)
+│   │   │   ├── core.py       # Core API routes
+│   │   │   ├── wiki.py       # Wiki generation
+│   │   │   └── projects.py   # Project management
+│   │   └── dependencies.py
+│   ├── config/               # Model configurations
+│   ├── core/                 # Business logic
+│   ├── services/             # Service layer (ChatService, etc.)
+│   ├── models/               # Pydantic data models
+│   ├── utils/                # Utility functions
+│   ├── websocket/            # WebSocket handlers
+│   ├── pipelines/            # Data processing pipelines
+│   └── tests/                # Python tests
+├── src/                      # Next.js 15.3.1 frontend (App Router)
+│   ├── app/                  # App Router pages
+│   │   ├── page.tsx          # Home page (target for integration)
+│   │   ├── [owner]/[repo]/page.tsx  # Repository wiki pages
+│   │   └── api/              # Next.js API routes
+│   │       └── chat/stream/route.ts  # Proxy to backend
+│   ├── components/           # React components
+│   │   ├── Ask.tsx           # Full Ask UI component (159 lines)
+│   │   ├── RepositorySelector.tsx
+│   │   ├── MultiRepositorySelector.tsx
+│   │   └── ModelSelectionModal.tsx
+│   ├── contexts/             # React contexts
+│   ├── hooks/                # Custom React hooks
+│   │   └── useProcessedProjects.ts
+│   ├── types/                # TypeScript definitions
+│   │   └── repoinfo.ts       # RepoInfo interface
+│   └── utils/                # Frontend utilities
+│       └── websocketClient.ts # WebSocket communication
+├── public/                   # Static assets
+├── package.json              # Node.js dependencies
+├── next.config.ts            # Next.js configuration
+├── tailwind.config.js        # Tailwind CSS config
+├── tsconfig.json             # TypeScript config
+└── requirements.txt          # Python dependencies (backend)
 ```
 
-**Structure Decision**: Web application (Option 2) - frontend modifications within existing Next.js structure
+**Structure Decision**: Full-stack Next.js + FastAPI application - frontend modifications within existing Next.js App Router structure
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
