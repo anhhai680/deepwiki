@@ -29,7 +29,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Enable direct access to Ask UI functionality from the DeepWiki home page by creating a new section that embeds the existing Ask.tsx component. Users can select repositories from the existing ProcessedProjects or via RepositorySelector, then ask questions without navigating to individual repository pages. The implementation reuses existing components and follows the current Next.js App Router structure.
+Restructure the DeepWiki home page to a two-column layout (40%/60%) where the left column contains the repository search bar and repository list, and the right column displays the Ask UI interface by default. This eliminates the need for users to click the floating chat button and provides immediate access to the AI assistant. The header and footer layouts remain unchanged. The implementation reuses existing Ask.tsx component and follows the current Next.js App Router structure.
 
 ## Technical Context
 **Language/Version**: TypeScript with Next.js 15.3.1 (App Router), React 19, Node.js 20+  
@@ -40,22 +40,34 @@ Enable direct access to Ask UI functionality from the DeepWiki home page by crea
 **Project Type**: web (frontend modification of existing Next.js app)  
 **Performance Goals**: <100ms UI response time, maintain existing Ask UI performance  
 **Constraints**: No breaking changes to existing functionality, reuse existing components and patterns, follow current app structure  
-**Scale/Scope**: Modify existing src/app/page.tsx, create 1-2 new components, integrate with existing component ecosystem
+**Scale/Scope**: Restructure existing src/app/page.tsx layout, create layout wrapper components, integrate existing repository grid with new Chat UI
 
-**User-Provided Technical Details**: Utilize the Ask.tsx and existing frontend tech stack. Do not make the deepwiki break when implement the new feature.
+**User-Provided Technical Details**: Utilize the Ask.tsx and existing frontend tech stack. Do not make the deepwiki break when implement the new feature. Based on current screenshot showing "Existing Projects" grid layout, restructure to two-column layout (40%/60%) with repository search/list on left and Chat UI on right by default.
 
 **Current Architecture Analysis**:
 - **Frontend Structure**: Next.js 15.3.1 App Router (`src/app/`), React 19, TypeScript, Tailwind CSS with custom properties
-- **Home page**: `src/app/page.tsx` (319 lines) with repository input form, demo sections, processed projects integration
+- **Current Home Layout**: 
+  - **Header**: DeepWiki-Open branding + URL input field + "Generate Wiki" button + theme toggle
+  - **Main Content**: "Existing Projects" section with search bar and grid of repository cards
+  - **Footer**: Copyright text and additional links
+- **Target Layout**: Two-column body layout (40%/60%) preserving header/footer unchanged
+  - **Left Column (40%)**: "Existing Projects" section (search bar + repository grid/list)
+  - **Right Column (60%)**: Embedded Ask.tsx component (always visible Chat UI)
+- **Current Repository Display**: Grid layout with repository cards showing:
+  - Repository names (e.g., "github/spec-kit", "anhhai680/deepwiki")
+  - Provider badges (github, gitlab, etc.)
+  - Processing dates
+  - Grid/list view toggle buttons
 - **Ask component**: `src/components/Ask.tsx` (159 lines, full-featured with multi-repository support)
 - **Repository selection**: `src/components/RepositorySelector.tsx`, `src/components/MultiRepositorySelector.tsx`
 - **Current Ask usage**: Repository pages (`src/app/[owner]/[repo]/page.tsx`) via floating button + modal
+- **New Ask usage**: Embedded directly in home page right column (60% width), always visible
 - **API Integration**: WebSocket primary (`ws://localhost:8001/api/ws/chat`), HTTP fallback (`/api/chat/stream`)
 - **Backend**: FastAPI on port 8001 with endpoints `/api/chat/completions/stream`, `/api/ws/chat`
 - **Data flow**: Ask.tsx → websocketClient.ts → Backend FastAPI → AI models
 - **Multi-repository support**: Already implemented in Ask.tsx with proper request format
-- Projects hook: `src/hooks/useProcessedProjects.ts` provides processed repository list
-- Layout structure: Uses Tailwind CSS with CSS variables for theming
+- **Projects hook**: `src/hooks/useProcessedProjects.ts` provides processed repository list
+- **Layout requirements**: Responsive design maintaining current mobile behavior, desktop two-column split
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -217,9 +229,12 @@ deepwiki/
 **Task Generation Strategy**:
 - Load `/templates/tasks-template.md` as base
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Focus on modifying existing `src/app/page.tsx` to add Ask UI section
-- Create HomePageAsk component in `src/components/HomePageAsk.tsx`
-- Integrate with existing components: Ask.tsx, RepositorySelector.tsx, MultiRepositorySelector.tsx
+- **Focus on restructuring `src/app/page.tsx` to two-column layout (40%/60%)**
+- **Left Column (40%)**: Preserve existing "Existing Projects" section (search bar + repository grid with grid/list toggle)
+- **Right Column (60%)**: Embedded Ask.tsx component, always visible
+- Preserve current repository card design and functionality
+- Maintain existing grid/list view toggle functionality
+- Integrate with existing components: Ask.tsx, repository grid components
 - Add tests following existing test patterns in the codebase
 - Each contract requirement → component test task [P]
 - Each user story → integration test task
@@ -227,25 +242,32 @@ deepwiki/
 **Ordering Strategy**:
 - TDD order: Tests before implementation 
 - Dependency order: 
-  1. Component test setup for HomePageAsk
-  2. HomePageAsk component tests (failing)
-  3. HomePageAsk component implementation
-  4. Home page integration tests
-  5. Modify `src/app/page.tsx` to include Ask section
-  6. Integration testing with existing Ask.tsx
-  7. End-to-end validation
+  1. Layout component tests (two-column structure)
+  2. Left column preservation tests (existing projects section)
+  3. Right column integration tests (Ask.tsx embedding)
+  4. Responsive behavior tests
+  5. Restructure `src/app/page.tsx` to two-column layout
+  6. Implement left column (repository search + list)
+  7. Implement right column (embedded Ask.tsx)
+  8. Mobile responsive fallback implementation
+  9. Integration testing with existing Ask.tsx
+  10. End-to-end validation
 - Mark [P] for parallel execution (independent files)
 
 **File-Specific Tasks**:
-- **src/components/HomePageAsk.tsx**: New component to wrap Ask with repository selection
-- **src/components/HomePageAsk.test.tsx**: Component tests
-- **src/app/page.tsx**: Add Ask section between repository form and demo charts
-- **src/app/page.test.tsx**: Integration tests for home page modifications
+- **src/components/ExistingProjectsPanel.tsx**: Extract existing projects section to left column component (40% width)
+- **src/components/ExistingProjectsPanel.test.tsx**: Left column component tests
+- **src/components/ChatPanel.tsx**: New right column component (60% width) wrapping Ask.tsx
+- **src/components/ChatPanel.test.tsx**: Right column component tests  
+- **src/app/page.tsx**: Restructure to two-column layout, preserve existing projects functionality, maintain header/footer
+- **src/app/page.test.tsx**: Integration tests for new two-column layout
 
-**Estimated Output**: 8-12 numbered, ordered tasks in tasks.md covering:
-- Component test creation (2-3 tasks)
-- Component implementation (2-3 tasks) 
-- Home page integration (2-3 tasks)
+**Estimated Output**: 10-14 numbered, ordered tasks in tasks.md covering:
+- Layout restructuring tests (2-3 tasks)
+- Existing projects section extraction (2-3 tasks)
+- Right column Chat UI integration (2-3 tasks) 
+- Two-column home page implementation (2-3 tasks)
+- Responsive behavior implementation (2-3 tasks)
 - Testing and validation (2-3 tasks)
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
@@ -261,19 +283,19 @@ deepwiki/
 *Fill ONLY if Constitution Check has violations that must be justified*
 
 No constitutional violations identified. The implementation follows all constitutional principles:
-- Simple component architecture (reusing existing components)
-- Direct framework usage (Next.js/React without wrappers)  
+- Simple component architecture (reusing existing Ask.tsx component)
+- Direct framework usage (Next.js/React with Tailwind CSS grid/flexbox)  
 - TDD approach enforced
-- Non-breaking additive changes only
+- Layout restructuring changes only (preserving existing functionality)
 - Single web project structure maintained
-
+- Non-breaking: Header/footer preserved, Ask.tsx functionality unchanged
 
 ## Progress Tracking
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [x] Phase 0: Research complete (/plan command) - Architecture analysis complete
-- [x] Phase 1: Design complete (/plan command) - Ready for /tasks command
+- [x] Phase 0: Research complete (/plan command) - Architecture analysis complete, two-column layout requirements defined
+- [x] Phase 1: Design complete (/plan command) - Ready for /tasks command with updated layout approach
 - [x] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
@@ -282,10 +304,11 @@ No constitutional violations identified. The implementation follows all constitu
 **Gate Status**:
 - [x] Initial Constitution Check: PASS
 - [x] Post-Design Constitution Check: PASS  
-- [x] All NEEDS CLARIFICATION resolved: Full codebase architecture analyzed
-- [x] Technical Context complete: Ask.tsx integration patterns identified
-- [x] API Integration verified: WebSocket + HTTP fallback architecture confirmed
-- [x] Component ecosystem mapped: Ask.tsx, Repository selectors, processed projects
+- [x] All NEEDS CLARIFICATION resolved: Full codebase architecture analyzed, two-column layout requirements clarified
+- [x] Technical Context complete: Ask.tsx integration patterns identified, layout restructuring approach defined
+- [x] API Integration verified: WebSocket + HTTP fallback architecture confirmed (no changes needed)
+- [x] Component ecosystem mapped: Ask.tsx, Repository selectors, processed projects, layout components planned
+- [x] Layout requirements defined: 40%/60% two-column split, header/footer preservation, responsive behavior
 - [x] Complexity deviations documented (none)
 
 ---
