@@ -204,6 +204,14 @@ deepwiki/
 
 **Only search the codebase if the information above is incomplete or found to be in error.** These instructions have been validated and contain the correct build sequences, configuration details, and architectural information needed for efficient development.
 
+### Current Feature Development
+**Active Feature**: Quick Access Ask UI from Home Page (Branch: `001-refactor-frontend-to`)
+- **Goal**: Embed Ask UI directly into home page for immediate repository querying
+- **Key Files**: `src/app/page.tsx`, `src/components/Ask.tsx`, `src/components/RepositorySelector.tsx`
+- **Approach**: Reuse existing Ask.tsx component with new HomePageAsk wrapper
+- **Requirements**: Non-breaking, utilize existing tech stack, support multi-repository selection
+- **Specs Location**: `/specs/001-refactor-frontend-to/` (plan.md, research.md, data-model.md, contracts/, quickstart.md)
+
 ### Quick Reference
 - **Backend**: `python -m backend.main` (port 8001)
 - **Frontend**: `npm run dev` (port 3000)
