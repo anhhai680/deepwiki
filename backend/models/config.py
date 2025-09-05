@@ -25,6 +25,7 @@ class Provider(BaseModel):
     name: str = Field(..., description="Display name for the provider")
     models: List[Model] = Field(..., description="List of available models for this provider")
     supportsCustomModel: Optional[bool] = Field(False, description="Whether this provider supports custom models")
+    defaultModel: Optional[str] = Field(None, description="ID of the default model for this provider")
 
 
 class ModelConfig(BaseModel):

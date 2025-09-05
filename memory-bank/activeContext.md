@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**UI Cleanup and Simplification** - September 5, 2025 - Successfully removed unsupported "View All Projects" functionality from the user interface.
+**Bug Fix Completed - Model Selection Issue** - September 5, 2025 - Successfully implemented and tested fix for model selection issue. UI now correctly respects backend default model configuration (gpt-4.1-mini instead of gpt-5).
 
 ## Project Status Summary
 All major development phases have been successfully completed:
@@ -12,13 +12,14 @@ All major development phases have been successfully completed:
 5. ✅ **UI Layout Enhancements** - Recent improvements to home page and Ask component
 6. ✅ **Repository Interaction** - Double-click navigation feature implemented
 7. ✅ **UI Cleanup** - Removed unsupported "View All Projects" functionality
+8. ✅ **Bug Fix Complete** - Model selection issue resolved (TASK027)
 
 ## Current Work Context
-- **Phase**: Frontend UI Enhancement and Cleanup
-- **Focus Area**: 🎯 **COMPLETED** - UI simplification and removal of non-functional features
-- **Status**: ✅ **FEATURE COMPLETE** - Removed "View All Projects" and "Wiki Projects" links
-- **Current Branch**: `refactor-home-layout` (active development branch)
-- **Latest Achievement**: UI cleanup - removed unsupported View All Projects functionality
+- **Phase**: Quality Assurance and Maintenance
+- **Focus Area**: ✅ **COMPLETED** - Model selection bug fix successfully implemented and tested
+- **Status**: ✅ **ISSUE RESOLVED** - Default model selection now works correctly across all providers
+- **Current Branch**: `fix-model-selection` (ready for merge)
+- **Latest Achievement**: Fixed critical model selection bug where UI defaulted to wrong model
 
 ## Key Discoveries Made
 - **Project Type**: AI-powered documentation generator for code repositories
