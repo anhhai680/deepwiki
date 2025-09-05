@@ -2,7 +2,6 @@
 
 import React, { useRef, useEffect } from 'react';
 import { FaTh, FaList } from 'react-icons/fa';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ExistingProjectsPanelProps, ProcessedProject } from '@/types/home-page-ask';
 
@@ -198,17 +197,6 @@ export default function ExistingProjectsPanel({
             })}
           </div>
         )}
-      </div>
-
-      {/* Footer with quick link to browse all */}
-      <div className="p-4 border-t border-[var(--border-color)]">
-        <Link
-          href="/projects"
-          className="block w-full text-center py-2 px-4 text-sm text-[var(--accent-primary)] 
-                   hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors"
-        >
-          View All Projects
-        </Link>
       </div>
     </div>
   );

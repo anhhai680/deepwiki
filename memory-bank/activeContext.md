@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Repository Interaction Enhancement** - September 5, 2025 - Successfully implemented double-click navigation functionality for repository selection.
+**UI Cleanup and Simplification** - September 5, 2025 - Successfully removed unsupported "View All Projects" functionality from the user interface.
 
 ## Project Status Summary
 All major development phases have been successfully completed:
@@ -11,13 +11,14 @@ All major development phases have been successfully completed:
 4. ✅ **System Stability** - All components working together seamlessly
 5. ✅ **UI Layout Enhancements** - Recent improvements to home page and Ask component
 6. ✅ **Repository Interaction** - Double-click navigation feature implemented
+7. ✅ **UI Cleanup** - Removed unsupported "View All Projects" functionality
 
 ## Current Work Context
-- **Phase**: Frontend UI Enhancement and Interactive Features
-- **Focus Area**: 🎯 **COMPLETED** - Repository double-click navigation functionality
-- **Status**: ✅ **FEATURE COMPLETE** - Double-click navigation successfully implemented
+- **Phase**: Frontend UI Enhancement and Cleanup
+- **Focus Area**: 🎯 **COMPLETED** - UI simplification and removal of non-functional features
+- **Status**: ✅ **FEATURE COMPLETE** - Removed "View All Projects" and "Wiki Projects" links
 - **Current Branch**: `refactor-home-layout` (active development branch)
-- **Latest Achievement**: Repository interaction enhancement with single/double-click behavior
+- **Latest Achievement**: UI cleanup - removed unsupported View All Projects functionality
 
 ## Key Discoveries Made
 - **Project Type**: AI-powered documentation generator for code repositories
@@ -34,6 +35,8 @@ All major development phases have been successfully completed:
 The DeepWiki project continues to evolve with UI/UX improvements while maintaining its mature core functionality:
 
 ### **Latest Achievements (September 2025)**
+- **UI Cleanup**: Removed non-functional "View All Projects" link from left sidebar and "Wiki Projects" from header
+- **Code Cleanup**: Removed unused imports (Link component) from affected files
 - **Repository Interaction Enhancement**: Implemented double-click navigation to repository details
 - **Multi-Platform Support**: Extended repository URL generation for GitHub, GitLab, and Bitbucket
 - **User Experience Improvement**: Added intuitive single-click selection + double-click navigation pattern

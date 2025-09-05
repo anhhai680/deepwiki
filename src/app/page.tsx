@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { FaWikipediaW, FaGithub, FaCoffee, FaTwitter } from 'react-icons/fa';
 import ThemeToggle from '@/components/theme-toggle';
 import ConfigurationModal from '@/components/ConfigurationModal';
@@ -444,10 +443,6 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </button>
-              <Link href="/wiki/projects"
-                className="text-[var(--muted)] hover:text-[var(--accent-primary)] text-sm font-medium transition-colors">
-                Wiki Projects
-              </Link>
               <ThemeToggle />
             </div>
           </div>
