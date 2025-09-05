@@ -727,8 +727,6 @@ const Ask: React.FC<AskProps> = ({
     }
   };
 
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
   return (
     <div className="h-full flex flex-col">
       {/* Model Selection Header - Fixed at top */}
@@ -892,7 +890,6 @@ const Ask: React.FC<AskProps> = ({
               disabled={isLoading}
             />
             <button
-              ref={buttonRef}
               type="submit"
               disabled={isLoading || !question.trim()}
               className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-md ${
