@@ -10,6 +10,35 @@
 
 ## Recent Fixes and Enhancements
 
+### ✅ **Repository Interaction Enhancement (September 5, 2025)** - **COMPLETED**
+
+#### **Double-Click Navigation Feature**
+**Objective**: Resolve issue where users couldn't access repository details - only selection was possible
+**User Request**: "Allow double click to open page details on each repo name. Single click to select that repo for current behavior on home page layout."
+**Implementation**: Enhanced `ExistingProjectsPanel.tsx` with intelligent click detection
+**Files Modified**: `src/components/ExistingProjectsPanel.tsx`
+
+#### **Key Features Implemented**
+- **Single Click**: Maintains existing repository selection behavior for Ask component
+- **Double Click**: Navigates to repository details page (`/${owner}/${repo}?type=${repo_type}&language=${language}`)
+- **300ms Detection**: Intelligent timeout-based distinction between single and double clicks
+- **Multi-Platform Support**: Fixed hardcoded GitHub URLs to support GitLab and Bitbucket
+- **User Feedback**: Added tooltip "Single click to select • Double click to view details"
+- **Memory Management**: Proper timeout cleanup to prevent memory leaks
+
+#### **Technical Implementation Details**
+- **React Hooks**: Used `useRef` for timeout management and `useEffect` for cleanup
+- **Next.js Router**: Leveraged `useRouter` for programmatic navigation
+- **Platform Detection**: Dynamic URL generation based on `repo_type` (github/gitlab/bitbucket)
+- **TypeScript**: Fully typed implementation with proper error handling
+- **Build Validation**: ✅ Successful compilation and build without errors
+
+#### **User Experience Improvements**
+- **Intuitive Interaction**: Follows common UI patterns (double-click to open items)
+- **Clear Instructions**: Visual feedback through tooltip explaining interaction behavior
+- **Non-Breaking**: Preserves all existing functionality while adding new navigation capability
+- **Platform Agnostic**: Works seamlessly with all supported repository platforms
+
 ### ✅ **UI Layout Enhancements (September 2025)** - **ACTIVE DEVELOPMENT**
 
 #### **Home Page Two-Column Layout Refactor**

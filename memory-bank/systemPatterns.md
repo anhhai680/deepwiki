@@ -148,6 +148,42 @@
 - Dedicated panels for different functionality (ExistingProjectsPanel, ChatPanel)
 - Mobile-responsive design with tab-based navigation
 - Flexible component arrangement for different screen sizes
+
+### 5. Interactive Repository Selection Pattern
+**Pattern**: Dual-purpose repository interaction with single and double-click behaviors
+**Implementation**:
+- **Single Click**: Repository selection for Ask component functionality
+- **Double Click**: Navigation to repository details page
+- **Timeout Detection**: 300ms intelligent delay to distinguish click types
+- **Multi-Platform Support**: Dynamic URL generation for GitHub, GitLab, Bitbucket
+- **User Feedback**: Tooltip guidance for interaction behavior
+- **Memory Management**: Proper timeout cleanup to prevent memory leaks
+
+**Files**: `src/components/ExistingProjectsPanel.tsx`
+**Technical Details**:
+```typescript
+// Click handler with timeout-based detection
+const handleRepositoryInteraction = (project: ProcessedProject) => {
+  if (clickTimeoutRef.current) {
+    // Double click detected
+    clearTimeout(clickTimeoutRef.current);
+    handleRepositoryDoubleClick(project);
+  } else {
+    // Single click - wait for potential double click
+    clickTimeoutRef.current = setTimeout(() => {
+      handleRepositoryClick(project);
+    }, 300);
+  }
+};
+
+// Multi-platform URL generation
+switch (project.repo_type.toLowerCase()) {
+  case 'gitlab': repositoryUrl = `https://gitlab.com/${owner}/${repo}`; break;
+  case 'bitbucket': repositoryUrl = `https://bitbucket.org/${owner}/${repo}`; break;
+  case 'github': 
+  default: repositoryUrl = `https://github.com/${owner}/${repo}`; break;
+}
+```
 - Seamless Ask component integration within home page layout
 
 **Files**: `src/app/page.tsx`, `src/components/ChatPanel.tsx`, `src/components/ExistingProjectsPanel.tsx`
