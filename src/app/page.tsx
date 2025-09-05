@@ -390,7 +390,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col max-h-screen">
+    <div className="h-screen bg-[var(--background)] flex flex-col overflow-hidden">
       {/* Simplified Header */}
       <header className="border-b border-[var(--border-color)] bg-[var(--card-bg)] flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -459,7 +459,7 @@ export default function Home() {
         {/* Desktop: Sidebar + Main Content */}
         <div className="hidden md:flex w-full h-full">
           {/* Left Sidebar - Projects Panel */}
-          <div className="w-96 border-r border-[var(--border-color)] bg-[var(--card-bg)] flex flex-col">
+          <div className="w-96 border-r border-[var(--border-color)] bg-[var(--card-bg)] flex flex-col h-full">
             <ExistingProjectsPanel
               projects={projects}
               onRepositorySelect={handleAskRepositorySelect}
@@ -473,7 +473,7 @@ export default function Home() {
           </div>
 
           {/* Main Content Area - Chat */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 h-full">
             <ChatPanel
               repoInfo={repoInfo}
               projects={projects}

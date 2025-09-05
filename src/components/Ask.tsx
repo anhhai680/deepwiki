@@ -731,24 +731,24 @@ const Ask: React.FC<AskProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Conversation Area - Scrollable */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        {/* Model Selection Header */}
-        <div className="p-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] sticky top-0 z-10">
-          <div className="flex items-center justify-end">
-            <button
-              type="button"
-              onClick={() => setIsModelSelectionModalOpen(true)}
-              className="text-xs px-2.5 py-1 rounded border border-[var(--border-color)]/40 bg-[var(--background)]/10 text-[var(--foreground)]/80 hover:bg-[var(--background)]/30 hover:text-[var(--foreground)] transition-colors flex items-center gap-1.5"
-            >
-              <span>{selectedProvider}/{isCustomSelectedModel ? customSelectedModel : selectedModel}</span>
-              <svg className="h-3.5 w-3.5 text-[var(--accent-primary)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
-          </div>
+      {/* Model Selection Header - Fixed at top */}
+      <div className="p-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] flex-shrink-0">
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => setIsModelSelectionModalOpen(true)}
+            className="text-xs px-2.5 py-1 rounded border border-[var(--border-color)]/40 bg-[var(--background)]/10 text-[var(--foreground)]/80 hover:bg-[var(--background)]/30 hover:text-[var(--foreground)] transition-colors flex items-center gap-1.5"
+          >
+            <span>{selectedProvider}/{isCustomSelectedModel ? customSelectedModel : selectedModel}</span>
+            <svg className="h-3.5 w-3.5 text-[var(--accent-primary)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
         </div>
+      </div>
 
+      {/* Conversation Area - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
         {/* Response/Conversation History */}
         {response ? (
           <div className="p-4">
