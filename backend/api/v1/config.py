@@ -77,6 +77,9 @@ async def get_model_config():
             model_list = [
                 Model(id=mid, name=mid) for mid in models_cfg.keys()
             ]
+            
+            # Get the default model for this provider
+            default_model = pcfg.get("default_model")
 
             providers.append(
                 Provider(
@@ -84,6 +87,7 @@ async def get_model_config():
                     name=provider_names.get(pid, pid.capitalize()),
                     supportsCustomModel=bool(pcfg.get("supportsCustomModel", False)),
                     models=model_list,
+                    defaultModel=default_model,
                 )
             )
 
@@ -98,6 +102,7 @@ async def get_model_config():
                     id="google",
                     name="Google",
                     supportsCustomModel=True,
+                    defaultModel="gemini-2.5-flash",
                     models=[
                         Model(id="gemini-2.5-flash", name="Gemini 2.5 Flash")
                     ]

@@ -20,6 +20,7 @@ interface Provider {
   name: string;
   models: Model[];
   supportsCustomModel?: boolean;
+  defaultModel?: string;
 }
 
 interface Message {
@@ -190,8 +191,13 @@ const Ask: React.FC<AskProps> = ({
 
           // Find the default provider and set its default model
           const selectedProvider = data.providers.find((p:Provider) => p.id === data.defaultProvider);
-          if (selectedProvider && selectedProvider.models.length > 0) {
-            setSelectedModel(selectedProvider.models[0].id);
+          if (selectedProvider) {
+            // Use the provider's default model if available, otherwise fall back to first model
+            const defaultModel = selectedProvider.defaultModel || 
+              (selectedProvider.models.length > 0 ? selectedProvider.models[0].id : '');
+            if (defaultModel) {
+              setSelectedModel(defaultModel);
+            }
           }
         } else {
           setSelectedProvider(providerRef.current);
