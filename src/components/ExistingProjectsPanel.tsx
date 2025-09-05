@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { FaTh, FaList } from 'react-icons/fa';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ExistingProjectsPanelProps, ProcessedProject } from '@/types/home-page-ask';
 
 export default function ExistingProjectsPanel({
@@ -15,6 +16,18 @@ export default function ExistingProjectsPanel({
   viewMode,
   onViewModeChange,
 }: ExistingProjectsPanelProps) {
+  const router = useRouter();
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Filter projects based on search query
   const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -22,10 +35,47 @@ export default function ExistingProjectsPanel({
     project.repo.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle repository selection
+  // Handle repository selection (single click)
   const handleRepositoryClick = (project: ProcessedProject) => {
-    const repositoryUrl = `https://github.com/${project.owner}/${project.repo}`;
+    let repositoryUrl: string;
+    
+    // Generate URL based on platform type
+    switch (project.repo_type.toLowerCase()) {
+      case 'gitlab':
+        repositoryUrl = `https://gitlab.com/${project.owner}/${project.repo}`;
+        break;
+      case 'bitbucket':
+        repositoryUrl = `https://bitbucket.org/${project.owner}/${project.repo}`;
+        break;
+      case 'github':
+      default:
+        repositoryUrl = `https://github.com/${project.owner}/${project.repo}`;
+        break;
+    }
+    
     onRepositorySelect(repositoryUrl);
+  };
+
+  // Handle repository navigation (double click)
+  const handleRepositoryDoubleClick = (project: ProcessedProject) => {
+    const repositoryUrl = `/${project.owner}/${project.repo}?type=${project.repo_type}&language=${project.language}`;
+    router.push(repositoryUrl);
+  };
+
+  // Combined click handler that distinguishes between single and double clicks
+  const handleRepositoryInteraction = (project: ProcessedProject) => {
+    if (clickTimeoutRef.current) {
+      // Double click detected
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = null;
+      handleRepositoryDoubleClick(project);
+    } else {
+      // Single click - set timeout to check if it becomes a double click
+      clickTimeoutRef.current = setTimeout(() => {
+        handleRepositoryClick(project);
+        clickTimeoutRef.current = null;
+      }, 300); // 300ms delay to detect double click
+    }
   };
 
   return (
@@ -93,18 +143,34 @@ export default function ExistingProjectsPanel({
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-3' : 'space-y-2'}>
             {filteredProjects.map((project) => {
-              const repositoryUrl = `https://github.com/${project.owner}/${project.repo}`;
+              let repositoryUrl: string;
+              
+              // Generate URL based on platform type for selection state check
+              switch (project.repo_type.toLowerCase()) {
+                case 'gitlab':
+                  repositoryUrl = `https://gitlab.com/${project.owner}/${project.repo}`;
+                  break;
+                case 'bitbucket':
+                  repositoryUrl = `https://bitbucket.org/${project.owner}/${project.repo}`;
+                  break;
+                case 'github':
+                default:
+                  repositoryUrl = `https://github.com/${project.owner}/${project.repo}`;
+                  break;
+              }
+              
               const isSelected = selectedRepository === repositoryUrl;
               
               return (
                 <div
                   key={project.id}
-                  onClick={() => handleRepositoryClick(project)}
+                  onClick={() => handleRepositoryInteraction(project)}
                   className={`cursor-pointer p-4 rounded-lg border transition-all duration-200 hover:shadow-md ${
                     isSelected
                       ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                       : 'border-[var(--border-color)] bg-[var(--background)] hover:border-[var(--accent-primary)]/50'
                   }`}
+                  title="Single click to select • Double click to view details"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
