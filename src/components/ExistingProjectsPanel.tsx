@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from 'react';
 import { FaTh, FaList } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { ExistingProjectsPanelProps, ProcessedProject } from '@/types/home-page-ask';
+import { RepositoryType } from '@/constants';
 
 export default function ExistingProjectsPanel({
   projects,
@@ -34,23 +35,29 @@ export default function ExistingProjectsPanel({
     project.repo.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle repository selection (single click)
-  const handleRepositoryClick = (project: ProcessedProject) => {
+  const getRepositoryUrl = (project: ProcessedProject): string => {
     let repositoryUrl: string;
     
     // Generate URL based on platform type
     switch (project.repo_type.toLowerCase()) {
       case 'gitlab':
-        repositoryUrl = `https://gitlab.com/${project.owner}/${project.repo}`;
+        repositoryUrl = `${RepositoryType.gitlab}/${project.owner}/${project.repo}`;
         break;
       case 'bitbucket':
-        repositoryUrl = `https://bitbucket.org/${project.owner}/${project.repo}`;
+        repositoryUrl = `${RepositoryType.bitbucket}/${project.owner}/${project.repo}`;
         break;
       case 'github':
       default:
-        repositoryUrl = `https://github.com/${project.owner}/${project.repo}`;
+        repositoryUrl = `${RepositoryType.github}/${project.owner}/${project.repo}`;
         break;
     }
+    
+    return repositoryUrl;
+  }
+
+  // Handle repository selection (single click)
+  const handleRepositoryClick = (project: ProcessedProject) => {
+    const repositoryUrl = getRepositoryUrl(project);
     
     onRepositorySelect(repositoryUrl);
   };
@@ -142,21 +149,7 @@ export default function ExistingProjectsPanel({
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-3' : 'space-y-2'}>
             {filteredProjects.map((project) => {
-              let repositoryUrl: string;
-              
-              // Generate URL based on platform type for selection state check
-              switch (project.repo_type.toLowerCase()) {
-                case 'gitlab':
-                  repositoryUrl = `https://gitlab.com/${project.owner}/${project.repo}`;
-                  break;
-                case 'bitbucket':
-                  repositoryUrl = `https://bitbucket.org/${project.owner}/${project.repo}`;
-                  break;
-                case 'github':
-                default:
-                  repositoryUrl = `https://github.com/${project.owner}/${project.repo}`;
-                  break;
-              }
+              const repositoryUrl = getRepositoryUrl(project);
               
               const isSelected = selectedRepository === repositoryUrl;
               
