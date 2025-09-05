@@ -120,6 +120,7 @@
 - Configuration modals for settings
 - Theme toggle and language selection
 - Reusable UI components
+- Two-column layout architecture for improved space utilization
 
 **Files**: `src/components/`, component hierarchy
 
@@ -140,6 +141,17 @@
 - Live diagram updates
 - Progress indicators
 - Error handling and retry logic
+
+### 4. Layout Architecture Pattern
+**Pattern**: Responsive two-column layout design for optimal space utilization
+**Implementation**:
+- Dedicated panels for different functionality (ExistingProjectsPanel, ChatPanel)
+- Mobile-responsive design with tab-based navigation
+- Flexible component arrangement for different screen sizes
+- Seamless Ask component integration within home page layout
+
+**Files**: `src/app/page.tsx`, `src/components/ChatPanel.tsx`, `src/components/ExistingProjectsPanel.tsx`
+**Benefits**: Better space utilization, improved user experience, cleaner component separation
 
 ## Backend Patterns
 
@@ -305,6 +317,8 @@ These patterns have evolved based on:
 - **Architecture Restructure**: Modular design, clean separation of concerns
 - **Testing Requirements**: Comprehensive testing infrastructure
 - **Performance Optimization**: Better component organization and caching
+- **User Experience**: Improved layout design and component integration
+- **Mobile Responsiveness**: Better support for different screen sizes
 
 ## Future Pattern Considerations
 
@@ -315,6 +329,9 @@ These patterns have evolved based on:
 - **API Versioning**: Structured API evolution
 - **Monitoring**: Enhanced observability patterns
 - **Security**: Advanced authentication and authorization patterns
+- **Progressive Web App**: Enhanced mobile experience
+- **Accessibility**: Improved accessibility patterns
+- **Internationalization**: Enhanced multi-language support
 
 ## Post-Restructure Architecture Benefits
 
