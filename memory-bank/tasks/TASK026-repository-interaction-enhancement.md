@@ -95,7 +95,7 @@ switch (project.repo_type.toLowerCase()) {
 #### 3. **Navigation Implementation**
 ```typescript
 const handleRepositoryDoubleClick = (project: ProcessedProject) => {
-  const repositoryUrl = `/${project.owner}/${project.repo}?type=${project.repo_type}&language=${project.language}`;
+  const repositoryUrl = `/${project.owner}/${project.repo}?type=${project.repo_type}`;
   router.push(repositoryUrl);
 };
 ```
