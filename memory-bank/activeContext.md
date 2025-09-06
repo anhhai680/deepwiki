@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Bug Fix Completed - Model Selection Issue** - September 5, 2025 - Successfully implemented and tested fix for model selection issue. UI now correctly respects backend default model configuration (gpt-4.1-mini instead of gpt-5).
+**Multi-Repository Selection Feature Completed** - September 6, 2025 - Successfully implemented complete multi-repository selection system with sidebar-based selection, automatic mode switching, and perfect isolation from individual repository pages.
 
 ## Project Status Summary
 All major development phases have been successfully completed:
@@ -13,39 +13,40 @@ All major development phases have been successfully completed:
 6. ✅ **Repository Interaction** - Double-click navigation feature implemented
 7. ✅ **UI Cleanup** - Removed unsupported "View All Projects" functionality
 8. ✅ **Bug Fix Complete** - Model selection issue resolved (TASK027)
+9. ✅ **Multi-Repository Selection** - Complete sidebar-based multi-repository selection system (TASK028)
 
 ## Current Work Context
 - **Phase**: Quality Assurance and Maintenance
-- **Focus Area**: ✅ **COMPLETED** - Model selection bug fix successfully implemented and tested
-- **Status**: ✅ **ISSUE RESOLVED** - Default model selection now works correctly across all providers
-- **Current Branch**: `fix-model-selection` (ready for merge)
-- **Latest Achievement**: Fixed critical model selection bug where UI defaulted to wrong model
+- **Focus Area**: ✅ **COMPLETED** - Multi-repository selection feature fully implemented and tested
+- **Status**: ✅ **FEATURE COMPLETE** - Sidebar-based multi-repository selection with automatic mode switching
+- **Current Branch**: `fix-multi-repository-selection-home-page` (ready for merge)
+- **Latest Achievement**: Complete multi-repository selection system with perfect home page/individual page isolation
 
 ## Key Discoveries Made
 - **Project Type**: AI-powered documentation generator for code repositories
 - **Architecture**: Full-stack Next.js + FastAPI application
 - **AI Integration**: Multi-provider LLM support (Google, OpenAI, OpenRouter, Azure, Ollama)
-- **Core Features**: RAG-powered Q&A, Mermaid diagrams, multi-language support
+- **Core Features**: RAG-powered Q&A, Mermaid diagrams, multi-language support, multi-repository querying
 - **Technology Stack**: Modern React 19, TypeScript, Python FastAPI, Docker
 - **Pydantic Version**: Project uses Pydantic 2.11.7, requiring compatibility considerations
-- **Multi-Repository Support**: Successfully implemented multi-repository querying capabilities
+- **Multi-Repository Architecture**: Sophisticated state management with sidebar selection and automatic mode switching
 - **UI Architecture**: Two-column layout design with integrated Ask component for immediate access
-- **Recent UI Enhancements**: Improved layout consistency, better component integration, enhanced user experience
+- **Component Isolation**: Perfect separation between home page multi-repository features and individual repository pages
 
 ## Recent Analysis and Current State
-The DeepWiki project continues to evolve with UI/UX improvements while maintaining its mature core functionality:
+The DeepWiki project has achieved a major milestone with the completion of the multi-repository selection system:
 
 ### **Latest Achievements (September 2025)**
-- **UI Cleanup**: Removed non-functional "View All Projects" link from left sidebar and "Wiki Projects" from header
-- **Code Cleanup**: Removed unused imports (Link component) from affected files
+- **Multi-Repository Selection System**: Complete sidebar-based selection with checkboxes and "Select All" functionality
+- **Automatic Mode Switching**: Seamless synchronization between Ask form toggle and sidebar selection mode
+- **Perfect UI Isolation**: Multi-repository features only appear on home page, individual pages remain unchanged
+- **Clean Interface Design**: Repository dropdown intelligently hidden when sidebar selections are made
+- **Robust State Management**: Enhanced TypeScript interfaces and prop-based communication
+- **Backward Compatibility**: Manual repository input still available as fallback option
 - **Repository Interaction Enhancement**: Implemented double-click navigation to repository details
 - **Multi-Platform Support**: Extended repository URL generation for GitHub, GitLab, and Bitbucket
-- **User Experience Improvement**: Added intuitive single-click selection + double-click navigation pattern
 - **Home Page Layout Refactor**: Implemented two-column layout for better space utilization
-- **Ask Component Integration**: Enhanced Ask component styling and behavior for home page embedding
-- **UI Consistency**: Improved styling consistency across Ask and Home components
-- **Component Restructuring**: Better separation between ChatPanel and ExistingProjectsPanel
-- **Git Status**: Active development on `refactor-home-layout` branch
+- **Component Architecture**: Enhanced component hierarchy with callback-based communication
 
 ### **Technical Architecture Status**
 - **Backend**: FastAPI with modular component architecture (100% complete and stable)

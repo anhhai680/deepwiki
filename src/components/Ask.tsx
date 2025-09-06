@@ -54,6 +54,7 @@ interface AskProps {
   customModel?: string;
   language?: string;
   onRef?: (ref: { clearConversation: () => void }) => void;
+  onMultiRepositoryModeChange?: (enabled: boolean) => void; // Callback to notify sidebar mode change
 }
 
 const Ask: React.FC<AskProps> = ({
@@ -64,7 +65,8 @@ const Ask: React.FC<AskProps> = ({
   isCustomModel = false,
   customModel = '',
   language = 'en',
-  onRef
+  onRef,
+  onMultiRepositoryModeChange
 }) => {
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
@@ -955,52 +957,56 @@ const Ask: React.FC<AskProps> = ({
             )}
           </div>
 
-          {/* Multi-Repository toggle and input */}
-          <div className="flex items-center mt-2 justify-between">
-            <div className="group relative">
-              <label className="flex items-center cursor-pointer">
-                <span className="text-xs text-gray-600 dark:text-gray-400 mr-2">Multi-Repository</span>
-                <div className="relative">
-                                  <input
-                  type="checkbox"
-                  checked={Array.isArray(currentRepoInfo)}
-                  onChange={() => {
-                    if (Array.isArray(currentRepoInfo)) {
-                      // Switch to single repository mode
-                      setCurrentRepoInfo(currentRepoInfo[0] || currentRepoInfo);
-                    } else {
-                      // Switch to multi-repository mode
-                      setCurrentRepoInfo([currentRepoInfo]);
-                    }
-                  }}
-                    className="sr-only"
-                  />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${Array.isArray(currentRepoInfo) ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-                  <div className={`absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white transition-transform transform ${Array.isArray(currentRepoInfo) ? 'translate-x-5' : ''}`}></div>
-                </div>
-              </label>
-              <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 w-72 z-10">
-                <div className="relative">
-                  <div className="absolute -bottom-2 left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
-                  <p className="mb-1">Multi-Repository mode allows you to query multiple repositories simultaneously:</p>
-                  <ul className="list-disc pl-4 text-xs">
-                    <li><strong>Single Mode:</strong> Query one repository at a time</li>
-                    <li><strong>Multi Mode:</strong> Query multiple repositories and get combined results</li>
-                    <li><strong>Smart Merging:</strong> Results are intelligently combined from all repositories</li>
-                  </ul>
-                  <p className="mt-1 text-xs italic">Toggle to switch between single and multiple repository modes</p>
+          {/* Multi-Repository toggle and input - only show on home page */}
+          {onMultiRepositoryModeChange && (
+            <div className="flex items-center mt-2 justify-between">
+              <div className="group relative">
+                <label className="flex items-center cursor-pointer">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 mr-2">Multi-Repository</span>
+                  <div className="relative">
+                                    <input
+                    type="checkbox"
+                    checked={Array.isArray(currentRepoInfo)}
+                    onChange={() => {
+                      if (Array.isArray(currentRepoInfo)) {
+                        // Switch to single repository mode
+                        setCurrentRepoInfo(currentRepoInfo[0] || currentRepoInfo);
+                        onMultiRepositoryModeChange?.(false);
+                      } else {
+                        // Switch to multi-repository mode
+                        setCurrentRepoInfo([currentRepoInfo]);
+                        onMultiRepositoryModeChange?.(true);
+                      }
+                    }}
+                      className="sr-only"
+                    />
+                    <div className={`w-10 h-5 rounded-full transition-colors ${Array.isArray(currentRepoInfo) ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                    <div className={`absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white transition-transform transform ${Array.isArray(currentRepoInfo) ? 'translate-x-5' : ''}`}></div>
+                  </div>
+                </label>
+                <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 w-72 z-10">
+                  <div className="relative">
+                    <div className="absolute -bottom-2 left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                    <p className="mb-1">Multi-Repository mode allows you to query multiple repositories simultaneously:</p>
+                    <ul className="list-disc pl-4 text-xs">
+                      <li><strong>Single Mode:</strong> Query one repository at a time</li>
+                      <li><strong>Multi Mode:</strong> Query multiple repositories and get combined results</li>
+                      <li><strong>Smart Merging:</strong> Results are intelligently combined from all repositories</li>
+                    </ul>
+                    <p className="mt-1 text-xs italic">Toggle to switch between single and multiple repository modes</p>
+                  </div>
                 </div>
               </div>
+              {Array.isArray(currentRepoInfo) && (
+                <div className="text-xs text-blue-600 dark:text-blue-400">
+                  Multi-repository mode enabled ({currentRepoInfo.length} repos)
+                </div>
+              )}
             </div>
-            {Array.isArray(currentRepoInfo) && (
-              <div className="text-xs text-blue-600 dark:text-blue-400">
-                Multi-repository mode enabled ({currentRepoInfo.length} repos)
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Multi-repository input fields */}
-          {Array.isArray(currentRepoInfo) && (
+          {Array.isArray(currentRepoInfo) && selectedRepositories.length === 0 && (
             <div className="mt-3 space-y-2">
               <MultiRepositorySelector
                 projects={projects}
@@ -1020,6 +1026,7 @@ const Ask: React.FC<AskProps> = ({
                 }}
                 placeholder="Search and select repositories..."
                 disabled={isLoading}
+                showSelectedRepositories={false}
               />
             </div>
           )}
