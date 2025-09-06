@@ -1,6 +1,6 @@
 # [TASK028] - Implement Multi-Repository Selection from Left Sidebar
 
-**Status:** In Progress  
+**Status:** Completed  
 **Added:** September 5, 2025  
 **Updated:** September 6, 2025
 
@@ -160,3 +160,13 @@ The dropdown approach creates unnecessary complexity and friction. Users should 
 - ✅ **Space Efficient**: Maximum space savings in the Ask form area
 - ✅ **Intuitive Flow**: Users naturally select from sidebar first, dropdown as fallback
 - ✅ **Backward Compatible**: Manual input still available when no sidebar selections made
+- ✅ **Automatic Mode Switching**: Enabling multi-repository mode automatically switches sidebar to multi-select
+- ✅ **Seamless Workflow**: Perfect synchronization between Ask form and sidebar selection modes
+
+**Automatic Mode Switching (September 6, 2025):**
+- Added `onMultiRepositoryModeChange` callback prop to Ask component
+- Updated ChatPanel to pass through the mode change callback
+- Created `handleAskMultiRepositoryModeChange` in main page to sync sidebar mode
+- When user toggles "Multi-Repository" in Ask form, sidebar automatically switches to "Multi-Select" mode
+- Perfect bidirectional synchronization between Ask component and sidebar selection mode
+- Users can now enable multi-repository mode and immediately start selecting repositories from sidebar

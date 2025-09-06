@@ -16,6 +16,7 @@ export default function ChatPanel({
   language,
   className = '',
   isMultiRepositoryMode = false,
+  onMultiRepositoryModeChange,
 }: ChatPanelProps) {
   // Determine if we have any repositories selected
   const hasRepositories = isMultiRepositoryMode 
@@ -71,6 +72,7 @@ export default function ChatPanel({
           isCustomModel={isCustomModel}
           customModel={customModel}
           language={language}
+          onMultiRepositoryModeChange={onMultiRepositoryModeChange}
         />
       </div>
     </div>

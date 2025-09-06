@@ -4,7 +4,7 @@
 
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| TASK028 | Fix Repository Selection Dropdown Not Appearing in Multi-Repository Mode | 🔄 **PENDING** | 0% | Bug Fix | 🔴 High |
+| TASK028 | Fix Repository Selection Dropdown Not Appearing in Multi-Repository Mode | ✅ **COMPLETED** | 100% | Bug Fix | 🔴 High |
 
 ## Current Status
 

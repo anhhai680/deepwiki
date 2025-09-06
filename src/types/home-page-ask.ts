@@ -48,6 +48,7 @@ export interface ChatPanelProps {
   language?: string;
   className?: string;
   isMultiRepositoryMode?: boolean; // Indicate if in multi-repository mode
+  onMultiRepositoryModeChange?: (enabled: boolean) => void; // Callback for mode changes
 }
 
 // Re-export existing types for convenience

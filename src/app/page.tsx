@@ -149,6 +149,12 @@ export default function Home() {
     }
   };
 
+  // Handle multi-repository mode toggle from Ask component
+  const handleAskMultiRepositoryModeChange = (enabled: boolean) => {
+    // Automatically switch sidebar to match the Ask component's multi-repository mode
+    handleMultiRepositoryModeChange(enabled);
+  };
+
   // Provider-based model selection state
   const [provider, setProvider] = useState<string>('');
   const [model, setModel] = useState<string>('');
@@ -523,6 +529,7 @@ export default function Home() {
               customModel={customModel}
               language={selectedLanguage}
               isMultiRepositoryMode={isMultiRepositoryMode}
+              onMultiRepositoryModeChange={handleAskMultiRepositoryModeChange}
             />
           </div>
         </div>
@@ -610,6 +617,7 @@ export default function Home() {
                 customModel={customModel}
                 language={selectedLanguage}
                 isMultiRepositoryMode={isMultiRepositoryMode}
+                onMultiRepositoryModeChange={handleAskMultiRepositoryModeChange}
               />
             )}
           </div>
