@@ -12,11 +12,6 @@ interface ConfigurationModalProps {
   // Repository input
   repositoryInput: string;
 
-  // Language selection
-  selectedLanguage: string;
-  setSelectedLanguage: (value: string) => void;
-  supportedLanguages: Record<string, string>;
-
   // Wiki type options
   isComprehensiveView: boolean;
   setIsComprehensiveView: (value: boolean) => void;
@@ -64,9 +59,6 @@ export default function ConfigurationModal({
   isOpen,
   onClose,
   repositoryInput,
-  selectedLanguage,
-  setSelectedLanguage,
-  supportedLanguages,
   isComprehensiveView,
   setIsComprehensiveView,
   provider,
@@ -133,23 +125,6 @@ export default function ConfigurationModal({
               <div className="bg-[var(--background)]/70 p-3 rounded-md border border-[var(--border-color)] text-sm text-[var(--foreground)]">
                 {repositoryInput}
               </div>
-            </div>
-
-            {/* Language selection */}
-            <div className="mb-4">
-              <label htmlFor="language-select" className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                {t.form?.wikiLanguage || 'Wiki Language'}
-              </label>
-              <select
-                id="language-select"
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="input-japanese block w-full px-3 py-2 text-sm rounded-md bg-transparent text-[var(--foreground)] focus:outline-none focus:border-[var(--accent-primary)]"
-              >
-                {
-                  Object.entries(supportedLanguages).map(([key, value])=> <option key={key} value={key}>{value}</option>)
-                }
-              </select>
             </div>
 
             {/* Wiki Type Selector - more compact version */}

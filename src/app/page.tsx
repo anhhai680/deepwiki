@@ -16,7 +16,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Home() {
   const router = useRouter();
-  const { language, setLanguage, messages, supportedLanguages } = useLanguage();
+  const { messages } = useLanguage();
   const { projects, isLoading: projectsLoading } = useProcessedProjects();
 
   // Create a simple translation function
@@ -59,7 +59,6 @@ export default function Home() {
         const configs = JSON.parse(cachedConfigs);
         const config = configs[repoUrl.trim()];
         if (config) {
-          setSelectedLanguage(config.selectedLanguage || language);
           setIsComprehensiveView(config.isComprehensiveView === undefined ? true : config.isComprehensiveView);
           setProvider(config.provider || '');
           setModel(config.model || '');
@@ -75,7 +74,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error loading config from localStorage:', error);
     }
-  }, [language]);
+  }, []);
 
   // Handle repository selection changes
   const handleRepositorySelect = (newRepoUrl: string) => {
@@ -172,7 +171,6 @@ export default function Home() {
   const [accessToken, setAccessToken] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(language);
 
   // Authentication state
   const [authRequired, setAuthRequired] = useState<boolean>(false);
@@ -188,11 +186,6 @@ export default function Home() {
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
   const [repoInfos, setRepoInfos] = useState<RepoInfo[]>([]);
   const [mobileActiveTab, setMobileActiveTab] = useState<'projects' | 'chat'>('projects');
-
-  // Sync the language context with the selectedLanguage state
-  useEffect(() => {
-    setLanguage(selectedLanguage);
-  }, [selectedLanguage, setLanguage]);
 
   // Fetch authentication status on component mount
   useEffect(() => {
@@ -355,7 +348,6 @@ export default function Home() {
       if (currentRepoUrl) {
         const existingConfigs = JSON.parse(localStorage.getItem(REPO_CONFIG_CACHE_KEY) || '{}');
         const configToSave = {
-          selectedLanguage,
           isComprehensiveView,
           provider,
           model,
@@ -420,8 +412,8 @@ export default function Home() {
       params.append('included_files', includedFiles);
     }
 
-    // Add language parameter
-    params.append('language', selectedLanguage);
+    // Add language parameter (always English)
+    params.append('language', 'en');
 
     // Add comprehensive parameter
     params.append('comprehensive', isComprehensiveView.toString());
@@ -527,7 +519,7 @@ export default function Home() {
               model={model}
               isCustomModel={isCustomModel}
               customModel={customModel}
-              language={selectedLanguage}
+              language={'en'}
               isMultiRepositoryMode={isMultiRepositoryMode}
               onMultiRepositoryModeChange={handleAskMultiRepositoryModeChange}
             />
@@ -615,7 +607,7 @@ export default function Home() {
                 model={model}
                 isCustomModel={isCustomModel}
                 customModel={customModel}
-                language={selectedLanguage}
+                language={'en'}
                 isMultiRepositoryMode={isMultiRepositoryMode}
                 onMultiRepositoryModeChange={handleAskMultiRepositoryModeChange}
               />
@@ -671,9 +663,6 @@ export default function Home() {
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
         repositoryInput={repositoryInput}
-        selectedLanguage={selectedLanguage}
-        setSelectedLanguage={setSelectedLanguage}
-        supportedLanguages={supportedLanguages}
         isComprehensiveView={isComprehensiveView}
         setIsComprehensiveView={setIsComprehensiveView}
         provider={provider}
