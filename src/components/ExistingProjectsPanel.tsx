@@ -81,7 +81,7 @@ export default function ExistingProjectsPanel({
 
   // Handle repository navigation (double click)
   const handleRepositoryDoubleClick = (project: ProcessedProject) => {
-    const repositoryUrl = `/${project.owner}/${project.repo}?type=${project.repo_type}&language=${project.language}`;
+    const repositoryUrl = `/${project.owner}/${project.repo}?type=${project.repo_type}`;
     router.push(repositoryUrl);
   };
 
@@ -259,11 +259,6 @@ export default function ExistingProjectsPanel({
                       <div className="text-sm text-[var(--muted)] truncate mt-1">
                         {project.owner}/{project.repo}
                       </div>
-                      {viewMode === 'list' && (
-                        <div className="text-xs text-[var(--muted)] mt-2">
-                          {project.language} • {new Date(project.submittedAt * 1000).toLocaleDateString()}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>

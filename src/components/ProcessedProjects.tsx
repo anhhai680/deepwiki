@@ -113,7 +113,7 @@ export default function ProcessedProjects({
           owner: project.owner,
           repo: project.repo,
           repo_type: project.repo_type,
-          language: project.language,
+          language: 'en',
         }),
       });
       if (!response.ok) {
@@ -205,7 +205,7 @@ export default function ProcessedProjects({
                   <FaTimes className="h-4 w-4" />
                 </button>
                 <Link
-                  href={`/${project.owner}/${project.repo}?type=${project.repo_type}&language=${project.language}`}
+                  href={`/${project.owner}/${project.repo}?type=${project.repo_type}`}
                   className="block"
                 >
                   <h3 className="text-lg font-semibold text-[var(--link-color)] hover:underline mb-2 line-clamp-2">
@@ -214,9 +214,6 @@ export default function ProcessedProjects({
                   <div className="flex flex-wrap gap-2 mb-3">
                     <span className="px-2 py-1 text-xs bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] rounded-full border border-[var(--accent-primary)]/20">
                       {project.repo_type}
-                    </span>
-                    <span className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--muted)] rounded-full border border-[var(--border-color)]">
-                      {project.language}
                     </span>
                   </div>
                   <p className="text-xs text-[var(--muted)]">
@@ -235,7 +232,7 @@ export default function ProcessedProjects({
                   <FaTimes className="h-4 w-4" />
                 </button>
                 <Link
-                  href={`/${project.owner}/${project.repo}?type=${project.repo_type}&language=${project.language}`}
+                  href={`/${project.owner}/${project.repo}?type=${project.repo_type}`}
                   className="flex items-center justify-between"
                 >
                   <div className="flex-1 min-w-0">
@@ -243,7 +240,7 @@ export default function ProcessedProjects({
                       {project.name}
                     </h3>
                     <p className="text-xs text-[var(--muted)] mt-1">
-                      {t('processedOn')} {new Date(project.submittedAt).toLocaleDateString()} • {project.repo_type} • {project.language}
+                      {t('processedOn')} {new Date(project.submittedAt).toLocaleDateString()} • {project.repo_type}
                     </p>
                   </div>
                   <div className="flex gap-2 ml-4">
