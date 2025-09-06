@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaWikipediaW, FaGithub, FaCoffee, FaTwitter } from 'react-icons/fa';
+import { FaWikipediaW } from 'react-icons/fa';
 import ThemeToggle from '@/components/theme-toggle';
 import ConfigurationModal from '@/components/ConfigurationModal';
 import RepositorySelector from '@/components/RepositorySelector';
@@ -698,20 +698,6 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <p className="text-[var(--muted)] text-sm">{t('footer.copyright')}</p>
-            <div className="flex items-center space-x-4">
-              <a href="https://github.com/anhhai680/deepwiki" target="_blank" rel="noopener noreferrer"
-                className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
-                <FaGithub className="text-lg" />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer"
-                className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
-                <FaCoffee className="text-lg" />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer"
-                className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
-                <FaTwitter className="text-lg" />
-              </a>
-            </div>
           </div>
         </div>
       </footer>
