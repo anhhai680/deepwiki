@@ -11,12 +11,30 @@ mermaid.initialize({
   logLevel: 'error',
   maxTextSize: 100000, // Increase text size limit
   htmlLabels: true,
+  wrap: false, // Disable automatic wrapping that might cause issues
+  look: 'handDrawn',
   flowchart: {
     htmlLabels: true,
     curve: 'basis',
-    nodeSpacing: 60,
-    rankSpacing: 60,
-    padding: 20,
+    nodeSpacing: 150, // Much more node spacing
+    rankSpacing: 150, // Much more rank spacing  
+    padding: 60, // Much more padding
+    useMaxWidth: false, // Let nodes size naturally to fit content
+    diagramPadding: 50, // Much more diagram padding
+    titleTopMargin: 25,
+    subGraphTitleMargin: {
+      top: 0,
+      bottom: 0
+    }
+  },
+  sequence: {
+    actorMargin: 120,
+    width: 300, // Much wider actor boxes
+    height: 100, // Much taller actor boxes
+    boxMargin: 20,
+    boxTextMargin: 15,
+    noteMargin: 20,
+    messageMargin: 50,
   },
   themeCSS: `
     /* Japanese aesthetic styles for all diagrams */
@@ -45,19 +63,69 @@ mermaid.initialize({
       stroke-width: 1px;
     }
 
+    /* Text handling improvements - remove width restrictions */
+    .nodeLabel {
+      white-space: nowrap !important;
+      text-align: center !important;
+      dominant-baseline: middle !important;
+      font-size: 16px !important;
+    }
+    .node text {
+      overflow: visible !important;
+      white-space: nowrap !important;
+      font-size: 16px !important;
+    }
+    /* Ensure nodes can expand to fit content */
+    .node rect {
+      min-width: 120px !important;
+    }
+    .node .label {
+      overflow: visible !important;
+    }
+    /* Force SVG to not clip content */
+    svg {
+      overflow: visible !important;
+    }
+    .node {
+      overflow: visible !important;
+    }
+    g.nodes {
+      overflow: visible !important;
+    }
+    /* Ensure foreignObject allows text wrapping */
+    .node foreignObject {
+      overflow: visible !important;
+    }
+    .node foreignObject div {
+      word-wrap: break-word !important;
+      white-space: normal !important;
+      text-align: center !important;
+      padding: 4px !important;
+      box-sizing: border-box !important;
+    }
+
     /* Sequence diagram specific styles */
     .actor {
       fill: #f8f4e6;
       stroke: #d7c4bb;
       stroke-width: 1px;
+      min-width: 80px !important; /* Ensure minimum width for long text */
     }
     text.actor {
       fill: #333333;
       stroke: none;
+      white-space: normal !important;
+      word-wrap: break-word !important;
     }
     .messageText {
       fill: #333333;
       stroke: none;
+      white-space: normal !important;
+      word-wrap: break-word !important;
+    }
+    /* Sequence diagram participant labels */
+    .actor-box {
+      min-width: 120px !important;
     }
     .messageLine0, .messageLine1 {
       stroke: #9b7cb9;
@@ -166,7 +234,7 @@ mermaid.initialize({
     }
   `,
   fontFamily: 'var(--font-geist-sans), var(--font-serif-jp), sans-serif',
-  fontSize: 12,
+  fontSize: 16, // Increase font size for better visibility
 });
 
 interface MermaidProps {
@@ -365,12 +433,118 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
         setError(null);
         setSvg('');
 
-        // Render the chart directly without preprocessing
+        // Re-initialize mermaid with updated configuration for each render
+        mermaid.initialize({
+          startOnLoad: true,
+          theme: 'neutral',
+          securityLevel: 'loose',
+          suppressErrorRendering: true,
+          logLevel: 'error',
+          maxTextSize: 100000,
+          htmlLabels: true,
+          wrap: false, // Disable automatic wrapping
+          flowchart: {
+            htmlLabels: true,
+            curve: 'basis',
+            nodeSpacing: 120, // Even more spacing
+            rankSpacing: 120, // Even more spacing
+            padding: 50, // More padding
+            useMaxWidth: false, // Let nodes size naturally
+            diagramPadding: 40,
+            titleTopMargin: 25,
+            subGraphTitleMargin: {
+              top: 0,
+              bottom: 0
+            },
+            defaultRenderer: 'elk'
+          },
+          sequence: {
+            actorMargin: 100,
+            width: 250, // Wider actor boxes
+            height: 80, // Taller actor boxes
+            boxMargin: 15,
+            boxTextMargin: 10,
+            noteMargin: 15,
+            messageMargin: 40,
+          },
+          fontFamily: 'var(--font-geist-sans), var(--font-serif-jp), sans-serif',
+          fontSize: 16, // Increase font size further
+        });
+
+        // For better text display, ensure nodes have adequate space
+        // Don't wrap text, let Mermaid handle sizing naturally
+        
+        // Render the chart with original text
         const { svg: renderedSvg } = await mermaid.render(idRef.current, chart);
+        
+        // Post-process the SVG to fix text truncation issues
+        let finalSvg = renderedSvg;
+        
+        // Parse the SVG to fix text and rect sizing
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(finalSvg, 'image/svg+xml');
+        
+        // Find all foreignObject elements (these contain the actual text that gets truncated)
+        const foreignObjects = svgDoc.querySelectorAll('foreignObject');
+        foreignObjects.forEach((foreignObj) => {
+          // Get the text content from within the foreignObject
+          const textSpan = foreignObj.querySelector('span');
+          if (textSpan) {
+            const textContent = textSpan.textContent || '';
+            const textLength = textContent.length;
+            
+            // Calculate minimum width needed (more generous estimation for foreignObject)
+            const minWidth = Math.max(100, textLength * 8.5);
+            const currentWidth = parseFloat(foreignObj.getAttribute('width') || '0');
+            
+            if (currentWidth < minWidth) {
+              // Expand the foreignObject
+              foreignObj.setAttribute('width', minWidth.toString());
+              
+              // Also adjust the x position to center it
+              const currentX = parseFloat(foreignObj.getAttribute('x') || '0');
+              const widthDiff = minWidth - currentWidth;
+              foreignObj.setAttribute('x', (currentX - widthDiff / 2).toString());
+            }
+          }
+        });
+        
+        // Also find all text elements and ensure their parent rects are wide enough
+        const textElements = svgDoc.querySelectorAll('text');
+        textElements.forEach((textEl) => {
+          // Get the actual text content length
+          const textContent = textEl.textContent || '';
+          const textLength = textContent.length;
+          
+          // Find the parent node/rect
+          const nodeGroup = textEl.closest('g.node');
+          if (nodeGroup) {
+            const rect = nodeGroup.querySelector('rect');
+            if (rect) {
+              // Calculate minimum width needed (rough estimation: 8px per character)
+              const minWidth = Math.max(120, textLength * 9);
+              const currentWidth = parseFloat(rect.getAttribute('width') || '0');
+              
+              if (currentWidth < minWidth) {
+                // Expand the rect
+                rect.setAttribute('width', minWidth.toString());
+                
+                // Center the rect by adjusting x position
+                const currentX = parseFloat(rect.getAttribute('x') || '0');
+                const widthDiff = minWidth - currentWidth;
+                rect.setAttribute('x', (currentX - widthDiff / 2).toString());
+              }
+            }
+          }
+        });
+        
+        // Serialize back to string
+        const serializer = new XMLSerializer();
+        finalSvg = serializer.serializeToString(svgDoc);
 
         if (!isMounted) return;
 
-        let processedSvg = renderedSvg;
+        let processedSvg = finalSvg;
         if (isDarkModeRef.current) {
           processedSvg = processedSvg.replace('<svg ', '<svg data-theme="dark" ');
         }

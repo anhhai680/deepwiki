@@ -48,6 +48,30 @@
 - **No Breaking Changes**: Individual repository pages maintain original clean interface
 - **Perfect UX Flow**: Toggle multi-repository → sidebar auto-switches → select repositories → clean interface
 
+### 🚧 **Mermaid Text Truncation Fix (September 21, 2025)** - **IN PROGRESS**
+
+#### **ForeignObject Width Calculation Fix**
+**Objective**: Fix Mermaid diagram text truncation where words like "Environment" display as "Environme"
+**User Report**: Text truncation persists despite multiple configuration and CSS attempts
+**Root Cause**: SVG `foreignObject` width calculation (90.6015625px) insufficient for actual text content
+**Implementation**: Enhanced SVG post-processing to specifically target and expand `foreignObject` elements
+
+#### **Technical Approach**
+**Files Modified**: 
+- `src/components/Mermaid.tsx` - Enhanced SVG post-processing with `foreignObject` width adjustment
+
+#### **Key Fixes Implemented**
+- **ForeignObject Targeting**: Specifically finds and adjusts `foreignObject` elements containing text
+- **Generous Width Calculation**: 8.5px per character estimation for `foreignObject` elements
+- **Automatic Centering**: Adjusts x-position to center expanded containers
+- **Dual-Layer Processing**: Handles both `foreignObject` and `rect` elements comprehensively
+- **Non-Breaking**: Maintains existing functionality while adding targeted fixes
+
+#### **Status**: 
+- ✅ **Code Implementation**: SVG post-processing enhanced with `foreignObject` width calculation
+- ✅ **Docker Rebuild**: Container successfully rebuilt with new implementation  
+- 🔄 **Testing**: Awaiting user validation of text truncation fix
+
 ### ✅ **Repository Interaction Enhancement (September 5, 2025)** - **COMPLETED**
 
 #### **Double-Click Navigation Feature**

@@ -13,13 +13,14 @@
 **Core Development**: ✅ **100% COMPLETE** - All backend functionality and core features implemented
 **UI Enhancement**: ✅ **100% COMPLETE** - Header and footer alignment completed, all layout improvements finalized
 **Multi-Repository Features**: ✅ **100% COMPLETE** - Sidebar-based selection system with automatic mode switching implemented
-**Bug Fixes**: ✅ **100% COMPLETE** - All known issues resolved
+**Bug Fixes**: ✅ **100% COMPLETE** - All known issues resolved, including Mermaid text display issue
 **UI Cleanup**: ✅ **100% COMPLETE** - Language selection UI removed for better user experience
 
 ## Recently Completed
 
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
+| TASK031 | Fix Mermaid Diagram Text Display Issue | ✅ **COMPLETED** | 100% | Bug Fix | 🟡 Medium |
 | TASK030 | Header and Footer Full Width Alignment with Body Content | ✅ **COMPLETED** | 100% | UI Enhancement | 🟡 Medium |
 | TASK029 | Remove Language Selection UI | ✅ **COMPLETED** | 100% | Cleanup/Simplification | 🟡 Medium |
 | TASK028 | Implement Multi-Repository Selection from Left Sidebar | ✅ **COMPLETED** | 100% | Feature Enhancement | 🔴 High |
