@@ -39,8 +39,8 @@ The first command downloads the embedding model that DeepWiki uses to understand
 
 Clone the DeepWiki repository:
 ```bash
-git clone https://github.com/AsyncFuncAI/deepwiki-open.git
-cd deepwiki-open
+git clone https://github.com/anhhai680/deepwiki.git
+cd deepwiki
 ```
 
 Create a `.env` file in the project root:

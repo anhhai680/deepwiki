@@ -25,7 +25,7 @@
 ```bash
 # Clone the repository
 git clone https://github.com/anhhai680/deepwiki.git
-cd deepwiki-open
+cd deepwiki
 
 # Create a .env file with your API keys
 echo "GOOGLE_API_KEY=your_google_api_key" > .env
@@ -351,36 +351,11 @@ You can use Docker to run DeepWiki:
 
 #### Running the Container
 
-```bash
-# Pull the image from GitHub Container Registry
-docker pull ghcr.io/asyncfuncai/deepwiki-open:latest
-
-# Run the container with environment variables
-docker run -p 8001:8001 -p 3000:3000 \
-  -e GOOGLE_API_KEY=your_google_api_key \
-  -e OPENAI_API_KEY=your_openai_api_key \
-  -e OPENROUTER_API_KEY=your_openrouter_api_key \
-  -e OLLAMA_HOST=your_ollama_host \
-  -e AZURE_OPENAI_API_KEY=your_azure_openai_api_key \
-  -e AZURE_OPENAI_ENDPOINT=your_azure_openai_endpoint \
-  -e AZURE_OPENAI_VERSION=your_azure_openai_version \
-
-  -v ~/.adalflow:/root/.adalflow \
-  ghcr.io/asyncfuncai/deepwiki-open:latest
-```
-
-This command also mounts `~/.adalflow` on your host to `/root/.adalflow` in the container. This path is used to store:
-- Cloned repositories (`~/.adalflow/repos/`)
-- Their embeddings and indexes (`~/.adalflow/databases/`)
-- Cached generated wiki content (`~/.adalflow/wikicache/`)
-
-This ensures that your data persists even if the container is stopped or removed.
-
-Or use the provided `docker-compose.yml` file:
+Use the provided `docker-compose.yml` file:
 
 ```bash
 # Edit the .env file with your API keys first
-docker-compose up
+docker-compose up --build -d
 ```
 
 (The `docker-compose.yml` file is pre-configured to mount `~/.adalflow` for data persistence, similar to the `docker run` command above.)
@@ -403,7 +378,7 @@ echo "OLLAMA_HOST=your_ollama_host" >> .env
 docker run -p 8001:8001 -p 3000:3000 \
   -v $(pwd)/.env:/app/.env \
   -v ~/.adalflow:/root/.adalflow \
-  ghcr.io/asyncfuncai/deepwiki-open:latest
+  ghcr.io/anhhai680/deepwiki:latest
 ```
 
 This command also mounts `~/.adalflow` on your host to `/root/.adalflow` in the container. This path is used to store:
@@ -419,11 +394,11 @@ If you want to build the Docker image locally:
 
 ```bash
 # Clone the repository
-git clone https://github.com/AsyncFuncAI/deepwiki-open.git
-cd deepwiki-open
+git clone https://github.com/anhhai680/deepwiki.git
+cd deepwiki
 
 # Build the Docker image
-docker build -t deepwiki-open .
+docker build -t deepwiki .
 
 # Run the container
 docker run -p 8001:8001 -p 3000:3000 \
@@ -434,7 +409,7 @@ docker run -p 8001:8001 -p 3000:3000 \
   -e AZURE_OPENAI_ENDPOINT=your_azure_openai_endpoint \
   -e AZURE_OPENAI_VERSION=your_azure_openai_version \
   -e OLLAMA_HOST=your_ollama_host \
-  deepwiki-open
+  deepwiki
 ```
 
 #### Using Self-Signed Certificates in Docker
