@@ -491,7 +491,7 @@ export default function Home() {
       <main className="flex-1 flex overflow-hidden min-h-0">
         <div className="w-full flex overflow-hidden min-h-0">
           {/* Desktop: Sidebar + Main Content */}
-          <div className="hidden md:flex h-full">
+          <div className="hidden md:flex w-full h-full">
           {/* Left Sidebar - Projects Panel */}
           <div className="w-96 border-r border-[var(--border-color)] bg-[var(--card-bg)] flex flex-col h-full">
             <ExistingProjectsPanel
