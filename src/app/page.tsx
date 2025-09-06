@@ -430,8 +430,8 @@ export default function Home() {
     <div className="h-screen bg-[var(--background)] flex flex-col overflow-hidden">
       {/* Simplified Header */}
       <header className="border-b border-[var(--border-color)] bg-[var(--card-bg)] flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="w-full">
+          <div className="flex items-center justify-between h-16 px-4">
             {/* Left: Logo and Brand */}
             <div className="flex items-center">
               <div className="bg-[var(--accent-primary)] p-2 rounded-lg mr-3">
@@ -489,8 +489,9 @@ export default function Home() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex overflow-hidden min-h-0">
-        {/* Desktop: Sidebar + Main Content */}
-        <div className="hidden md:flex w-full h-full">
+        <div className="w-full flex overflow-hidden min-h-0">
+          {/* Desktop: Sidebar + Main Content */}
+          <div className="hidden md:flex w-full h-full">
           {/* Left Sidebar - Projects Panel */}
           <div className="w-96 border-r border-[var(--border-color)] bg-[var(--card-bg)] flex flex-col h-full">
             <ExistingProjectsPanel
@@ -656,6 +657,7 @@ export default function Home() {
             </div>
           </div>
         )}
+        </div>
       </main>
 
       {/* Configuration Modal */}
@@ -695,8 +697,8 @@ export default function Home() {
 
       {/* Minimal Footer */}
       <footer className="border-t border-[var(--border-color)] bg-[var(--card-bg)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+        <div className="w-full py-4">
+          <div className="flex items-center justify-between px-4">
             <p className="text-[var(--muted)] text-sm">{t('footer.copyright')}</p>
           </div>
         </div>
