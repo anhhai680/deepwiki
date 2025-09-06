@@ -2,11 +2,9 @@
 
 ## Active Tasks
 
-**No Active Tasks** - All development work completed successfully. Project is in maintenance mode.
-
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| - | - | - | - | - | - |
+| TASK029 | Remove Language Selection UI | 🔄 **PENDING** | 0% | Cleanup/Simplification | 🟡 Medium |
 
 ## Current Status
 
@@ -14,6 +12,7 @@
 **UI Enhancement**: ✅ **100% COMPLETE** - All layout improvements, component refinements, and mobile optimizations completed
 **Multi-Repository Features**: ✅ **100% COMPLETE** - Sidebar-based selection system with automatic mode switching implemented
 **Bug Fixes**: ✅ **100% COMPLETE** - All known issues resolved
+**Active Cleanup**: 🔄 **IN PROGRESS** - Removing unnecessary language selection UI for English-only support
 
 ## Recently Completed
 
