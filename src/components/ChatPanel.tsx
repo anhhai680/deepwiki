@@ -3,9 +3,11 @@
 import React from 'react';
 import Ask from '@/components/Ask';
 import { ChatPanelProps } from '@/types/home-page-ask';
+import { RepoInfo } from '@/types/repoinfo';
 
 export default function ChatPanel({
   repoInfo,
+  repoInfos = [],
   projects,
   provider,
   model,
@@ -13,9 +15,15 @@ export default function ChatPanel({
   customModel,
   language,
   className = '',
+  isMultiRepositoryMode = false,
 }: ChatPanelProps) {
+  // Determine if we have any repositories selected
+  const hasRepositories = isMultiRepositoryMode 
+    ? repoInfos.length > 0 
+    : repoInfo !== null;
+
   // If no repository is selected, show placeholder
-  if (!repoInfo) {
+  if (!hasRepositories) {
     return (
       <div className={`h-full flex flex-col bg-[var(--card-bg)] ${className}`}>
         <div className="flex-1 flex items-center justify-center p-8">
@@ -25,8 +33,10 @@ export default function ChatPanel({
               Start a Conversation
             </h3>
             <p className="text-[var(--muted)] leading-relaxed">
-              Select a repository from the sidebar to start asking questions about your codebase. 
-              I can help you understand code structure, find specific implementations, and explain complex logic.
+              {isMultiRepositoryMode 
+                ? 'Select repositories from the sidebar using multi-select mode to start asking questions about multiple codebases simultaneously.'
+                : 'Select a repository from the sidebar to start asking questions about your codebase. I can help you understand code structure, find specific implementations, and explain complex logic.'
+              }
             </p>
           </div>
         </div>
@@ -36,14 +46,17 @@ export default function ChatPanel({
 
   return (
     <div className={`h-full flex flex-col bg-[var(--card-bg)] ${className}`}>
-      {/* Minimal Header */}
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
         <div>
           <h3 className="text-lg font-semibold text-[var(--foreground)]">
             Chat
           </h3>
           <p className="text-sm text-[var(--muted)]">
-            {repoInfo.owner}/{repoInfo.repo}
+            {isMultiRepositoryMode 
+              ? `${repoInfos.length} repositories selected`
+              : `${repoInfo?.owner}/${repoInfo?.repo}`
+            }
           </p>
         </div>
       </div>
@@ -51,7 +64,7 @@ export default function ChatPanel({
       {/* Ask component container - Full remaining height */}
       <div className="flex-1 min-h-0">
         <Ask
-          repoInfo={repoInfo}
+          repoInfo={isMultiRepositoryMode ? repoInfos : (repoInfo as RepoInfo)}
           projects={projects}
           provider={provider}
           model={model}

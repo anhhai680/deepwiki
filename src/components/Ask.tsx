@@ -1000,7 +1000,7 @@ const Ask: React.FC<AskProps> = ({
           </div>
 
           {/* Multi-repository input fields */}
-          {Array.isArray(currentRepoInfo) && (
+          {Array.isArray(currentRepoInfo) && selectedRepositories.length === 0 && (
             <div className="mt-3 space-y-2">
               <MultiRepositorySelector
                 projects={projects}
@@ -1020,6 +1020,7 @@ const Ask: React.FC<AskProps> = ({
                 }}
                 placeholder="Search and select repositories..."
                 disabled={isLoading}
+                showSelectedRepositories={false}
               />
             </div>
           )}

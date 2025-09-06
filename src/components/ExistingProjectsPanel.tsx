@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { FaTh, FaList } from 'react-icons/fa';
+import { FaTh, FaList, FaCheck } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { ExistingProjectsPanelProps, ProcessedProject } from '@/types/home-page-ask';
 import { RepositoryType } from '@/constants';
@@ -10,6 +10,10 @@ export default function ExistingProjectsPanel({
   projects,
   onRepositorySelect,
   selectedRepository,
+  selectedRepositories = [],
+  onRepositoriesChange,
+  isMultiSelectMode = false,
+  onMultiSelectModeChange,
   isLoading,
   searchQuery,
   onSearchQueryChange,
@@ -59,7 +63,20 @@ export default function ExistingProjectsPanel({
   const handleRepositoryClick = (project: ProcessedProject) => {
     const repositoryUrl = getRepositoryUrl(project);
     
-    onRepositorySelect(repositoryUrl);
+    if (isMultiSelectMode) {
+      // Multi-select mode: toggle repository in selection
+      if (onRepositoriesChange) {
+        const isSelected = selectedRepositories.includes(repositoryUrl);
+        if (isSelected) {
+          onRepositoriesChange(selectedRepositories.filter(url => url !== repositoryUrl));
+        } else {
+          onRepositoriesChange([...selectedRepositories, repositoryUrl]);
+        }
+      }
+    } else {
+      // Single select mode: use existing behavior
+      onRepositorySelect(repositoryUrl);
+    }
   };
 
   // Handle repository navigation (double click)
@@ -84,16 +101,59 @@ export default function ExistingProjectsPanel({
     }
   };
 
+  // Handle select all / clear all
+  const handleSelectAll = () => {
+    if (onRepositoriesChange) {
+      if (selectedRepositories.length === filteredProjects.length) {
+        // Clear all
+        onRepositoriesChange([]);
+      } else {
+        // Select all visible projects
+        const allUrls = filteredProjects.map(getRepositoryUrl);
+        onRepositoriesChange(allUrls);
+      }
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-[var(--card-bg)]">
-      {/* Simplified Header */}
+      {/* Header with multi-select toggle */}
       <div className="p-4 border-b border-[var(--border-color)]">
-        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-1">
-          Projects
-        </h2>
-        <p className="text-sm text-[var(--muted)]">
-          {projects.length} repositories processed
-        </p>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">
+            Projects
+          </h2>
+          {onMultiSelectModeChange && (
+            <button
+              onClick={() => onMultiSelectModeChange(!isMultiSelectMode)}
+              className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                isMultiSelectMode
+                  ? 'bg-[var(--accent-primary)] text-white'
+                  : 'bg-[var(--background)] text-[var(--muted)] border border-[var(--border-color)] hover:text-[var(--foreground)]'
+              }`}
+              title={isMultiSelectMode ? 'Switch to single selection' : 'Enable multi-selection'}
+            >
+              {isMultiSelectMode ? 'Multi-Select' : 'Single'}
+            </button>
+          )}
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-[var(--muted)]">
+            {isMultiSelectMode 
+              ? `${selectedRepositories.length} of ${projects.length} selected`
+              : `${projects.length} repositories processed`
+            }
+          </p>
+          {isMultiSelectMode && selectedRepositories.length > 0 && onRepositoriesChange && (
+            <button
+              onClick={handleSelectAll}
+              className="text-xs text-[var(--accent-primary)] hover:underline"
+            >
+              {selectedRepositories.length === filteredProjects.length ? 'Clear All' : 'Select All'}
+            </button>
+          )}
+        </div>
 
         {/* Search input */}
         <div className="relative mt-3">
@@ -151,7 +211,9 @@ export default function ExistingProjectsPanel({
             {filteredProjects.map((project) => {
               const repositoryUrl = getRepositoryUrl(project);
               
-              const isSelected = selectedRepository === repositoryUrl;
+              const isSelected = isMultiSelectMode 
+                ? selectedRepositories.includes(repositoryUrl)
+                : selectedRepository === repositoryUrl;
               
               return (
                 <div
@@ -162,15 +224,34 @@ export default function ExistingProjectsPanel({
                       ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                       : 'border-[var(--border-color)] bg-[var(--background)] hover:border-[var(--accent-primary)]/50'
                   }`}
-                  title="Single click to select • Double click to view details"
+                  title={isMultiSelectMode 
+                    ? "Click to toggle selection • Double click to view details"
+                    : "Single click to select • Double click to view details"
+                  }
                 >
                   <div className="flex items-center gap-3">
+                    {/* Multi-select checkbox */}
+                    {isMultiSelectMode && (
+                      <div className="flex-shrink-0">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white'
+                            : 'border-[var(--border-color)] bg-[var(--background)]'
+                        }`}>
+                          {isSelected && <FaCheck className="text-xs" />}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Repository type indicator */}
                     <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                       project.repo_type === 'github' ? 'bg-[var(--accent-primary)]' :
                       project.repo_type === 'gitlab' ? 'bg-orange-500' :
                       project.repo_type === 'bitbucket' ? 'bg-blue-500' :
                       'bg-gray-500'
                     }`} />
+                    
+                    {/* Repository info */}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-[var(--foreground)] truncate text-base">
                         {project.name}

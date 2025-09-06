@@ -21,6 +21,7 @@ interface MultiRepositorySelectorProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  showSelectedRepositories?: boolean; // New prop to control display of selected repos
 }
 
 export default function MultiRepositorySelector({
@@ -29,7 +30,8 @@ export default function MultiRepositorySelector({
   onRepositoriesChange,
   placeholder = "Select repositories...",
   className = "",
-  disabled = false
+  disabled = false,
+  showSelectedRepositories = true
 }: MultiRepositorySelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,7 +126,7 @@ export default function MultiRepositorySelector({
   return (
     <div className={`relative ${className}`}>
       {/* Selected repositories display */}
-      {selectedRepositories.length > 0 && (
+      {showSelectedRepositories && selectedRepositories.length > 0 && (
         <div className="mb-3 space-y-2">
           <div className="text-xs text-[var(--muted)]">Selected Repositories:</div>
           {selectedRepositories.map((repoUrl, index) => (

@@ -112,6 +112,43 @@ export default function Home() {
     }
   };
 
+  // Handle multiple repository selection for multi-repository mode
+  const handleRepositoriesChange = (repoUrls: string[]) => {
+    setSelectedRepositories(repoUrls);
+    
+    // Parse repository URLs to create RepoInfo array
+    const newRepoInfos: RepoInfo[] = repoUrls.map(repoUrl => {
+      const parsed = parseRepositoryInput(repoUrl);
+      if (parsed) {
+        return {
+          owner: parsed.owner,
+          repo: parsed.repo,
+          type: parsed.type,
+          token: accessToken || null,
+          localPath: parsed.localPath || null,
+          repoUrl: repoUrl,
+        } as RepoInfo;
+      }
+      return null;
+    }).filter((info): info is RepoInfo => info !== null);
+    
+    setRepoInfos(newRepoInfos);
+  };
+
+  // Handle multi-repository mode toggle
+  const handleMultiRepositoryModeChange = (enabled: boolean) => {
+    setIsMultiRepositoryMode(enabled);
+    if (!enabled) {
+      // When switching to single mode, clear multi-selections
+      setSelectedRepositories([]);
+      setRepoInfos([]);
+    } else {
+      // When switching to multi mode, clear single selection
+      setSelectedRepository('');
+      setRepoInfo(null);
+    }
+  };
+
   // Provider-based model selection state
   const [provider, setProvider] = useState<string>('');
   const [model, setModel] = useState<string>('');
@@ -138,9 +175,12 @@ export default function Home() {
 
   // Home page state for two-column layout
   const [selectedRepository, setSelectedRepository] = useState<string>('');
+  const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
+  const [isMultiRepositoryMode, setIsMultiRepositoryMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
+  const [repoInfos, setRepoInfos] = useState<RepoInfo[]>([]);
   const [mobileActiveTab, setMobileActiveTab] = useState<'projects' | 'chat'>('projects');
 
   // Sync the language context with the selectedLanguage state
@@ -459,6 +499,10 @@ export default function Home() {
               projects={projects}
               onRepositorySelect={handleAskRepositorySelect}
               selectedRepository={selectedRepository}
+              selectedRepositories={selectedRepositories}
+              onRepositoriesChange={handleRepositoriesChange}
+              isMultiSelectMode={isMultiRepositoryMode}
+              onMultiSelectModeChange={handleMultiRepositoryModeChange}
               isLoading={projectsLoading}
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
@@ -470,13 +514,15 @@ export default function Home() {
           {/* Main Content Area - Chat */}
           <div className="flex-1 flex flex-col min-w-0 h-full">
             <ChatPanel
-              repoInfo={repoInfo}
+              repoInfo={isMultiRepositoryMode ? null : repoInfo}
+              repoInfos={isMultiRepositoryMode ? repoInfos : undefined}
               projects={projects}
               provider={provider}
               model={model}
               isCustomModel={isCustomModel}
               customModel={customModel}
               language={selectedLanguage}
+              isMultiRepositoryMode={isMultiRepositoryMode}
             />
           </div>
         </div>
@@ -543,6 +589,10 @@ export default function Home() {
                   setMobileActiveTab('chat'); // Auto-switch to chat when repository selected
                 }}
                 selectedRepository={selectedRepository}
+                selectedRepositories={selectedRepositories}
+                onRepositoriesChange={handleRepositoriesChange}
+                isMultiSelectMode={isMultiRepositoryMode}
+                onMultiSelectModeChange={handleMultiRepositoryModeChange}
                 isLoading={projectsLoading}
                 searchQuery={searchQuery}
                 onSearchQueryChange={setSearchQuery}
@@ -551,13 +601,15 @@ export default function Home() {
               />
             ) : (
               <ChatPanel
-                repoInfo={repoInfo}
+                repoInfo={isMultiRepositoryMode ? null : repoInfo}
+                repoInfos={isMultiRepositoryMode ? repoInfos : undefined}
                 projects={projects}
                 provider={provider}
                 model={model}
                 isCustomModel={isCustomModel}
                 customModel={customModel}
                 language={selectedLanguage}
+                isMultiRepositoryMode={isMultiRepositoryMode}
               />
             )}
           </div>
