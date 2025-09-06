@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "DeepWiki-Open",
+    "appName": "DeepWiki",
     "tagline": "AI-powered documentation",
     "generateWiki": "Generate Wiki",
     "processing": "Processing...",
@@ -18,7 +18,7 @@
     "preparingDownload": "Please wait while we prepare your download..."
   },
   "home": {
-    "welcome": "Welcome to DeepWiki-Open",
+    "welcome": "Welcome to DeepWiki",
     "welcomeTagline": "AI-powered documentation for your code repositories",
     "description": "Generate comprehensive documentation from GitHub, GitLab, or Bitbucket repositories with just a few clicks.",
     "quickStart": "Quick Start",

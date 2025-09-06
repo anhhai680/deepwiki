@@ -1,1 +1,1 @@
-# Test package for deepwiki-open data pipeline
+# Test package for deepwiki data pipeline

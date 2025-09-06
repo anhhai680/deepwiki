@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Deepwiki-Open",
+            "name": "Deepwiki",
             "type": "python",
             "request": "launch",
             "module": "uvicorn",

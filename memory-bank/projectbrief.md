@@ -48,7 +48,7 @@ Transform any code repository into a comprehensive, AI-generated wiki with:
 **Active Development** - Core functionality implemented, ongoing feature enhancements and optimization.
 
 ## Repository Information
-- **Name**: deepwiki-open
+- **Name**: deepwiki
 - **Type**: Open source AI documentation tool
 - **License**: MIT
 - **Primary Language**: TypeScript/JavaScript (Frontend), Python (Backend)

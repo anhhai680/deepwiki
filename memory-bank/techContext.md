@@ -252,7 +252,7 @@ npm run dev
 docker-compose up
 
 # Backend only
-docker run -p 8001:8001 -e GOOGLE_API_KEY=... deepwiki-open
+docker run -p 8001:8001 -e GOOGLE_API_KEY=... deepwiki
 ```
 
 ### Data Persistence

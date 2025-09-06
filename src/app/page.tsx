@@ -655,7 +655,7 @@ export default function Home() {
               <p className="text-sm text-[var(--foreground)] mb-3">{t('home.enterRepoUrl')}</p>
               <div className="text-xs text-[var(--muted)] space-y-2">
                 <div className="bg-[var(--background)]/70 p-3 rounded border border-[var(--border-color)] font-mono">
-                  https://github.com/AsyncFuncAI/deepwiki-open
+                  https://github.com/anhhai680/deepwiki
                 </div>
                 <p className="text-center text-[var(--muted)]">
                   Process a repository first to use the Ask feature
@@ -710,15 +710,15 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <p className="text-[var(--muted)] text-sm">{t('footer.copyright')}</p>
             <div className="flex items-center space-x-4">
-              <a href="https://github.com/AsyncFuncAI/deepwiki-open" target="_blank" rel="noopener noreferrer"
+              <a href="https://github.com/anhhai680/deepwiki" target="_blank" rel="noopener noreferrer"
                 className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
                 <FaGithub className="text-lg" />
               </a>
-              <a href="https://buymeacoffee.com/sheing" target="_blank" rel="noopener noreferrer"
+              <a href="#" target="_blank" rel="noopener noreferrer"
                 className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
                 <FaCoffee className="text-lg" />
               </a>
-              <a href="https://x.com/sashimikun_void" target="_blank" rel="noopener noreferrer"
+              <a href="#" target="_blank" rel="noopener noreferrer"
                 className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
                 <FaTwitter className="text-lg" />
               </a>

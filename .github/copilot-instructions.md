@@ -80,8 +80,8 @@ yarn dev
 docker-compose up --build
 
 # Or build manually
-docker build -t deepwiki-open .
-docker run -p 8001:8001 -p 3000:3000 deepwiki-open
+docker build -t deepwiki .
+docker run -p 8001:8001 -p 3000:3000 deepwiki
 ```
 
 ### Testing
