@@ -189,6 +189,56 @@ switch (project.repo_type.toLowerCase()) {
 **Files**: `src/app/page.tsx`, `src/components/ChatPanel.tsx`, `src/components/ExistingProjectsPanel.tsx`
 **Benefits**: Better space utilization, improved user experience, cleaner component separation
 
+### 6. Multi-Repository Selection Pattern
+**Pattern**: Sidebar-based multi-repository selection with automatic mode switching
+**Implementation**:
+- **Checkbox-Based Selection**: Multi-select checkboxes in left sidebar for repository selection
+- **Automatic Mode Switching**: Bidirectional synchronization between Ask form toggle and sidebar mode
+- **State Management**: Enhanced TypeScript interfaces with callback-based communication
+- **Conditional UI**: Smart hiding/showing of UI elements based on selection state
+- **Perfect Isolation**: Multi-repository features only on home page, individual pages unchanged
+- **Clean Interface**: Repository dropdown hidden when sidebar selections are made
+- **Fallback Support**: Manual repository input still available when no sidebar selections
+
+**Files**: 
+- `src/types/home-page-ask.ts` - Enhanced TypeScript interfaces
+- `src/components/ExistingProjectsPanel.tsx` - Multi-select with checkboxes
+- `src/components/MultiRepositorySelector.tsx` - Conditional display logic
+- `src/components/Ask.tsx` - Mode switching integration
+- `src/components/ChatPanel.tsx` - Multi-repository state handling
+- `src/app/page.tsx` - Central state orchestration
+
+**Technical Implementation**:
+```typescript
+// Enhanced state management
+const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
+const [isMultiRepositoryMode, setIsMultiRepositoryMode] = useState(false);
+
+// Automatic mode switching callback
+const handleAskMultiRepositoryModeChange = (enabled: boolean) => {
+  setIsMultiRepositoryMode(enabled);
+};
+
+// Conditional UI rendering
+{onMultiRepositoryModeChange && (
+  <div className="multi-repository-toggle">
+    {/* Multi-repository toggle only appears on home page */}
+  </div>
+)}
+
+// Smart dropdown hiding
+{Array.isArray(currentRepoInfo) && selectedRepositories.length === 0 && (
+  <MultiRepositorySelector showSelectedRepositories={false} />
+)}
+```
+
+**Benefits**: 
+- Intuitive user experience with sidebar-based selection
+- Seamless mode switching without manual coordination
+- Clean interface with no redundant UI elements
+- Perfect separation between home and individual repository pages
+- Backward compatible with existing functionality
+
 ## Backend Patterns
 
 ### 1. FastAPI Service Pattern
