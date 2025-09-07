@@ -173,6 +173,53 @@ jinja2>=3.1.2                       # Template engine
 python-dotenv>=1.0.0                # Environment management
 ```
 
+## Recent Technical Improvements (September 2025)
+
+### Mermaid Diagram Rendering Enhancement
+- **Problem Solved**: Critical syntax parsing errors causing diagram render failures
+- **Implementation**: Comprehensive preprocessing pipeline with error recovery
+- **Files Updated**: `src/components/Mermaid.tsx`, `src/app/[owner]/[repo]/page.tsx`
+- **Technical Achievement**: Single comprehensive regex replacing multiple operations for better performance
+
+#### Key Technical Features
+- **Unified Regex Pattern**: `/(\w+)\[([^\]]*?)(?:\]|$|\n)/gm` handles all bracket pattern issues
+- **Intelligent Syntax Correction**: Automatic quoting for special characters and spaces
+- **Error Recovery**: Graceful degradation with detailed debugging information
+- **Performance Optimization**: Single-pass processing instead of multiple iterations
+- **Code Quality**: Eliminated duplicate regex patterns and improved maintainability
+
+#### Error Handling Strategy
+```typescript
+// Enhanced error display with debugging information
+if (mermaidRef.current) {
+  const cleanedChart = preprocessMermaidChart(chart);
+  mermaidRef.current.innerHTML = `
+    <div class="text-red-500 dark:text-red-400 text-xs mb-2">
+      <strong>Chart Rendering Error</strong><br/>
+      ${errorMessage}
+    </div>
+    <div class="text-xs mb-2"><strong>Original Chart:</strong></div>
+    <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2">${chart}</pre>
+    ${cleanedChart !== chart ? `
+      <div class="text-xs mb-2"><strong>Cleaned Chart (attempted fix):</strong></div>
+      <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">${cleanedChart}</pre>
+    ` : ''}
+  `;
+}
+```
+
+### Multi-Repository Architecture Enhancement
+- **Advanced State Management**: Bidirectional synchronization between Ask form and sidebar selection
+- **Component Isolation**: Perfect separation between home page features and individual repository pages
+- **TypeScript Enhancement**: Comprehensive type definitions for new multi-repository functionality
+- **UI Optimization**: Conditional rendering based on selection state for cleaner interfaces
+
+### Performance and Code Quality Improvements
+- **Single-Pass Processing**: Optimized regex operations for better performance
+- **Memory Management**: Proper cleanup of timeouts and event listeners
+- **Code Deduplication**: Eliminated overlapping patterns and consolidated logic
+- **Build Optimization**: Reduced warnings and improved compilation efficiency
+
 ## Technical Constraints
 
 ### Performance Constraints

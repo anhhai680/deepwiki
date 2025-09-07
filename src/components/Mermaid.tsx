@@ -165,7 +165,7 @@ mermaid.initialize({
       filter: brightness(0.95);
     }
   `,
-  fontFamily: 'var(--font-geist-sans), var(--font-serif-jp), sans-serif',
+  fontFamily: 'sans-serif',
   fontSize: 12,
 });
 
@@ -235,7 +235,7 @@ const FullScreenModal: React.FC<{
       >
         {/* Modal header with controls */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
-          <div className="font-medium text-[var(--foreground)] font-serif">図表表示</div>
+          <div className="font-medium text-[var(--foreground)] font-serif">Chart display</div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <button
@@ -303,6 +303,124 @@ const FullScreenModal: React.FC<{
   );
 };
 
+// Function to fix activation/deactivation sequence mismatches
+const fixActivationDeactivationSequence = (chart: string): string => {
+  const lines = chart.split('\n');
+  
+  // Track activation state for participants
+  const activationState = new Map<string, boolean>();
+  const processedLines: string[] = [];
+  
+  // Patterns for activation and deactivation (both with original participant names)
+  const activatePattern = /^.*?->>[\+](.+?):\s*.*/;
+  const deactivatePattern = /^.*?-->>[\-](.+?):\s*.*/;
+  
+  lines.forEach((line) => {
+    const trimmedLine = line.trim();
+    
+    // Skip empty lines and declarations
+    if (!trimmedLine || trimmedLine.startsWith('participant') || trimmedLine.startsWith('sequenceDiagram')) {
+      processedLines.push(line);
+      return;
+    }
+    
+    // Check for activation
+    const activateMatch = line.match(activatePattern);
+    if (activateMatch) {
+      const participant = activateMatch[1].trim();
+      activationState.set(participant, true);
+      processedLines.push(line);
+      return;
+    }
+    
+    // Check for deactivation
+    const deactivateMatch = line.match(deactivatePattern);
+    if (deactivateMatch) {
+      const participant = deactivateMatch[1].trim();
+      
+      // Only include deactivation if participant is currently active
+      if (activationState.get(participant) === true) {
+        activationState.set(participant, false);
+        processedLines.push(line);
+      }
+      // Skip invalid deactivations (when participant is not active)
+      return;
+    }
+    
+    // Regular line (message without activation/deactivation)
+    processedLines.push(line);
+  });
+  
+  return processedLines.join('\n');
+};
+
+// Function to clean and fix common Mermaid syntax issues
+const preprocessMermaidChart = (chart: string): string => {
+  let cleanedChart = chart;
+  
+  // Detect diagram type for specific preprocessing
+  const isSequenceDiagram = cleanedChart.trim().startsWith('sequenceDiagram');
+  
+  if (isSequenceDiagram) {
+    // Fix activation/deactivation sequences while preserving original participant names
+    cleanedChart = fixActivationDeactivationSequence(cleanedChart);
+  } else {
+    // Handle flowchart and other diagram types
+    
+    // Single comprehensive regex to fix all node bracket issues at once
+    // This handles:
+    // 1. Incomplete brackets: NodeId[Text without closing bracket
+    // 2. Text with special characters: NodeId[Text with spaces and (parentheses)]
+    // 3. Multiline incomplete patterns: NodeId[Text\n
+    cleanedChart = cleanedChart.replace(
+      /(\w+)\[([^\]]*?)(?:\]|$|\n)/gm,
+      (match, nodeId, text) => {
+        // Check if this is already properly quoted
+        if (text.startsWith('"') && text.endsWith('"')) {
+          return match;
+        }
+        
+        // Determine the ending (was it closed, end of string, or newline?)
+        const wasProperlyClosedBracket = match.endsWith(']');
+        const wasNewline = match.endsWith('\n');
+        
+        // Clean and quote the text if it needs special handling
+        const needsQuoting = text.includes(' ') || 
+                            text.includes('(') || 
+                            text.includes(')') || 
+                            text.includes('[') || 
+                            !wasProperlyClosedBracket;
+        
+        if (needsQuoting) {
+          const escapedText = text.replace(/"/g, '\\"');
+          return `${nodeId}["${escapedText}"]${wasNewline ? '\n' : ''}`;
+        }
+        
+        // If it was an incomplete bracket, just close it properly
+        if (!wasProperlyClosedBracket) {
+          return `${nodeId}[${text}]${wasNewline ? '\n' : ''}`;
+        }
+        
+        return match;
+      }
+    );
+    
+    // Normalize arrow syntax with proper spacing for flowcharts
+    cleanedChart = cleanedChart.replace(/\s*-->\s*/g, ' --> ');
+    cleanedChart = cleanedChart.replace(/\s*--->\s*/g, ' ---> ');
+    cleanedChart = cleanedChart.replace(/\s*-\.->\s*/g, ' -.-> ');
+    cleanedChart = cleanedChart.replace(/\s*==>\s*/g, ' ==> ');
+  }
+  
+  // Common cleanup for all diagram types
+  // Normalize whitespace but preserve line structure
+  cleanedChart = cleanedChart.split('\n').map(line => 
+    line.trim().replace(/\s+/g, ' ')
+  ).join('\n');
+  
+  return cleanedChart.trim();
+};
+
 const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled = false }) => {
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -365,8 +483,11 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
         setError(null);
         setSvg('');
 
-        // Render the chart directly without preprocessing
-        const { svg: renderedSvg } = await mermaid.render(idRef.current, chart);
+        // Preprocess the chart to fix common syntax issues
+        const cleanedChart = preprocessMermaidChart(chart);
+
+        // Render the chart with cleaned syntax
+        const { svg: renderedSvg } = await mermaid.render(idRef.current, cleanedChart);
 
         if (!isMounted) return;
 
@@ -390,9 +511,22 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
           setError(`Failed to render diagram: ${errorMessage}`);
 
           if (mermaidRef.current) {
+            const cleanedChart = preprocessMermaidChart(chart);
             mermaidRef.current.innerHTML = `
-              <div class="text-red-500 dark:text-red-400 text-xs mb-1">Syntax error in diagram</div>
-              <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">${chart}</pre>
+              <div class="text-red-500 dark:text-red-400 text-xs mb-2">
+                <strong>Chart Rendering Error</strong><br/>
+                ${errorMessage}
+              </div>
+              <div class="text-xs mb-2">
+                <strong>Original Chart:</strong>
+              </div>
+              <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2">${chart}</pre>
+              ${cleanedChart !== chart ? `
+                <div class="text-xs mb-2">
+                  <strong>Cleaned Chart (attempted fix):</strong>
+                </div>
+                <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">${cleanedChart}</pre>
+              ` : ''}
             `;
           }
         }
@@ -420,12 +554,12 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            図表レンダリングエラー
+            Chart Rendering Error
           </div>
         </div>
         <div ref={mermaidRef} className="text-xs overflow-auto"></div>
         <div className="mt-3 text-xs text-[var(--muted)] font-serif">
-          図表に構文エラーがあり、レンダリングできません。
+          The chart has a syntax error and cannot be rendered.
         </div>
       </div>
     );
@@ -438,7 +572,7 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
           <div className="w-2 h-2 bg-[var(--accent-primary)]/70 rounded-full animate-pulse"></div>
           <div className="w-2 h-2 bg-[var(--accent-primary)]/70 rounded-full animate-pulse delay-75"></div>
           <div className="w-2 h-2 bg-[var(--accent-primary)]/70 rounded-full animate-pulse delay-150"></div>
-          <span className="text-[var(--muted)] text-xs ml-2 font-serif">図表を描画中...</span>
+          <span className="text-[var(--muted)] text-xs ml-2 font-serif">Rendering chart...</span>
         </div>
       </div>
     );

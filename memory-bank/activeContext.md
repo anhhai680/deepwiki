@@ -1,10 +1,10 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Header and Footer Alignment Task Completed** - September 6, 2025 - Successfully completed TASK030, standardizing width constraints to `max-w-[90%] xl:max-w-[1400px]` across all pages for perfect visual alignment and improved space utilization.
+**Mermaid Diagram Fix Completed and Optimized** - September 7, 2025 - Successfully fixed Mermaid diagram parsing errors with comprehensive preprocessing function, enhanced error handling, and eliminated code duplication for cleaner, more maintainable code.
 
 ## Project Status Summary
-Major development phases completed with new UI enhancement task:
+Major development phases completed with latest technical improvements:
 1. ✅ **API Restructure (Phases 1-8)** - All phases 100% complete
 2. ✅ **Multi-Repository Enhancement (Phase 9)** - Implementation completed successfully  
 3. ✅ **WebSocket Connection Fixes** - Critical FAISS retriever issues resolved
@@ -15,13 +15,48 @@ Major development phases completed with new UI enhancement task:
 8. ✅ **Bug Fix Complete** - Model selection issue resolved (TASK027)
 9. ✅ **Multi-Repository Selection** - Complete sidebar-based multi-repository selection system (TASK028)
 10. ✅ **Header/Footer Alignment** - TASK030 completed successfully, layout width consistency achieved
+11. ✅ **Mermaid Diagram Fix** - Comprehensive syntax error fix with code optimization and deduplication
 
 ## Current Work Context
-- **Phase**: Quality Assurance and Maintenance
-- **Focus Area**: ✅ **COMPLETED** - Header and footer alignment standardization (TASK030)
-- **Status**: ✅ **TASK COMPLETE** - All layout width constraints now consistent across pages
-- **Current Branch**: `fix-header-footer-size` (ready for merge)
-- **Latest Achievement**: Perfect visual alignment between home page and repository page layouts
+- **Phase**: Quality Assurance and Code Optimization
+- **Focus Area**: ✅ **COMPLETED** - Mermaid diagram comprehensive fix and code cleanup
+- **Status**: ✅ **OPTIMIZATION COMPLETE** - Parsing errors resolved, code duplication eliminated, enhanced error display
+- **Current Branch**: `fix-mermaid-diagram` (ready for merge)
+- **Latest Achievement**: Robust, optimized Mermaid diagram handling with single-pass preprocessing and improved maintainability
+
+## Key Technical Improvements (September 7, 2025)
+
+### **Mermaid Diagram Fix - Comprehensive Solution**
+- **Problem Solved**: Parse error with malformed node syntax (e.g., `Memory[Memo`, `LLM[Language Model (LLM)]`)
+- **Root Cause**: Unquoted special characters in Mermaid node labels causing parser failures
+- **Solution Implemented**: Multi-layered fix approach
+
+#### **Technical Implementation Details**
+1. **Preprocessing Function**: Added `preprocessMermaidChart()` in `src/components/Mermaid.tsx`
+   - **Single comprehensive regex**: `/(\w+)\[([^\]]*?)(?:\]|$|\n)/gm` handles all bracket patterns
+   - **Intelligent quoting**: Automatically quotes node text containing spaces, parentheses, or special characters
+   - **Incomplete bracket fixing**: Handles patterns like `Memory[Memo` (missing closing bracket)
+   - **Preserves existing formatting**: Leaves properly quoted nodes unchanged
+
+2. **Enhanced Error Handling**: 
+   - **Detailed error display**: Shows both original and cleaned chart for debugging
+   - **Helpful error messages**: Clear indication of syntax issues with visual comparison
+   - **Graceful degradation**: Application continues to function even with malformed diagrams
+
+3. **Prompt Improvements**: Updated generation guidelines in `src/app/[owner]/[repo]/page.tsx`
+   - **Specific syntax rules**: Clear examples of proper node naming conventions
+   - **Prevention guidelines**: Helps AI generate correct syntax from the start
+
+4. **Code Optimization**: 
+   - **Eliminated duplication**: Replaced 3 separate regex operations with single comprehensive function
+   - **Improved performance**: Single-pass processing instead of multiple iterations
+   - **Better maintainability**: Centralized logic reduces complexity and potential conflicts
+
+#### **Test Coverage and Validation**
+- ✅ **Unit testing**: All test cases pass for various malformed syntax patterns
+- ✅ **Build validation**: Successful compilation with zero errors
+- ✅ **Functionality preserved**: Existing diagrams continue to render correctly
+- ✅ **Error cases handled**: Graceful handling of syntax errors with helpful debugging information
 
 ## Key Discoveries Made
 - **Project Type**: AI-powered documentation generator for code repositories
