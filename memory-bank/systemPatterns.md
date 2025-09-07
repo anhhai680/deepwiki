@@ -189,6 +189,54 @@ switch (project.repo_type.toLowerCase()) {
 **Files**: `src/app/page.tsx`, `src/components/ChatPanel.tsx`, `src/components/ExistingProjectsPanel.tsx`
 **Benefits**: Better space utilization, improved user experience, cleaner component separation
 
+### 7. Robust Diagram Rendering Pattern
+**Pattern**: Comprehensive Mermaid diagram preprocessing with error recovery and code optimization
+**Implementation**:
+- **Preprocessing Pipeline**: Automatic syntax correction before rendering
+- **Unified Regex Processing**: Single comprehensive pattern replacing multiple operations
+- **Intelligent Syntax Correction**: Handles malformed node labels, incomplete brackets, special characters
+- **Enhanced Error Handling**: Detailed debugging with original vs. cleaned syntax comparison
+- **Graceful Degradation**: Application continues functioning with syntax errors
+- **Performance Optimization**: Single-pass processing instead of multiple iterations
+
+**Files**: `src/components/Mermaid.tsx`, `src/components/Markdown.tsx`
+**Technical Details**:
+```typescript
+// Single comprehensive regex for all bracket pattern fixes
+const preprocessMermaidChart = (chart: string): string => {
+  let cleanedChart = chart;
+  
+  // Unified pattern handles: incomplete brackets, special chars, multiline patterns
+  cleanedChart = cleanedChart.replace(
+    /(\w+)\[([^\]]*?)(?:\]|$|\n)/gm,
+    (match, nodeId, text) => {
+      // Intelligent quoting based on content analysis
+      const needsQuoting = text.includes(' ') || 
+                          text.includes('(') || 
+                          text.includes(')') || 
+                          text.includes('[') || 
+                          !match.endsWith(']');
+      
+      if (needsQuoting) {
+        return `${nodeId}["${text.replace(/"/g, '\\"')}"]`;
+      }
+      return match;
+    }
+  );
+  
+  // Arrow syntax normalization and whitespace cleanup
+  return cleanedChart.trim();
+};
+```
+
+**Error Handling Strategy**:
+- **Visual Debugging**: Shows both original and cleaned chart when errors occur
+- **Clear Error Messages**: Descriptive error information for troubleshooting
+- **Fallback Display**: Renders error information instead of breaking the page
+- **Prevention Guidelines**: Enhanced AI prompts to generate correct syntax
+
+**Benefits**: Reliable diagram rendering, excellent debugging experience, maintainable code, performance optimization
+
 ### 6. Multi-Repository Selection Pattern
 **Pattern**: Sidebar-based multi-repository selection with automatic mode switching
 **Implementation**:
