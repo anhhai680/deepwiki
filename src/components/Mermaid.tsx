@@ -303,6 +303,62 @@ const FullScreenModal: React.FC<{
   );
 };
 
+// Function to clean and fix common Mermaid syntax issues
+const preprocessMermaidChart = (chart: string): string => {
+  let cleanedChart = chart;
+  
+  // Single comprehensive regex to fix all node bracket issues at once
+  // This handles:
+  // 1. Incomplete brackets: NodeId[Text without closing bracket
+  // 2. Text with special characters: NodeId[Text with spaces and (parentheses)]
+  // 3. Multiline incomplete patterns: NodeId[Text\n
+  cleanedChart = cleanedChart.replace(
+    /(\w+)\[([^\]]*?)(?:\]|$|\n)/gm,
+    (match, nodeId, text) => {
+      // Check if this is already properly quoted
+      if (text.startsWith('"') && text.endsWith('"')) {
+        return match;
+      }
+      
+      // Determine the ending (was it closed, end of string, or newline?)
+      const wasProperlyClosedBracket = match.endsWith(']');
+      const wasNewline = match.endsWith('\n');
+      
+      // Clean and quote the text if it needs special handling
+      const needsQuoting = text.includes(' ') || 
+                          text.includes('(') || 
+                          text.includes(')') || 
+                          text.includes('[') || 
+                          !wasProperlyClosedBracket;
+      
+      if (needsQuoting) {
+        const escapedText = text.replace(/"/g, '\\"');
+        return `${nodeId}["${escapedText}"]${wasNewline ? '\n' : ''}`;
+      }
+      
+      // If it was an incomplete bracket, just close it properly
+      if (!wasProperlyClosedBracket) {
+        return `${nodeId}[${text}]${wasNewline ? '\n' : ''}`;
+      }
+      
+      return match;
+    }
+  );
+  
+  // Normalize arrow syntax with proper spacing
+  cleanedChart = cleanedChart.replace(/\s*-->\s*/g, ' --> ');
+  cleanedChart = cleanedChart.replace(/\s*--->\s*/g, ' ---> ');
+  cleanedChart = cleanedChart.replace(/\s*-\.->\s*/g, ' -.-> ');
+  cleanedChart = cleanedChart.replace(/\s*==>\s*/g, ' ==> ');
+  
+  // Normalize whitespace but preserve line structure
+  cleanedChart = cleanedChart.split('\n').map(line => 
+    line.trim().replace(/\s+/g, ' ')
+  ).join('\n');
+  
+  return cleanedChart.trim();
+};
+
 const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled = false }) => {
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -365,8 +421,11 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
         setError(null);
         setSvg('');
 
-        // Render the chart directly without preprocessing
-        const { svg: renderedSvg } = await mermaid.render(idRef.current, chart);
+        // Preprocess the chart to fix common syntax issues
+        const cleanedChart = preprocessMermaidChart(chart);
+
+        // Render the chart with cleaned syntax
+        const { svg: renderedSvg } = await mermaid.render(idRef.current, cleanedChart);
 
         if (!isMounted) return;
 
@@ -390,9 +449,22 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
           setError(`Failed to render diagram: ${errorMessage}`);
 
           if (mermaidRef.current) {
+            const cleanedChart = preprocessMermaidChart(chart);
             mermaidRef.current.innerHTML = `
-              <div class="text-red-500 dark:text-red-400 text-xs mb-1">Syntax error in diagram</div>
-              <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">${chart}</pre>
+              <div class="text-red-500 dark:text-red-400 text-xs mb-2">
+                <strong>Chart Rendering Error</strong><br/>
+                ${errorMessage}
+              </div>
+              <div class="text-xs mb-2">
+                <strong>Original Chart:</strong>
+              </div>
+              <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2">${chart}</pre>
+              ${cleanedChart !== chart ? `
+                <div class="text-xs mb-2">
+                  <strong>Cleaned Chart (attempted fix):</strong>
+                </div>
+                <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">${cleanedChart}</pre>
+              ` : ''}
             `;
           }
         }

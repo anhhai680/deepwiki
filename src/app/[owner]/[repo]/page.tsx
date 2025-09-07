@@ -450,7 +450,13 @@ Based ONLY on the content of the \`[RELEVANT_SOURCE_FILES]\`:
        - Use "graph TD" (top-down) directive for flow diagrams
        - NEVER use "graph LR" (left-right)
        - Maximum node width should be 3-4 words
-       - For sequence diagrams:
+    *   CRITICAL SYNTAX RULES for node naming:
+       - Always enclose node text containing spaces, parentheses, or special characters in double quotes
+       - Example: Agent["Language Model (LLM)"] NOT Agent[Language Model (LLM)]
+       - Example: Memory["Memory Store"] NOT Memory[Memory Store]
+       - Use simple IDs for nodes (Agent, Memory, Tools) and quoted text for display names
+       - Avoid brackets [ ] inside node text unless properly quoted
+    *   For sequence diagrams:
          - Start with "sequenceDiagram" directive on its own line
          - Define ALL participants at the beginning
          - Use descriptive but concise participant names
