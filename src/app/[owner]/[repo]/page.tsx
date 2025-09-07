@@ -481,7 +481,21 @@ Based ONLY on the content of the \`[RELEVANT_SOURCE_FILES]\`:
 6.  **Source Citations (EXTREMELY IMPORTANT):**
     *   For EVERY piece of significant information, explanation, diagram, table entry, or code snippet, you MUST cite the specific source file(s) and relevant line numbers from which the information was derived.
     *   Place citations at the end of the paragraph, under the diagram/table, or after the code snippet.
-    *   Use the exact format: \`Sources: [filename.ext:start_line-end_line]()\` for a range, or \`Sources: [filename.ext:line_number]()\` for a single line. Multiple files can be cited: \`Sources: [file1.ext:1-10](), [file2.ext:5](), [dir/file3.ext]()\` (if the whole file is relevant and line numbers are not applicable or too broad).
+    *   Use the exact format with proper repository URLs based on repository type:
+    *   For ${effectiveRepoInfo.type || 'github'} repositories, use these formats:
+        - Line range: \`Sources: [filename.ext:start_line-end_line](repository_url)\`
+        - Single line: \`Sources: [filename.ext:line_number](repository_url)\`
+        - Whole file: \`Sources: [filename.ext](repository_url)\`
+    *   URL Format Guidelines:
+        - GitHub: Use \`${effectiveRepoInfo.repoUrl || 'https://github.com/owner/repo'}/blob/${defaultBranch}/filename.ext#L10-L25\` for line ranges
+        - GitLab: Use \`${effectiveRepoInfo.repoUrl || 'https://gitlab.com/owner/repo'}/-/blob/${defaultBranch}/filename.ext#L10-L25\` for line ranges  
+        - Bitbucket: Use \`${effectiveRepoInfo.repoUrl || 'https://bitbucket.org/owner/repo'}/src/${defaultBranch}/filename.ext#lines-10:25\` for line ranges
+        - Local repos: Use empty parentheses \`()\` as no web URLs are available
+    *   EXAMPLES for this ${effectiveRepoInfo.type || 'github'} repository:
+        - Range: \`Sources: [src/app.py:10-25](${effectiveRepoInfo.type === 'github' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/blob/' + defaultBranch + '/src/app.py#L10-L25' : effectiveRepoInfo.type === 'gitlab' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/-/blob/' + defaultBranch + '/src/app.py#L10-L25' : effectiveRepoInfo.type === 'bitbucket' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/src/' + defaultBranch + '/src/app.py#lines-10:25' : ''})\`
+        - Single: \`Sources: [config/settings.js:42](${effectiveRepoInfo.type === 'github' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/blob/' + defaultBranch + '/config/settings.js#L42' : effectiveRepoInfo.type === 'gitlab' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/-/blob/' + defaultBranch + '/config/settings.js#L42' : effectiveRepoInfo.type === 'bitbucket' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/src/' + defaultBranch + '/config/settings.js#lines-42' : ''})\`
+        - File: \`Sources: [utils/helper.py](${effectiveRepoInfo.type === 'github' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/blob/' + defaultBranch + '/utils/helper.py' : effectiveRepoInfo.type === 'gitlab' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/-/blob/' + defaultBranch + '/utils/helper.py' : effectiveRepoInfo.type === 'bitbucket' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/src/' + defaultBranch + '/utils/helper.py' : ''})\`
+    *   Multiple files can be cited: \`Sources: [file1.ext:1-10](URL1), [file2.ext:5](URL2), [dir/file3.ext](URL3)\`
     *   If an entire section is overwhelmingly based on one or two files, you can cite them under the section heading in addition to more specific citations within the section.
     *   IMPORTANT: You MUST cite AT LEAST 5 different source files throughout the wiki page to ensure comprehensive coverage.
 
@@ -2122,6 +2136,13 @@ IMPORTANT:
                   <div className="prose prose-sm md:prose-base lg:prose-lg max-w-none">
                     <Markdown
                       content={generatedPages[currentPageId].content}
+                      repoInfo={{
+                        type: effectiveRepoInfo.type,
+                        repoUrl: effectiveRepoInfo.repoUrl || undefined,
+                        defaultBranch: defaultBranch,
+                        owner: effectiveRepoInfo.owner,
+                        repo: effectiveRepoInfo.repo
+                      }}
                     />
                   </div>
 

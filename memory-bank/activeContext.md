@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Mermaid Diagram Fix Completed and Optimized** - September 7, 2025 - Successfully fixed Mermaid diagram parsing errors with comprehensive preprocessing function, enhanced error handling, and eliminated code duplication for cleaner, more maintainable code.
+**New Bug Fix Identified and Task Created** - September 7, 2025 - Created TASK032 to fix reference source hyperlinks that currently point to localhost instead of original repository URLs.
 
 ## Project Status Summary
 Major development phases completed with latest technical improvements:
@@ -18,11 +18,11 @@ Major development phases completed with latest technical improvements:
 11. ✅ **Mermaid Diagram Fix** - Comprehensive syntax error fix with code optimization and deduplication
 
 ## Current Work Context
-- **Phase**: Quality Assurance and Code Optimization
-- **Focus Area**: ✅ **COMPLETED** - Mermaid diagram comprehensive fix and code cleanup
-- **Status**: ✅ **OPTIMIZATION COMPLETE** - Parsing errors resolved, code duplication eliminated, enhanced error display
-- **Current Branch**: `fix-mermaid-diagram` (ready for merge)
-- **Latest Achievement**: Robust, optimized Mermaid diagram handling with single-pass preprocessing and improved maintainability
+- **Phase**: Bug Fix and User Experience Enhancement
+- **Focus Area**: 🔄 **NEW TASK** - Reference Source Hyperlink Fix (TASK032)
+- **Status**: 🔄 **PLANNING COMPLETE** - Task created and implementation plan developed
+- **Issue**: Citation links incorrectly point to localhost instead of original repository URLs
+- **Priority**: 🔴 **HIGH** - Affects documentation credibility and user experience
 
 ## Key Technical Improvements (September 7, 2025)
 

@@ -2,18 +2,16 @@
 
 ## Active Tasks
 
-**No Active Tasks** - All development work completed successfully. Project is in maintenance mode.
-
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
-| - | - | - | - | - | - |
+| TASK032 | Fix Reference Source Hyperlinks | 🔄 **PENDING** | 0% | Bug Fix | 🔴 High |
 
 ## Current Status
 
 **Core Development**: ✅ **100% COMPLETE** - All backend functionality and core features implemented
 **UI Enhancement**: ✅ **100% COMPLETE** - Header and footer alignment completed, all layout improvements finalized
 **Multi-Repository Features**: ✅ **100% COMPLETE** - Sidebar-based selection system with automatic mode switching implemented
-**Bug Fixes**: ✅ **100% COMPLETE** - All known issues resolved
+**Bug Fixes**: 🔄 **IN PROGRESS** - Working on reference source hyperlink fix (TASK032)
 **UI Cleanup**: ✅ **100% COMPLETE** - Language selection UI removed for better user experience
 
 ## Recently Completed
