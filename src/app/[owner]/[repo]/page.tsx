@@ -2315,7 +2315,7 @@ IMPORTANT:
               isCustomModel={isCustomSelectedModelState}
               customModel={customSelectedModelState}
               language={language}
-              onRef={(ref) => (askComponentRef.current = ref)}
+              onRef={(ref: { clearConversation: () => void }) => (askComponentRef.current = ref)}
             />
           </div>
         </div>
