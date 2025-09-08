@@ -278,6 +278,9 @@ export default function RepoWikiPage() {
   // Default branch state
   const [defaultBranch, setDefaultBranch] = useState<string>('main');
 
+  // Repository file list for citation validation
+  const [repositoryFiles, setRepositoryFiles] = useState<string[]>([]);
+
   // Helper function to generate proper repository file URLs
   const generateFileUrl = useCallback((filePath: string): string => {
     if (effectiveRepoInfo.type === 'local') {
@@ -364,6 +367,60 @@ export default function RepoWikiPage() {
     fetchAuthStatus();
   }, []);
 
+  // Fetch repository information to detect the actual default branch and get file list
+  useEffect(() => {
+    const fetchRepositoryInfo = async () => {
+      if (!owner || !repo || effectiveRepoInfo.type === 'local') {
+        return;
+      }
+
+      try {
+        console.log(`Fetching repository info for ${owner}/${repo} to detect default branch...`);
+        
+        // Build the query parameters for the API call
+        const params = new URLSearchParams({
+          owner,
+          repo,
+          type: effectiveRepoInfo.type
+        });
+
+        if (effectiveRepoInfo.token) {
+          params.append('token', effectiveRepoInfo.token);
+        }
+        if (effectiveRepoInfo.repoUrl) {
+          params.append('repo_url', effectiveRepoInfo.repoUrl);
+        }
+
+        // Fetch repository information including default branch and file list
+        const response = await fetch(`/api/repo-info?${params}`);
+        
+        if (response.ok) {
+          const repoData = await response.json();
+          
+          // Update default branch if provided
+          if (repoData.default_branch) {
+            console.log(`Detected default branch: ${repoData.default_branch} (was: ${defaultBranch})`);
+            setDefaultBranch(repoData.default_branch);
+          }
+          
+          // Update repository files list if provided
+          if (repoData.files && Array.isArray(repoData.files)) {
+            console.log(`Repository contains ${repoData.files.length} files`);
+            setRepositoryFiles(repoData.files);
+          }
+        } else {
+          console.warn(`Failed to fetch repository info: ${response.status} ${response.statusText}`);
+          // Keep default branch as 'main' if fetch fails
+        }
+      } catch (error) {
+        console.error('Error fetching repository information:', error);
+        // Keep default branch as 'main' if error occurs
+      }
+    };
+
+    fetchRepositoryInfo();
+  }, [owner, repo, effectiveRepoInfo.type, effectiveRepoInfo.token, effectiveRepoInfo.repoUrl, defaultBranch]);
+
   // Generate content for a wiki page
   const generatePageContent = useCallback(async (page: WikiPage, owner: string, repo: string) => {
     return new Promise<void>(async (resolve) => {
@@ -406,6 +463,8 @@ export default function RepoWikiPage() {
 
         // Make API call to generate page content
         console.log(`Starting content generation for page: ${page.title}`);
+        console.log(`Using branch for citations: ${defaultBranch || 'main'} (fallback: main)`);
+        console.log(`Repository type: ${effectiveRepoInfo.type}, URL: ${effectiveRepoInfo.repoUrl}`);
 
         // Get repository URL
         const repoUrl = getRepoUrl(effectiveRepoInfo);
@@ -481,7 +540,24 @@ Based ONLY on the content of the \`[RELEVANT_SOURCE_FILES]\`:
 6.  **Source Citations (EXTREMELY IMPORTANT):**
     *   For EVERY piece of significant information, explanation, diagram, table entry, or code snippet, you MUST cite the specific source file(s) and relevant line numbers from which the information was derived.
     *   Place citations at the end of the paragraph, under the diagram/table, or after the code snippet.
-    *   Use the exact format: \`Sources: [filename.ext:start_line-end_line]()\` for a range, or \`Sources: [filename.ext:line_number]()\` for a single line. Multiple files can be cited: \`Sources: [file1.ext:1-10](), [file2.ext:5](), [dir/file3.ext]()\` (if the whole file is relevant and line numbers are not applicable or too broad).
+    *   Use the exact format with proper repository URLs based on repository type:
+    *   For ${effectiveRepoInfo.type || 'github'} repositories, use these formats:
+        - Line range: \`Sources: [filename.ext:start_line-end_line](repository_url)\`
+        - Single line: \`Sources: [filename.ext:line_number](repository_url)\`
+        - Whole file: \`Sources: [filename.ext](repository_url)\`
+    *   URL Format Guidelines:
+        - GitHub: Use \`${effectiveRepoInfo.repoUrl || 'https://github.com/owner/repo'}/blob/${defaultBranch || 'main'}/filename.ext#L10-L25\` for line ranges
+        - GitLab: Use \`${effectiveRepoInfo.repoUrl || 'https://gitlab.com/owner/repo'}/-/blob/${defaultBranch || 'main'}/filename.ext#L10-L25\` for line ranges  
+        - Bitbucket: Use \`${effectiveRepoInfo.repoUrl || 'https://bitbucket.org/owner/repo'}/src/${defaultBranch || 'main'}/filename.ext#lines-10:25\` for line ranges
+        - Local repos: Use empty parentheses \`()\` as no web URLs are available
+    *   CRITICAL: ONLY cite files that actually exist in the repository. Do not create citations for hypothetical or non-existent files.
+    *   The repository's default/main branch is: ${defaultBranch || 'main'} (use this branch in all URLs)
+    *   Available files in repository (for validation): ${repositoryFiles.slice(0, 200).join(', ')}${repositoryFiles.length > 200 ? ` and ${repositoryFiles.length - 200} more files` : ''}
+    *   EXAMPLES for this ${effectiveRepoInfo.type || 'github'} repository:
+        - Range: \`Sources: [src/app.py:10-25](${effectiveRepoInfo.type === 'github' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/blob/' + (defaultBranch || 'main') + '/src/app.py#L10-L25' : effectiveRepoInfo.type === 'gitlab' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/-/blob/' + (defaultBranch || 'main') + '/src/app.py#L10-L25' : effectiveRepoInfo.type === 'bitbucket' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/src/' + (defaultBranch || 'main') + '/src/app.py#lines-10:25' : ''})\`
+        - Single: \`Sources: [config/settings.js:42](${effectiveRepoInfo.type === 'github' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/blob/' + (defaultBranch || 'main') + '/config/settings.js#L42' : effectiveRepoInfo.type === 'gitlab' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/-/blob/' + (defaultBranch || 'main') + '/config/settings.js#L42' : effectiveRepoInfo.type === 'bitbucket' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/src/' + (defaultBranch || 'main') + '/config/settings.js#lines-42' : ''})\`
+        - File: \`Sources: [utils/helper.py](${effectiveRepoInfo.type === 'github' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/blob/' + (defaultBranch || 'main') + '/utils/helper.py' : effectiveRepoInfo.type === 'gitlab' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/-/blob/' + (defaultBranch || 'main') + '/utils/helper.py' : effectiveRepoInfo.type === 'bitbucket' ? (effectiveRepoInfo.repoUrl || 'REPO_URL') + '/src/' + (defaultBranch || 'main') + '/utils/helper.py' : ''})\`
+    *   Multiple files can be cited: \`Sources: [file1.ext:1-10](URL1), [file2.ext:5](URL2), [dir/file3.ext](URL3)\`
     *   If an entire section is overwhelmingly based on one or two files, you can cite them under the section heading in addition to more specific citations within the section.
     *   IMPORTANT: You MUST cite AT LEAST 5 different source files throughout the wiki page to ensure comprehensive coverage.
 
@@ -654,7 +730,7 @@ Remember:
         setLoadingMessage(undefined); // Clear specific loading message
       }
     });
-  }, [generatedPages, currentToken, effectiveRepoInfo, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, language, activeContentRequests, generateFileUrl]);
+  }, [generatedPages, currentToken, effectiveRepoInfo, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, modelIncludedDirs, modelIncludedFiles, language, activeContentRequests, generateFileUrl, defaultBranch, repositoryFiles]);
 
   // Determine the wiki structure from repository data
   const determineWikiStructure = useCallback(async (fileTree: string, readme: string, owner: string, repo: string) => {
@@ -1129,7 +1205,7 @@ IMPORTANT:
     } finally {
       setStructureRequestInProgress(false);
     }
-  }, [generatePageContent, currentToken, effectiveRepoInfo, pagesInProgress.size, structureRequestInProgress, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, language, messages.loading, isComprehensiveView]);
+  }, [generatePageContent, currentToken, effectiveRepoInfo, pagesInProgress.size, structureRequestInProgress, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, modelIncludedDirs, modelIncludedFiles, language, messages.loading, isComprehensiveView]);
 
   // Fetch repository structure using GitHub or GitLab API
   const fetchRepositoryStructure = useCallback(async () => {
@@ -1228,6 +1304,7 @@ IMPORTANT:
           ? [defaultBranchLocal, 'main', 'master'].filter((branch, index, arr) => arr.indexOf(branch) === index)
           : ['main', 'master'];
 
+        let actualWorkingBranch = null;
         for (const branch of branchesToTry) {
           const apiUrl = `${githubApiBaseUrl}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
           const headers = createGithubHeaders(currentToken);
@@ -1240,12 +1317,15 @@ IMPORTANT:
 
             if (response.ok) {
               treeData = await response.json();
-              console.log('Successfully fetched repository structure');
+              actualWorkingBranch = branch;
+              console.log(`Successfully fetched repository structure from branch: ${branch}`);
+              // Update the default branch state with the actual working branch
+              setDefaultBranch(branch);
               break;
             } else {
               const errorData = await response.text();
               apiErrorDetails = `Status: ${response.status}, Response: ${errorData}`;
-              console.error(`Error fetching repository structure: ${apiErrorDetails}`);
+              console.error(`Error fetching repository structure from branch ${branch}: ${apiErrorDetails}`);
             }
           } catch (err) {
             console.error(`Network error fetching branch ${branch}:`, err);
@@ -1265,6 +1345,13 @@ IMPORTANT:
           .filter((item: { type: string; path: string }) => item.type === 'blob')
           .map((item: { type: string; path: string }) => item.path)
           .join('\n');
+
+        // Store the file list for citation validation
+        const fileList = treeData.tree
+          .filter((item: { type: string; path: string }) => item.type === 'blob')
+          .map((item: { type: string; path: string }) => item.path);
+        setRepositoryFiles(fileList);
+        console.log(`Repository contains ${fileList.length} files`);
 
         // Try to fetch README.md content
         try {
@@ -1349,6 +1436,13 @@ IMPORTANT:
           .map((item: { type: string; path: string }) => item.path)
           .join('\n');
 
+        // Store the file list for citation validation
+        const fileList = filesData
+          .filter((item: { type: string; path: string }) => item.type === 'blob')
+          .map((item: { type: string; path: string }) => item.path);
+        setRepositoryFiles(fileList);
+        console.log(`GitLab repository contains ${fileList.length} files`);
+
           // Step 4: Try to fetch README.md content
           const readmeUrl = `${projectInfoUrl}/repository/files/README.md/raw`;
             try {
@@ -1429,6 +1523,13 @@ IMPORTANT:
           .filter((item: { type: string; path: string }) => item.type === 'commit_file')
           .map((item: { type: string; path: string }) => item.path)
           .join('\n');
+
+        // Store the file list for citation validation
+        const fileList = filesData.values
+          .filter((item: { type: string; path: string }) => item.type === 'commit_file')
+          .map((item: { type: string; path: string }) => item.path);
+        setRepositoryFiles(fileList);
+        console.log(`Bitbucket repository contains ${fileList.length} files`);
 
         // Try to fetch README.md content
         try {
@@ -1896,7 +1997,7 @@ IMPORTANT:
     };
 
     saveCache();
-  }, [isLoading, error, wikiStructure, generatedPages, effectiveRepoInfo.owner, effectiveRepoInfo.repo, effectiveRepoInfo.type, effectiveRepoInfo.repoUrl, repoUrl, language, isComprehensiveView]);
+  }, [isLoading, error, wikiStructure, generatedPages, effectiveRepoInfo, selectedModelState, selectedProviderState, repoUrl, language, isComprehensiveView]);
 
   const handlePageSelect = (pageId: string) => {
     if (currentPageId != pageId) {
@@ -2122,6 +2223,13 @@ IMPORTANT:
                   <div className="prose prose-sm md:prose-base lg:prose-lg max-w-none">
                     <Markdown
                       content={generatedPages[currentPageId].content}
+                      repoInfo={{
+                        type: effectiveRepoInfo.type,
+                        repoUrl: effectiveRepoInfo.repoUrl || undefined,
+                        defaultBranch: defaultBranch,
+                        owner: effectiveRepoInfo.owner,
+                        repo: effectiveRepoInfo.repo
+                      }}
                     />
                   </div>
 

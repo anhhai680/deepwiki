@@ -8,9 +8,59 @@ import Mermaid from './Mermaid';
 
 interface MarkdownProps {
   content: string;
+  repoInfo?: {
+    type?: string;
+    repoUrl?: string;
+    defaultBranch?: string;
+    owner?: string;
+    repo?: string;
+  };
 }
 
-const Markdown: React.FC<MarkdownProps> = ({ content }) => {
+const Markdown: React.FC<MarkdownProps> = ({ content, repoInfo }) => {
+  // Helper function to generate proper file URLs for citations
+  const generateCitationUrl = (fileName: string, lineInfo?: string): string => {
+    if (!repoInfo || repoInfo.type === 'local' || !repoInfo.repoUrl) {
+      return ''; // No URL for local repos or when repo info is missing
+    }
+
+    const { type, repoUrl, defaultBranch = 'main' } = repoInfo;
+    let baseUrl = '';
+    let anchor = '';
+
+    // Generate base URL based on repository type
+    if (type === 'github') {
+      baseUrl = `${repoUrl}/blob/${defaultBranch}/${fileName}`;
+    } else if (type === 'gitlab') {
+      baseUrl = `${repoUrl}/-/blob/${defaultBranch}/${fileName}`;
+    } else if (type === 'bitbucket') {
+      baseUrl = `${repoUrl}/src/${defaultBranch}/${fileName}`;
+    }
+
+    // Add line number anchor if provided
+    if (lineInfo && baseUrl) {
+      if (type === 'github' || type === 'gitlab') {
+        // GitHub/GitLab format: #L10-L25 or #L42
+        if (lineInfo.includes('-')) {
+          const [start, end] = lineInfo.split('-');
+          anchor = `#L${start}-L${end}`;
+        } else {
+          anchor = `#L${lineInfo}`;
+        }
+      } else if (type === 'bitbucket') {
+        // Bitbucket format: #lines-10:25 or #lines-42
+        if (lineInfo.includes('-')) {
+          const [start, end] = lineInfo.split('-');
+          anchor = `#lines-${start}:${end}`;
+        } else {
+          anchor = `#lines-${lineInfo}`;
+        }
+      }
+    }
+
+    return baseUrl + anchor;
+  };
+
   // Define markdown components
   const MarkdownComponents: React.ComponentProps<typeof ReactMarkdown>['components'] = {
     p({ children, ...props }: { children?: React.ReactNode }) {
@@ -58,6 +108,48 @@ const Markdown: React.FC<MarkdownProps> = ({ content }) => {
       return <li className="mb-2 text-sm leading-relaxed dark:text-white" {...props}>{children}</li>;
     },
     a({ children, href, ...props }: { children?: React.ReactNode; href?: string }) {
+      // Check if this is a citation link that needs URL transformation
+      if (children && typeof children === 'string' && (!href || href === '')) {
+        const citationMatch = children.match(/^(.+?):(\d+(?:-\d+)?)$/);
+        if (citationMatch) {
+          const [, fileName, lineInfo] = citationMatch;
+          const generatedUrl = generateCitationUrl(fileName, lineInfo);
+          if (generatedUrl) {
+            return (
+              <a
+                href={generatedUrl}
+                className="text-purple-600 dark:text-purple-400 hover:underline font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
+                {...props}
+              >
+                {children}
+              </a>
+            );
+          }
+        }
+        
+        // Check for file-only citations
+        const fileMatch = children.match(/^([^:]+)$/);
+        if (fileMatch && fileMatch[1].includes('.')) {
+          const fileName = fileMatch[1];
+          const generatedUrl = generateCitationUrl(fileName);
+          if (generatedUrl) {
+            return (
+              <a
+                href={generatedUrl}
+                className="text-purple-600 dark:text-purple-400 hover:underline font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
+                {...props}
+              >
+                {children}
+              </a>
+            );
+          }
+        }
+      }
+
       return (
         <a
           href={href}
