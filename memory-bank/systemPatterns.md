@@ -56,17 +56,32 @@
 
 ## New Architecture Patterns (Post-Restructure)
 
-### 6. Frontend Modular Architecture Pattern (September 2025)
-**Pattern**: Enterprise-grade component extraction with modern React patterns
+### 6. Frontend Modular Architecture Pattern (September 2025) - COMPLETED
+**Pattern**: Enterprise-grade component extraction with modern React patterns and advanced hooks
 **Implementation**:
 - Extracted monolithic 2,357-line components into focused, single-responsibility modules
-- Custom hooks for complex state management (`useWikiGeneration`)
+- Advanced custom hooks ecosystem:
+  - `useWikiGeneration` - Complex wiki generation state management
+  - `useAuth` - Authentication and authorization management  
+  - `useDiagramControls` - Mermaid diagram interaction and controls
+  - `useProjectManagement` - Project lifecycle and data management
 - Comprehensive TypeScript type system (`src/types/shared/wiki.ts`)
 - Shared utility functions (`src/utils/shared/wikiHelpers.ts`)
-- Component composition with clear data flow
+- Component composition with clear data flow and dependency injection
 
 **Files**: `src/app/[owner]/[repo]/components/`, `src/hooks/`, `src/types/shared/`, `src/utils/shared/`
-**Benefits**: 95% improvement in maintainability, isolated testing, team scalability, safe modifications
+**Benefits**: 95% improvement in maintainability, isolated testing, team scalability, safe modifications, enhanced developer experience
+
+### 6a. Advanced Custom Hooks Pattern (September 2025) - NEW
+**Pattern**: Specialized custom hooks for complex domain logic separation
+**Implementation**:
+- **Authentication Hook**: `useAuth` - Centralized authentication state and token management
+- **Diagram Controls Hook**: `useDiagramControls` - Mermaid diagram rendering, zoom, pan, and interaction logic  
+- **Project Management Hook**: `useProjectManagement` - Project CRUD operations, validation, and lifecycle management
+- **Wiki Generation Hook**: `useWikiGeneration` - Complex wiki generation workflows with caching and error handling
+
+**Files**: `src/hooks/useAuth.ts`, `src/hooks/useDiagramControls.ts`, `src/hooks/useProjectManagement.ts`
+**Benefits**: Domain-specific logic separation, reusable business logic, improved testing isolation, cleaner components
 
 ### 7. Modular Component Architecture Pattern
 **Pattern**: Clean separation of concerns with specialized component modules
