@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import DiagramContainer from './Mermaid/DiagramContainer';
-import FullScreenModal from './Mermaid/FullScreenModal';
+import DiagramContainer from './DiagramContainer';
+import FullScreenModal from './FullScreenModal';
 import { useMermaidRendering } from '@/hooks/useMermaidRendering';
 import { useDiagramControls } from '@/hooks/useDiagramControls';
 
