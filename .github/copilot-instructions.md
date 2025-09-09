@@ -205,12 +205,17 @@ deepwiki/
 **Only search the codebase if the information above is incomplete or found to be in error.** These instructions have been validated and contain the correct build sequences, configuration details, and architectural information needed for efficient development.
 
 ### Current Feature Development
-**Active Feature**: Quick Access Ask UI from Home Page (Branch: `001-refactor-frontend-to`)
-- **Goal**: Embed Ask UI directly into home page for immediate repository querying
-- **Key Files**: `src/app/page.tsx`, `src/components/Ask.tsx`, `src/components/RepositorySelector.tsx`
-- **Approach**: Reuse existing Ask.tsx component with new HomePageAsk wrapper
-- **Requirements**: Non-breaking, utilize existing tech stack, support multi-repository selection
-- **Specs Location**: `/specs/001-refactor-frontend-to/` (plan.md, research.md, data-model.md, contracts/, quickstart.md)
+**Active Feature**: Frontend Code Refactoring for Maintainability (Branch: `001-refactor-the-frontend`)
+- **Goal**: Refactor 7 critical oversized files (533-2,357 lines each) into maintainable modules <500 lines
+- **Critical Files**: 
+  - `src/app/[owner]/[repo]/page.tsx` (2,357 lines) - Main repository page
+  - `src/components/Ask.tsx` (1,062 lines) - Chat/Q&A interface  
+  - `src/components/Mermaid.tsx` (624 lines) - Diagram rendering
+  - `src/app/page.tsx` (707 lines) - Home page
+  - Plus 3 other large page components (625, 1,299, 533 lines)
+- **Approach**: Extract utilities, types, hooks while preserving ALL existing functionality
+- **Requirements**: Zero breaking changes, maintain all APIs, preserve user experience
+- **Specs Location**: `/specs/001-refactor-the-frontend/` (spec.md, plan.md, research.md, data-model.md, contracts/, quickstart.md)
 
 ### Quick Reference
 - **Backend**: `python -m backend.main` (port 8001)
