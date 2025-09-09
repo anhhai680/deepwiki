@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**MEMORY BANK UPDATE REQUESTED** - September 9, 2025 - User requested comprehensive memory bank update to capture current project state.
+**WIKI REFRESH FUNCTIONALITY FIX** - January 15, 2025 - Fixed critical error in wiki refresh button functionality where AI responses weren't returning expected XML format.
 
 ## Project Status Summary - COMPLETE SUCCESS
 DeepWiki has achieved extraordinary success with all major development phases completed and production-ready status:
@@ -26,12 +26,36 @@ DeepWiki has achieved extraordinary success with all major development phases co
 13. ✅ **Model Selection Fix** - Default model selection issue completely resolved
 14. ✅ **Header/Footer Alignment** - Layout width consistency achieved across all pages
 
+### **Wiki Refresh Functionality Fix (January 15, 2025)** - **COMPLETED**
+
+#### **Critical Bug Resolution**
+**Problem**: Wiki refresh button failing with error "No valid XML found in response"
+**Root Cause**: Frontend sending simplified prompt "Determine wiki structure based on repository analysis" instead of detailed XML format instructions
+**Impact**: Users unable to refresh wikis, breaking core functionality
+
+#### **Technical Implementation**
+**File Modified**: `src/hooks/useWikiGeneration.ts`
+**Solution**: Replaced simple prompt with comprehensive XML format template including:
+- Repository analysis instructions with file tree and README context
+- Explicit XML structure requirements with `<wiki_structure>` tags
+- Detailed formatting guidelines preventing markdown code block wrapping
+- Language-specific generation instructions
+- Page count specifications for comprehensive vs concise wikis
+
+**Key Changes**:
+- **Before**: Simple message `'Determine wiki structure based on repository analysis'`
+- **After**: Detailed 80+ line prompt template with complete XML formatting instructions
+- **XML Requirements**: Explicit `<wiki_structure>` wrapper with structured `<title>`, `<description>`, `<pages>` elements
+- **Format Prevention**: Clear instructions to avoid markdown code blocks and explanation text
+
+**Result**: Wiki refresh now correctly generates and parses XML responses, restoring full functionality
+
 ## Current Work Context
 - **Phase**: ✅ **PROJECT COMPLETE** - All development phases successfully completed
-- **Focus Area**: ✅ **ENTERPRISE EXCELLENCE** - Production-ready system with world-class architecture
+- **Focus Area**: ✅ **ENTERPRISE EXCELLENCE** - Production-ready system with world-class architecture  
 - **Status**: ✅ **PRODUCTION DEPLOYMENT** - System running successfully in production environment
 - **Achievement**: Complete transformation from prototype to enterprise-grade AI documentation system
-- **Priority**: 🟢 **MAINTENANCE MODE** - System in optimal operational status
+- **Priority**: 🟢 **MAINTENANCE MODE** - System in optimal operational status with recent refresh functionality fix
 
 ## Current Branch Status
 - **Active Branch**: `modularize-home-page` (current)

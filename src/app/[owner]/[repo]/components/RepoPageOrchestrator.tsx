@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { FaComments, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import Link from 'next/link';
@@ -87,7 +87,16 @@ const RepoPageOrchestrator: React.FC = () => {
     repoInfo,
     defaultBranch,
     repositoryFiles,
-    language
+    language,
+    provider: searchParams.get('provider') || 'openai',
+    model: searchParams.get('model') || 'gpt-4.1-mini',
+    isCustomModel: searchParams.get('custom_model') ? true : false,
+    customModel: searchParams.get('custom_model') || '',
+    excludedDirs: searchParams.get('excluded_dirs') || '',
+    excludedFiles: searchParams.get('excluded_files') || '',
+    includedDirs: searchParams.get('included_dirs') || '',
+    includedFiles: searchParams.get('included_files') || '',
+    isComprehensiveView: searchParams.get('comprehensive') !== 'false'
   });
 
   // Handle page selection
@@ -97,11 +106,10 @@ const RepoPageOrchestrator: React.FC = () => {
     }
   };
 
-  // Handle wiki refresh
-  const handleRefresh = () => {
-    // Implement refresh logic
-    console.log('Refresh wiki');
-  };
+  // Handle wiki refresh using the hook's refreshWiki function
+  const handleRefresh = useCallback(async () => {
+    await wikiGeneration.refreshWiki();
+  }, [wikiGeneration]);
 
   // Close modal on escape key
   useEffect(() => {

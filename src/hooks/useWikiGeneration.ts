@@ -13,6 +13,15 @@ interface UseWikiGenerationOptions {
   defaultBranch: string;
   repositoryFiles: string[];
   language: string;
+  provider?: string;
+  model?: string;
+  isCustomModel?: boolean;
+  customModel?: string;
+  excludedDirs?: string;
+  excludedFiles?: string;
+  includedDirs?: string;
+  includedFiles?: string;
+  isComprehensiveView?: boolean;
 }
 
 export const useWikiGeneration = ({ 
@@ -21,7 +30,16 @@ export const useWikiGeneration = ({
   defaultBranch, 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   repositoryFiles, 
-  language 
+  language,
+  provider = 'openai',
+  model = 'gpt-4.1-mini',
+  isCustomModel = false,
+  customModel = '',
+  excludedDirs = '',
+  excludedFiles = '',
+  includedDirs = '',
+  includedFiles = '',
+  isComprehensiveView = true
 }: UseWikiGenerationOptions) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>();
@@ -59,14 +77,117 @@ export const useWikiGeneration = ({
       const repoUrl = getRepoUrl(repoInfo);
       let responseText = '';
 
-      // Create request body
+      // Create request body with detailed XML instruction prompt
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const requestBody: Record<string, any> = {
         repo_url: repoUrl,
         type: repoInfo.type,
         messages: [{
           role: 'user',
-          content: 'Determine wiki structure based on repository analysis'
+          content: `Analyze this ${repoInfo.type} repository ${owner}/${repo} and create a wiki structure for it.
+
+1. The complete file tree of the project:
+<file_tree>
+${fileTreeData}
+</file_tree>
+
+2. The README file of the project:
+<readme>
+${readmeContent}
+</readme>
+
+I want to create a wiki for this repository. Determine the most logical structure for a wiki based on the repository's content.
+
+IMPORTANT: The wiki content will be generated in ${language === 'en' ? 'English' : language} language.
+
+When designing the wiki structure, include pages that would benefit from visual diagrams, such as:
+- Architecture overviews
+- Data flow descriptions
+- Component relationships
+- Process workflows
+- State machines
+- Class hierarchies
+
+${isComprehensiveView ? `
+Create a structured wiki with the following main sections:
+- Overview (general information about the project)
+- System Architecture (how the system is designed)
+- Core Features (key functionality)
+- Data Management/Flow: If applicable, how data is stored, processed, accessed, and managed (e.g., database schema, data pipelines, state management).
+- Frontend Components (UI elements, if applicable.)
+- Backend Systems (server-side components)
+- Model Integration (AI model connections)
+- Deployment/Infrastructure (how to deploy, what's the infrastructure like)
+- Extensibility and Customization (how to extend or customize functionality)
+
+Each section should contain relevant pages.
+
+Return your analysis in the following XML format:
+
+<wiki_structure>
+  <title>[Overall title for the wiki]</title>
+  <description>[Brief description of the repository]</description>
+  <sections>
+    <section id="section-1">
+      <title>[Section title]</title>
+      <pages>
+        <page_ref>page-1</page_ref>
+        <page_ref>page-2</page_ref>
+      </pages>
+      <subsections>
+        <section_ref>section-2</section_ref>
+      </subsections>
+    </section>
+  </sections>
+  <pages>
+    <page id="page-1">
+      <title>[Page title]</title>
+      <description>[Brief description of what this page will cover]</description>
+      <importance>high|medium|low</importance>
+      <relevant_files>
+        <file_path>[Path to a relevant file]</file_path>
+      </relevant_files>
+      <related_pages>
+        <related>page-2</related>
+      </related_pages>
+      <parent_section>section-1</parent_section>
+    </page>
+  </pages>
+</wiki_structure>
+` : `
+Return your analysis in the following XML format:
+
+<wiki_structure>
+  <title>[Overall title for the wiki]</title>
+  <description>[Brief description of the repository]</description>
+  <pages>
+    <page id="page-1">
+      <title>[Page title]</title>
+      <description>[Brief description of what this page will cover]</description>
+      <importance>high|medium|low</importance>
+      <relevant_files>
+        <file_path>[Path to a relevant file]</file_path>
+      </relevant_files>
+      <related_pages>
+        <related>page-2</related>
+      </related_pages>
+    </page>
+  </pages>
+</wiki_structure>
+`}
+
+IMPORTANT FORMATTING INSTRUCTIONS:
+- Return ONLY the valid XML structure specified above
+- DO NOT wrap the XML in markdown code blocks (no \`\`\` or \`\`\`xml)
+- DO NOT include any explanation text before or after the XML
+- Ensure the XML is properly formatted and valid
+- Start directly with <wiki_structure> and end with </wiki_structure>
+
+IMPORTANT:
+1. Create ${isComprehensiveView ? '8-12' : '4-6'} pages for a ${isComprehensiveView ? 'comprehensive' : 'concise'} wiki
+2. Each page should focus on a specific aspect of the codebase
+3. The relevant_files should be actual files from the repository
+4. Return ONLY valid XML with the structure specified above, with no markdown code block delimiters`
         }]
       };
 
@@ -148,10 +269,15 @@ export const useWikiGeneration = ({
 
       // Parse XML response
       responseText = responseText.replace(/^```(?:xml)?\s*/i, '').replace(/```\s*$/i, '');
+      
+      // Debug logging
+      console.log('Raw response text:', responseText);
+      
       const xmlMatch = responseText.match(/<wiki_structure>[\s\S]*?<\/wiki_structure>/m);
       
       if (!xmlMatch) {
-        throw new Error('No valid XML found in response');
+        console.error('No XML found. Full response:', responseText);
+        throw new Error(`No valid XML found in response. Response was: ${responseText.substring(0, 500)}${responseText.length > 500 ? '...' : ''}`);
       }
 
       const xmlText = xmlMatch[0].replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
@@ -402,7 +528,7 @@ export const useWikiGeneration = ({
 
       const repoUrl = getRepoUrl(repoInfo);
 
-      const response = await fetch(`/export/wiki`, {
+      const response = await fetch(`/api/export/wiki`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -509,7 +635,7 @@ export const useWikiGeneration = ({
     try {
       if (repoInfo.type === 'local' && repoInfo.localPath) {
         // Handle local repositories
-        const response = await fetch(`/local_repo/structure?path=${encodeURIComponent(repoInfo.localPath)}`);
+        const response = await fetch(`/api/local_repo/structure?path=${encodeURIComponent(repoInfo.localPath)}`);
         
         if (!response.ok) {
           const errorData = await response.text();
@@ -756,23 +882,63 @@ export const useWikiGeneration = ({
         readmeContent,
         repoInfo.owner,
         repoInfo.repo,
-        'google', // Default provider
-        'gemini-1.5-flash', // Default model
-        false, // isCustomModel
-        '', // customModel
-        repoInfo.token || '', // token
-        '', // excludedDirs
-        '', // excludedFiles
-        '', // includedDirs
-        '', // includedFiles
-        true // isComprehensiveView
+        provider,
+        model,
+        isCustomModel,
+        customModel,
+        repoInfo.token || '',
+        excludedDirs,
+        excludedFiles,
+        includedDirs,
+        includedFiles,
+        isComprehensiveView
       );
       
     } catch (error) {
       console.error('Error in fetchRepositoryStructureAndGenerateWiki:', error);
       throw error;
     }
-  }, [repoInfo, determineWikiStructure]);
+  }, [repoInfo, determineWikiStructure, provider, model, isCustomModel, customModel, excludedDirs, excludedFiles, includedDirs, includedFiles, isComprehensiveView]);
+
+  // Refresh function to regenerate wiki
+  const refreshWiki = useCallback(async () => {
+    try {
+      // Clear current data
+      setWikiStructure(undefined);
+      setGeneratedPages({});
+      setPagesInProgress(new Set());
+      setCurrentPageId(undefined);
+      setError(null);
+      setIsLoading(true);
+      setLoadingMessage('Refreshing wiki...');
+      
+      // Clear server cache
+      const params = new URLSearchParams({
+        owner: repoInfo.owner,
+        repo: repoInfo.repo,
+        repo_type: repoInfo.type,
+        language: language
+      });
+      
+      try {
+        await fetch(`/api/wiki_cache?${params.toString()}`, {
+          method: 'DELETE'
+        });
+        console.log('Cache cleared successfully');
+      } catch (cacheError) {
+        console.warn('Failed to clear cache, proceeding with refresh:', cacheError);
+      }
+      
+      // Trigger fresh generation
+      await fetchRepositoryStructureAndGenerateWiki();
+      
+    } catch (error) {
+      console.error('Error refreshing wiki:', error);
+      setError(error instanceof Error ? error.message : 'Failed to refresh wiki. Please try again.');
+      setIsLoading(false);
+      setLoadingMessage(undefined);
+    }
+  }, [repoInfo, language, fetchRepositoryStructureAndGenerateWiki]);
 
   return {
     // State
@@ -789,6 +955,7 @@ export const useWikiGeneration = ({
     // Actions
     determineWikiStructure,
     exportWiki,
+    refreshWiki,
     setCurrentPageId,
     setError,
     setIsLoading,
