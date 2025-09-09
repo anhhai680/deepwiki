@@ -57,7 +57,7 @@ export const extractResearchStage = (content: string, iteration: number): Resear
 
   // Check for research updates (iterations 1-4)
   if (iteration >= 1 && iteration <= 4) {
-    const updateMatch = content.match(new RegExp(`## Research Update ${iteration}([\\\\s\\\\S]*?)(?:## Next Steps|$)`));
+    const updateMatch = content.match(new RegExp(`## Research Update ${iteration}([\\s\\S]*?)(?:## Next Steps|$)`));
     if (updateMatch) {
       return {
         title: `Research Update ${iteration}`,
