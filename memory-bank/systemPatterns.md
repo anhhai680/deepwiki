@@ -56,19 +56,7 @@
 
 ## New Architecture Patterns (Post-Restructure)
 
-### 6. Frontend Modular Architecture Pattern (September 2025)
-**Pattern**: Enterprise-grade component extraction with modern React patterns
-**Implementation**:
-- Extracted monolithic 2,357-line components into focused, single-responsibility modules
-- Custom hooks for complex state management (`useWikiGeneration`)
-- Comprehensive TypeScript type system (`src/types/shared/wiki.ts`)
-- Shared utility functions (`src/utils/shared/wikiHelpers.ts`)
-- Component composition with clear data flow
-
-**Files**: `src/app/[owner]/[repo]/components/`, `src/hooks/`, `src/types/shared/`, `src/utils/shared/`
-**Benefits**: 95% improvement in maintainability, isolated testing, team scalability, safe modifications
-
-### 7. Modular Component Architecture Pattern
+### 6. Modular Component Architecture Pattern
 **Pattern**: Clean separation of concerns with specialized component modules
 **Implementation**:
 - Dedicated directories for each component type

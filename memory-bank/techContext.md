@@ -93,51 +93,31 @@ backend/
 └── requirements.txt        # Python dependencies
 ```
 
-### Frontend Structure (Post-Refactoring - September 2025)
+### Frontend Structure
 ```
 src/
 ├── app/                    # Next.js app router pages
 │   ├── [owner]/           # Dynamic owner routes
 │   │   └── [repo]/        # Dynamic repository routes
-│   │       ├── page.tsx   # Clean orchestrator (~100 lines)
-│   │       ├── page_backup.tsx # Original monolith backup
-│   │       └── components/ # Modular component architecture
-│   │           ├── RepoPageOrchestrator.tsx # Main page logic
-│   │           ├── RepositoryHeader/
-│   │           │   └── index.tsx # Repository metadata
-│   │           ├── WikiSidebar/
-│   │           │   └── index.tsx # Navigation sidebar
-│   │           └── WikiViewer/
-│   │               └── index.tsx # Content display
 │   ├── api/               # API route handlers
 │   ├── wiki/              # Wiki interface
 │   └── layout.tsx         # Root layout component
-├── components/             # Shared React components
+├── components/             # React components
 │   ├── Ask.tsx            # Question asking interface
 │   ├── ConfigurationModal.tsx # Configuration modal
 │   ├── Markdown.tsx       # Markdown rendering
-│   ├── Mermaid.tsx        # Enhanced diagram rendering
+│   ├── Mermaid.tsx        # Diagram rendering
 │   ├── ModelSelectionModal.tsx # AI model selection
 │   ├── ProcessedProjects.tsx # Project display
 │   ├── WikiTreeView.tsx   # Wiki navigation tree
 │   └── WikiTypeSelector.tsx # Wiki type selection
 ├── contexts/               # React contexts
 │   └── LanguageContext.tsx # Language selection context
-├── hooks/                  # Custom React hooks (Enhanced)
-│   ├── useProcessedProjects.ts # Project data hook
-│   └── useWikiGeneration.ts # Wiki generation state management
+├── hooks/                  # Custom React hooks
+│   └── useProcessedProjects.ts # Project data hook
 ├── messages/               # Internationalization messages
-├── types/                  # TypeScript type definitions (Enhanced)
-│   ├── shared/            # Shared type definitions
-│   │   ├── index.ts       # Type exports
-│   │   └── wiki.ts        # Comprehensive wiki types
-│   └── [other types]      # Existing type definitions
-├── utils/                  # Utility functions (Enhanced)
-│   ├── shared/            # Shared utilities
-│   │   ├── index.ts       # Utility exports
-│   │   └── wikiHelpers.ts # Wiki operation utilities
-│   └── [other utils]      # Existing utilities
-└── [other directories]     # Existing directories
+├── types/                  # TypeScript type definitions
+└── utils/                  # Utility functions
 ```
 
 ## Dependencies Analysis
@@ -194,27 +174,6 @@ python-dotenv>=1.0.0                # Environment management
 ```
 
 ## Recent Technical Improvements (September 2025)
-
-### Frontend Architectural Transformation (September 9, 2025)
-**Major Achievement**: Complete transformation from monolithic to modular component architecture
-
-#### **Architectural Revolution**
-- **Monolith Eliminated**: Transformed 2,357-line repository page into enterprise-grade modular system
-- **Component Extraction**: Created focused, single-responsibility components with clear boundaries
-- **Modern React Patterns**: Implemented custom hooks, comprehensive TypeScript types, and utility functions
-- **Enterprise Standards**: Achieved professional-grade maintainability and scalability
-
-#### **Technical Implementation**
-- **Custom State Management**: `useWikiGeneration` hook for complex wiki generation workflows
-- **Type Safety**: Comprehensive TypeScript definitions in `src/types/shared/wiki.ts`
-- **Utility Functions**: Shared business logic in `src/utils/shared/wikiHelpers.ts`
-- **Component Composition**: Clean data flow and explicit dependencies
-
-#### **Quality Improvements**
-- **Maintainability**: 95% improvement in code maintainability through modular architecture
-- **Testing**: Components can now be unit tested in isolation
-- **Collaboration**: Multiple developers can work simultaneously on different components
-- **Performance**: Better bundle splitting and component optimization
 
 ### Mermaid Diagram Rendering Enhancement
 - **Problem Solved**: Critical syntax parsing errors causing diagram render failures
