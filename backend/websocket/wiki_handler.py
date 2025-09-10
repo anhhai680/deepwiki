@@ -11,7 +11,7 @@ from typing import List, Optional, Dict, Any, Union
 from urllib.parse import unquote
 
 import google.generativeai as genai
-from adalflow.components.model_client.ollama_client import OllamaClient
+from backend.components.generator.providers.ollama_generator import OllamaGenerator
 from backend.components.generator.base import ModelType
 from fastapi import WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel, Field
@@ -461,7 +461,7 @@ This file contains...
     if request.provider == "ollama":
         prompt += " /no_think"
 
-        model = OllamaClient()
+        model = OllamaGenerator()
         model_kwargs = {
             "model": full_config["model"],
             "stream": True,

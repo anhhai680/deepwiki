@@ -5,13 +5,12 @@ This module handles the AI model interactions and streaming responses
 for different AI providers in the chat pipeline.
 """
 
-import logging
 import google.generativeai as genai
 from typing import AsyncGenerator, Any, Dict
 
-from ..base.base_pipeline import PipelineStep, PipelineContext
+from ..base.base_pipeline import PipelineStep
 from .chat_context import ChatPipelineContext
-from adalflow.components.model_client.ollama_client import OllamaClient
+from backend.components.generator.providers.ollama_generator import OllamaGenerator
 from backend.components.generator.base import ModelType
 
 
@@ -89,7 +88,7 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_ollama_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Ollama."""
-        model = OllamaClient()
+        model = OllamaGenerator()
         model_name = context.model or context.model_config.get("model")
         model_kwargs = self._clean_dict({
             "model": model_name,
@@ -109,11 +108,23 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         
         response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
         
-        async for chunk in response:
-            text = getattr(chunk, 'response', None) or getattr(chunk, 'text', None) or str(chunk)
-            if text and not text.startswith('model=') and not text.startswith('created_at='):
-                text = text.replace('<think>', '').replace('</think>', '')
-                yield text
+        # Handle response parsing for Ollama format
+        if hasattr(response, 'get') and 'message' in response:
+            # Single response format
+            content = response['message'].get('content', '')
+            content = content.replace('<think>', '').replace('</think>', '')
+            if content:
+                yield content
+        elif isinstance(response, str):
+            # Direct string response
+            content = response.replace('<think>', '').replace('</think>', '')
+            if content:
+                yield content
+        else:
+            # Fallback for unexpected format
+            content = str(response).replace('<think>', '').replace('</think>', '')
+            if content and not content.startswith('model=') and not content.startswith('created_at='):
+                yield content
     
     async def _generate_openrouter_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from OpenRouter."""
@@ -300,7 +311,7 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_ollama_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Ollama fallback response."""
-        model = OllamaClient()
+        model = OllamaGenerator()
         model_name = context.model or context.model_config.get("model")
         model_kwargs = self._clean_dict({
             "model": model_name,
@@ -319,11 +330,24 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         )
         
         response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
-        async for chunk in response:
-            text = getattr(chunk, 'response', None) or getattr(chunk, 'text', None) or str(chunk)
-            if text and not text.startswith('model=') and not text.startswith('created_at='):
-                text = text.replace('<think>', '').replace('</think>', '')
-                yield text
+        
+        # Handle response parsing for Ollama format
+        if hasattr(response, 'get') and 'message' in response:
+            # Single response format
+            content = response['message'].get('content', '')
+            content = content.replace('<think>', '').replace('</think>', '')
+            if content:
+                yield content
+        elif isinstance(response, str):
+            # Direct string response
+            content = response.replace('<think>', '').replace('</think>', '')
+            if content:
+                yield content
+        else:
+            # Fallback for unexpected format
+            content = str(response).replace('<think>', '').replace('</think>', '')
+            if content and not content.startswith('model=') and not content.startswith('created_at='):
+                yield content
     
     async def _generate_openrouter_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate OpenRouter fallback response."""

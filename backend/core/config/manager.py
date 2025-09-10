@@ -37,7 +37,7 @@ class ConfigurationManager:
         self._client_classes = {}
     
     def _load_client_classes(self):
-        """Load generator classes for provider configuration."""
+        """Load generator and embedder classes for provider configuration."""
         try:
             from backend.components.generator.providers.openai_generator import OpenAIGenerator
             from backend.components.generator.providers.openrouter_generator import OpenRouterGenerator
@@ -45,17 +45,22 @@ class ConfigurationManager:
             from backend.components.generator.providers.azure_generator import AzureAIGenerator
             from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
             from backend.components.generator.providers.ollama_generator import OllamaGenerator
+            from backend.components.embedder.providers.openai_embedder import OpenAIEmbedder
+            from backend.components.embedder.providers.ollama_embedder import OllamaEmbedder
             from adalflow import GoogleGenAIClient, OllamaClient, OpenAIClient
             
             self._client_classes = {
                 "GoogleGenAIClient": GoogleGenAIClient,
                 "OpenAIClient": OpenAIClient,
+                "OllamaClient": OllamaClient,
                 "OpenAIGenerator": OpenAIGenerator,
                 "OpenRouterGenerator": OpenRouterGenerator,
                 "OllamaGenerator": OllamaGenerator,
                 "BedrockGenerator": BedrockGenerator,
                 "AzureAIGenerator": AzureAIGenerator,
-                "DashScopeGenerator": DashScopeGenerator
+                "DashScopeGenerator": DashScopeGenerator,
+                "OpenAIEmbedder": OpenAIEmbedder,
+                "OllamaEmbedder": OllamaEmbedder
             }
         except ImportError:
             # Handle import errors gracefully during development

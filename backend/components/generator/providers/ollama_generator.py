@@ -43,9 +43,55 @@ class OllamaGenerator(BaseGenerator):
     ) -> None:
         super().__init__(**kwargs)
         self._env_host_name = env_host_name
-        self.host = host or os.getenv(self._env_host_name, "http://localhost:11434")
+        
+        # Get initial host preference
+        initial_host = host or os.getenv(self._env_host_name, "http://localhost:11434")
+        
+        # Try to find a working Ollama host (for Docker compatibility)
+        self.host = self._find_working_host(initial_host)
         self.sync_client = self.init_sync_client()
         self.async_client = None  # Initialize async client only when needed
+    
+    def _find_working_host(self, initial_host: str) -> str:
+        """
+        Find a working Ollama host by trying different Docker networking options.
+        
+        This method tries multiple host addresses in order of preference:
+        1. The provided/configured host
+        2. host.docker.internal (for Docker Desktop)
+        3. 172.17.0.1 (default Docker bridge gateway)
+        4. localhost (fallback)
+        """
+        hosts_to_try = [
+            initial_host,
+            "http://host.docker.internal:11434",
+            "http://172.17.0.1:11434", 
+            "http://localhost:11434"
+        ]
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_hosts = []
+        for host in hosts_to_try:
+            if host not in seen:
+                seen.add(host)
+                unique_hosts.append(host)
+        
+        for host in unique_hosts:
+            try:
+                # Quick test to see if Ollama is responding
+                test_url = host.rstrip('/api') + '/api/tags'
+                response = requests.get(test_url, timeout=2)
+                if response.status_code == 200:
+                    log.info(f"Successfully connected to Ollama at {host}")
+                    return host
+            except requests.exceptions.RequestException:
+                log.debug(f"Could not connect to Ollama at {host}")
+                continue
+        
+        # If no host works, return the original and let later error handling deal with it
+        log.warning(f"Could not find working Ollama host, using {initial_host}")
+        return initial_host
     
     def init_sync_client(self):
         """Initialize the synchronous Ollama client."""
@@ -173,6 +219,13 @@ class OllamaGenerator(BaseGenerator):
                     content = completion['response']
                 else:
                     content = str(completion)
+                
+                # Clean up content by removing <think> tags
+                if isinstance(content, str):
+                    # Remove <think>...</think> blocks
+                    import re
+                    content = re.sub(r'<think>.*?</think>\s*', '', content, flags=re.DOTALL)
+                    content = content.strip()
                     
                 # Extract usage if available
                 usage = None
@@ -192,8 +245,14 @@ class OllamaGenerator(BaseGenerator):
                 )
             else:
                 # Handle other response types
+                content = str(completion)
+                # Clean up content by removing <think> tags
+                import re
+                content = re.sub(r'<think>.*?</think>\s*', '', content, flags=re.DOTALL)
+                content = content.strip()
+                
                 return GeneratorOutput(
-                    data=str(completion),
+                    data=content,
                     error=None,
                     raw_response=completion
                 )
@@ -249,6 +308,10 @@ class OllamaGenerator(BaseGenerator):
             if not self.check_model_exists(model_name):
                 raise OllamaModelNotFoundError(f"Model {model_name} not found in Ollama")
             
+            # Ensure we're not streaming for non-streaming calls
+            api_kwargs_copy = api_kwargs.copy()
+            api_kwargs_copy["stream"] = False
+            
             if model_type == ModelType.LLM:
                 # Chat completion endpoint
                 url = f"{self.sync_client['base_url']}/chat"
@@ -260,8 +323,8 @@ class OllamaGenerator(BaseGenerator):
             
             response = requests.post(
                 url,
-                json=api_kwargs,
-                timeout=60  # Ollama can be slow
+                json=api_kwargs_copy,
+                timeout=120  # Ollama can be very slow on first call
             )
             response.raise_for_status()
             

@@ -78,21 +78,48 @@ npm run dev
 
 ![Ollama Option](screenshots/Ollama.png)
 
-## Alternative using Dockerfile
+## Using Docker with Ollama
+
+### Method 1: Using Docker Compose (Recommended)
+
+1. Make sure Ollama is running on your host machine
+2. Update your `.env` file for Docker networking:
+   ```
+   # Use host.docker.internal for Docker Desktop (macOS/Windows)
+   OLLAMA_HOST=http://host.docker.internal:11434
+   
+   # Or use Docker bridge gateway for Linux
+   # OLLAMA_HOST=http://172.17.0.1:11434
+   ```
+
+3. Run with Docker Compose:
+   ```bash
+   docker-compose up
+   ```
+
+### Method 2: Using Custom Dockerfile
 
 1. Build the docker image `docker build -f Dockerfile-ollama-local -t deepwiki:ollama-local .`
-2. Run the container:
+2. Run the container with proper networking:
    ```bash
-   # For regular use
+   # For Docker Desktop (macOS/Windows)
    docker run -p 3000:3000 -p 8001:8001 --name deepwiki \
      -v ~/.adalflow:/root/.adalflow \
-     -e OLLAMA_HOST=your_ollama_host \
+     -e OLLAMA_HOST=http://host.docker.internal:11434 \
+     --add-host=host.docker.internal:host-gateway \
+     deepwiki:ollama-local
+   
+   # For Linux Docker
+   docker run -p 3000:3000 -p 8001:8001 --name deepwiki \
+     -v ~/.adalflow:/root/.adalflow \
+     -e OLLAMA_HOST=http://172.17.0.1:11434 \
      deepwiki:ollama-local
    
    # For local repository analysis
    docker run -p 3000:3000 -p 8001:8001 --name deepwiki \
      -v ~/.adalflow:/root/.adalflow \
-     -e OLLAMA_HOST=your_ollama_host \
+     -e OLLAMA_HOST=http://host.docker.internal:11434 \
+     --add-host=host.docker.internal:host-gateway \
      -v /path/to/your/repo:/app/local-repos/repo-name \
      deepwiki:ollama-local
    ```
@@ -100,6 +127,12 @@ npm run dev
 3. When using local repositories in the interface: use `/app/local-repos/repo-name` as the local repository path.
 
 4. Open http://localhost:3000 in your browser
+
+### Docker Networking Notes
+
+- **Docker Desktop (macOS/Windows)**: Use `host.docker.internal:11434` to access Ollama running on the host
+- **Linux Docker**: Use `172.17.0.1:11434` (default Docker bridge gateway) or `--network host` mode
+- **Docker Compose**: The provided `docker-compose.yml` automatically handles networking with `extra_hosts` configuration
 
 Note: For Apple Silicon Macs, the Dockerfile automatically uses ARM64 binaries for better performance.
 
@@ -117,6 +150,52 @@ When you select "Use Local Ollama", DeepWiki will:
 - Make sure Ollama is running in the background. You can check by running `ollama list` in your terminal.
 - Verify that Ollama is running on the default port (11434)
 - Try restarting Ollama
+
+### Docker Connection Issues (Container cannot access Ollama)
+
+If you see errors like "Connection refused" or "Model not found" when using Docker:
+
+1. **Check your OLLAMA_HOST configuration**:
+   ```bash
+   # For Docker Desktop (macOS/Windows)
+   OLLAMA_HOST=http://host.docker.internal:11434
+   
+   # For Linux Docker 
+   OLLAMA_HOST=http://172.17.0.1:11434
+   ```
+
+2. **Verify Ollama is accessible from your host**:
+   ```bash
+   curl http://localhost:11434/api/tags
+   ```
+
+3. **Test from inside the Docker container**:
+   ```bash
+   # Enter the container
+   docker exec -it deepwiki_container bash
+   
+   # Test connection (adjust host as needed)
+   curl http://host.docker.internal:11434/api/tags
+   ```
+
+4. **Alternative solutions**:
+   - **Linux users**: Try using `--network host` mode:
+     ```bash
+     docker run --network host deepwiki:ollama-local
+     ```
+   - **All platforms**: Find your Docker host IP:
+     ```bash
+     # On the host machine
+     docker network inspect bridge | grep Gateway
+     # Use the gateway IP in OLLAMA_HOST
+     ```
+
+5. **DeepWiki automatically tries multiple host addresses**:
+   - The system will automatically attempt to connect to:
+     1. Your configured OLLAMA_HOST
+     2. `http://host.docker.internal:11434` 
+     3. `http://172.17.0.1:11434`
+     4. `http://localhost:11434` (fallback)
 
 ### Slow generation
 - Local models are typically slower than cloud APIs. Consider using a smaller repository or a more powerful computer.
