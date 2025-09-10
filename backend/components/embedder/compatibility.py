@@ -32,7 +32,9 @@ def get_embedder():
         # Map client class names to provider types
         provider_mapping = {
             "OpenAIGenerator": EmbeddingProviderType.OPENAI,
+            "OpenAIEmbedder": EmbeddingProviderType.OPENAI,
             "OllamaGenerator": EmbeddingProviderType.OLLAMA,
+            "OllamaEmbedder": EmbeddingProviderType.OLLAMA,
         }
         
         provider_type = provider_mapping.get(client_class, EmbeddingProviderType.OPENAI)
