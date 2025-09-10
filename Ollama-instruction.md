@@ -53,14 +53,14 @@ OLLAMA_HOST=your_ollama_host # (default: http://localhost:11434)
 
 Configure the Local Embedder for Ollama:
 ```
-cp api/config/embedder.ollama.json.bak api/config/embedder.json
-# overwrite api/config/embedder.json? (y/n [n]) y
+cp backend/config/embedder.ollama.json.bak backend/config/embedder.json
+# overwrite backend/config/embedder.json? (y/n [n]) y
 ```
 
 Start the backend:
 ```bash
-pip install -r api/requirements.txt
-python -m api.main
+pip install -r backend/requirements.txt
+python -m backend.main
 ```
 
 Start the frontend:
@@ -128,7 +128,7 @@ When you select "Use Local Ollama", DeepWiki will:
 
 ## Advanced: Using Different Models
 
-If you want to try different models, you can modify the `api/config/generator.json` file:
+If you want to try different models, you can modify the `backend/config/generator.json` file:
 
 ```python
 "generator_ollama": {
