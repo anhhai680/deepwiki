@@ -33,7 +33,7 @@ class ChatPipelineContext(PipelineContext):
     file_path: Optional[str] = None
     
     # Model configuration
-    provider: str = "google"
+    provider: str = "ollama"  # Will be overridden by configuration
     model: Optional[str] = None
     model_config: Dict[str, Any] = field(default_factory=dict)
     

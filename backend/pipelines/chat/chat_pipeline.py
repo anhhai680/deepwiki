@@ -8,6 +8,7 @@ and provides a streaming interface for chat completions.
 import logging
 from typing import AsyncGenerator, Dict, Any, List
 
+from ...core.config.manager import get_config_manager
 from ..base.base_pipeline import BasePipeline, PipelineContext
 from .chat_context import ChatPipelineContext
 from .steps import (
@@ -121,7 +122,7 @@ class ChatPipeline(BasePipeline[ChatPipelineContext, ChatPipelineContext, ChatPi
             repo_type=request_data.get("type", "github"),
             token=request_data.get("token"),
             language=request_data.get("language", "en"),
-            provider=request_data.get("provider", "google"),
+            provider=request_data.get("provider") or get_config_manager().get_default_provider(),
             model=request_data.get("model"),
             file_path=request_data.get("filePath"),
             excluded_dirs=request_data.get("excluded_dirs"),

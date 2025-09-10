@@ -52,60 +52,50 @@ class OllamaGenerator(BaseGenerator):
         self.sync_client = self.init_sync_client()
         self.async_client = None  # Initialize async client only when needed
     
+
     def _find_working_host(self, initial_host: str) -> str:
         """
-        Find a working Ollama host by trying different Docker networking options.
+        Find a working Ollama host, trying multiple options for Docker compatibility.
         
-        This method tries multiple host addresses in order of preference:
-        1. The provided/configured host
-        2. host.docker.internal (for Docker Desktop)
-        3. 172.17.0.1 (default Docker bridge gateway)
-        4. localhost (fallback)
+        Args:
+            initial_host: The initially preferred host URL
+            
+        Returns:
+            A working host URL
         """
-        hosts_to_try = [
-            initial_host,
-            "http://host.docker.internal:11434",
-            "http://172.17.0.1:11434", 
-            "http://localhost:11434"
-        ]
+        # Remove /api suffix if present
+        if initial_host.endswith('/api'):
+            initial_host = initial_host[:-4]
+            
+        # List of hosts to try (in order of preference)
+        hosts_to_try = [initial_host]
         
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_hosts = []
+        # Add Docker-specific hosts if we're trying localhost
+        if "localhost" in initial_host or "127.0.0.1" in initial_host:
+            hosts_to_try.extend([
+                "http://host.docker.internal:11434",
+                "http://172.17.0.1:11434",  # Default Docker bridge gateway
+            ])
+        
         for host in hosts_to_try:
-            if host not in seen:
-                seen.add(host)
-                unique_hosts.append(host)
-        
-        for host in unique_hosts:
             try:
-                # Quick test to see if Ollama is responding
-                test_url = host.rstrip('/api') + '/api/tags'
-                response = requests.get(test_url, timeout=2)
+                response = requests.get(f"{host}/api/tags", timeout=10)
                 if response.status_code == 200:
                     log.info(f"Successfully connected to Ollama at {host}")
                     return host
-            except requests.exceptions.RequestException:
-                log.debug(f"Could not connect to Ollama at {host}")
+            except requests.exceptions.RequestException as e:
+                log.debug(f"Could not connect to Ollama at {host}: {e}")
                 continue
         
-        # If no host works, return the original and let later error handling deal with it
-        log.warning(f"Could not find working Ollama host, using {initial_host}")
+        # If no host works, return the initial host and let later methods handle the error
+        log.warning(f"Could not find a working Ollama host. Tried: {hosts_to_try}. Using {initial_host}")
         return initial_host
-    
+
     def init_sync_client(self):
         """Initialize the synchronous Ollama client."""
         # Remove /api prefix if present and add it back
         if self.host.endswith('/api'):
             self.host = self.host[:-4]
-        
-        # Test connection
-        try:
-            response = requests.get(f"{self.host}/api/tags", timeout=5)
-            if response.status_code != 200:
-                log.warning(f"Could not connect to Ollama at {self.host}")
-        except requests.exceptions.RequestException as e:
-            log.warning(f"Could not connect to Ollama at {self.host}: {e}")
         
         return {
             "host": self.host,
@@ -138,6 +128,28 @@ class OllamaGenerator(BaseGenerator):
                 is_available = model_base_name in available_models
                 if is_available:
                     log.info(f"Ollama model '{model_name}' is available")
+                    
+                    # Pre-warm model for Docker environments to reduce first-call timeout
+                    if "docker.internal" in self.host:
+                        try:
+                            log.info(f"Pre-warming model '{model_name}' for Docker environment...")
+                            warm_data = {
+                                "model": model_name,
+                                "prompt": "Hello",
+                                "stream": False,
+                                "options": {"num_predict": 1}
+                            }
+                            warm_response = requests.post(
+                                f"{self.host}/api/generate", 
+                                json=warm_data, 
+                                timeout=30
+                            )
+                            if warm_response.status_code == 200:
+                                log.info(f"Model '{model_name}' successfully pre-warmed")
+                            else:
+                                log.warning(f"Model pre-warming failed with status {warm_response.status_code}")
+                        except Exception as e:
+                            log.warning(f"Model pre-warming failed: {e}")
                 else:
                     log.warning(f"Ollama model '{model_name}' is not available. Available models: {available_models}")
                 return is_available
@@ -321,10 +333,20 @@ class OllamaGenerator(BaseGenerator):
             else:
                 raise ValueError(f"Model type {model_type} not supported")
             
+            # Use progressive timeouts for Docker environments
+            timeout = 300 if "docker.internal" in self.host else 120  # 5 min for Docker, 2 min for local
+            
+            # Optimize API kwargs for faster responses in Docker
+            if model_type == ModelType.LLM and api_kwargs_copy.get('options'):
+                api_kwargs_copy['options'].update({
+                    'num_ctx': min(api_kwargs_copy['options'].get('num_ctx', 4000), 4000),  # Limit context
+                    'num_predict': 2000,  # Limit response length
+                })
+            
             response = requests.post(
                 url,
                 json=api_kwargs_copy,
-                timeout=120  # Ollama can be very slow on first call
+                timeout=timeout  # Progressive timeout based on environment
             )
             response.raise_for_status()
             

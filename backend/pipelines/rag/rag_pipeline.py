@@ -34,7 +34,7 @@ class RAGPipeline(SequentialPipeline[str, Dict[str, str], RAGPipelineContext]):
     5. Memory update for conversation history
     """
     
-    def __init__(self, provider: str = "google", model: str = None):
+    def __init__(self, provider: str = "ollama", model: str = None):
         """Initialize the RAG pipeline with the specified AI provider and model."""
         super().__init__("rag_pipeline")
         

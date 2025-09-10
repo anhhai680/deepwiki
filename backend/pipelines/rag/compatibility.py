@@ -22,7 +22,7 @@ class RAGCompatibility:
     from rag.py, ensuring backward compatibility.
     """
     
-    def __init__(self, provider: str = "google", model: str = None, use_s3: bool = False):
+    def __init__(self, provider: str = "ollama", model: str = None, use_s3: bool = False):
         """
         Initialize the RAG compatibility wrapper.
         
@@ -168,7 +168,7 @@ class RAGCompatibility:
         return []
 
 # Create a compatibility function that mimics the original RAG class
-def create_rag(provider: str = "google", model: str = None, use_s3: bool = False) -> RAGCompatibility:
+def create_rag(provider: str = "ollama", model: str = None, use_s3: bool = False) -> RAGCompatibility:
     """
     Create a RAG instance for compatibility.
     
