@@ -69,6 +69,7 @@ async def get_model_config():
             "bedrock": "Bedrock",
             "azure": "Azure AI",
             "dashscope": "DashScope",
+            "privatemodel": "Private Model",
         }
 
         providers: list[Provider] = []
