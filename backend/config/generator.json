@@ -207,7 +207,7 @@
       }
     },
     "privatemodel": {
-      "client_class": "PrivateModelClient",
+      "client_class": "PrivateModelGenerator",
       "default_model": "custom-model",
       "url_base": "http://localhost:8000/v1",
       "supportsCustomModel": true,
