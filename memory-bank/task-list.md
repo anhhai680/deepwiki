@@ -5,6 +5,7 @@
 | ID | Task Name | Status | Progress | Phase | Priority |
 |----|-----------|--------|----------|-------|----------|
 | TASK032 | Fix Reference Source Hyperlinks | 🔄 **PENDING** | 0% | Bug Fix | 🔴 High |
+| TASK033 | Implement Private Model LLM Support | 🔄 **PENDING** | 0% | Feature Implementation | 🟡 Medium |
 
 ## Current Status
 
