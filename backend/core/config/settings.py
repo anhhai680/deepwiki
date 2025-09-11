@@ -257,7 +257,7 @@ def get_model_config(provider: str = "google", model: str = None) -> Dict[str, A
             }
         },
         "ollama": {
-            "model": "llama3.1:8b-instruct-q4_0",
+            "model": "qwen3:4b",
             "model_kwargs": {
                 "temperature": 0.7,
                 "top_p": 0.9,

@@ -1,5 +1,5 @@
 {
-  "default_provider": "openai",
+  "default_provider": "ollama",
   "providers": {
     "dashscope": {
       "default_model": "qwen-plus",

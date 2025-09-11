@@ -1,6 +1,6 @@
 {
   "embedder": {
-    "client_class": "OllamaClient",
+    "client_class": "OllamaEmbedder",
     "model_kwargs": {
       "model": "nomic-embed-text"
     }
