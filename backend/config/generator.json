@@ -208,11 +208,11 @@
     },
     "privatemodel": {
       "client_class": "PrivateModelGenerator",
-      "default_model": "custom-model",
-      "url_base": "http://localhost:8000/v1",
+      "default_model": "GPT-4o-mini",
+      "url_base": "https://aiportalapi.stu-platform.live/jpe",
       "supportsCustomModel": true,
       "models": {
-        "custom-model": {
+        "GPT-4o-mini": {
           "temperature": 0.7,
           "top_p": 0.8
         }

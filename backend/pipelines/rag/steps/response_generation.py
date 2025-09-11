@@ -258,17 +258,24 @@ IMPORTANT FORMATTING RULES:
             # Import ModelType for proper type specification
             from backend.components.generator.base import ModelType
 
-            # Prepare API kwargs for the generator call
-            api_kwargs = {
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ],
-                "model": self.model,
+            # Prepare model kwargs for the generator
+            model_kwargs = {
                 "temperature": 0.7,
                 "max_tokens": 2000
             }
+            
+            # Only include model if it's specified and not "default"
+            if self.model and self.model != "default":
+                model_kwargs["model"] = self.model
 
-            # Call the generator with proper model type
+            # Use the proper generator interface: convert inputs first, then call
+            api_kwargs = self.generator.convert_inputs_to_api_kwargs(
+                input=prompt,
+                model_kwargs=model_kwargs,
+                model_type=ModelType.LLM
+            )
+
+            # Call the generator with the properly converted kwargs
             context.logger.info(f"Calling {self.provider} generator for response generation")
             result = self.generator.call(api_kwargs, model_type=ModelType.LLM)
             

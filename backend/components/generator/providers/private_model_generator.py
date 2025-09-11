@@ -12,10 +12,6 @@ from typing import Dict, Any, Optional, Union, Generator
 from openai import OpenAI, AsyncOpenAI
 from openai import (
     APITimeoutError,
-    InternalServerError,
-    RateLimitError,
-    UnprocessableEntityError,
-    BadRequestError,
     APIConnectionError,
 )
 from openai.types.chat import ChatCompletionChunk, ChatCompletion

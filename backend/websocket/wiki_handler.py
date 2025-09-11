@@ -572,6 +572,36 @@ This file contains...
             model_kwargs=model_kwargs,
             model_type=ModelType.LLM
         )
+    elif request.provider == "privatemodel":
+        logger.info(f"Using PrivateModel with model: {request.model}")
+
+        # Import and initialize PrivateModel client
+        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
+        
+        try:
+            model = PrivateModelGenerator()
+        except Exception as e_init:
+            logger.error(f"Failed to initialize PrivateModelGenerator: {str(e_init)}")
+            error_msg = f"\nError: Failed to initialize Private Model client. Please check that you have set the PRIVATE_MODEL_API_KEY environment variable if required.\n\nError details: {str(e_init)}"
+            await websocket.send_text(error_msg)
+            await websocket.close()
+            return
+        
+        model_kwargs = {
+            "model": request.model,
+            "stream": True,
+            "temperature": model_config["temperature"]
+        }
+        
+        # Only add top_p if it exists in the model config
+        if "top_p" in model_config:
+            model_kwargs["top_p"] = model_config["top_p"]
+
+        api_kwargs = model.convert_inputs_to_api_kwargs(
+            input=prompt,
+            model_kwargs=model_kwargs,
+            model_type=ModelType.LLM
+        )
     else:
         # Initialize Google Generative AI model
         model = genai.GenerativeModel(
@@ -666,6 +696,40 @@ This file contains...
             except Exception as e_azure:
                 logger.error(f"Error with Azure AI API: {str(e_azure)}")
                 error_msg = f"\nError with Azure AI API: {str(e_azure)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
+                await websocket.send_text(error_msg)
+                # Close the WebSocket connection after sending the error message
+                await websocket.close()
+        elif request.provider == "privatemodel":
+            try:
+                # Get the response and handle it properly using the previously created api_kwargs
+                logger.info("Making PrivateModel API call")
+                response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+                logger.info("PrivateModel API call completed, processing response...")
+                
+                chunk_count = 0
+                # Handle streaming response from PrivateModel (OpenAI-compatible)
+                async for chunk in response:
+                    try:
+                        chunk_count += 1
+                        choices = getattr(chunk, "choices", [])
+                        if len(choices) > 0:
+                            choice = choices[0]
+                            delta = getattr(choice, "delta", None)
+                            if delta is not None:
+                                text = getattr(delta, "content", None)
+                                if text is not None:
+                                    await websocket.send_text(text)
+                    except Exception as e_chunk:
+                        logger.error(f"Error processing PrivateModel chunk {chunk_count}: {str(e_chunk)}")
+                        import traceback
+                        logger.error(f"PrivateModel chunk processing traceback: {traceback.format_exc()}")
+                
+                logger.info(f"Total PrivateModel chunks processed: {chunk_count}")
+                # Send completion signal instead of closing connection
+                await websocket.send_text("[DONE]")
+            except Exception as e_privatemodel:
+                logger.error(f"Error with PrivateModel API: {str(e_privatemodel)}")
+                error_msg = f"\nError with PrivateModel API: {str(e_privatemodel)}\n\nPlease check that your private model deployment is running and accessible, and that you have set the PRIVATE_MODEL_API_KEY environment variable if required."
                 await websocket.send_text(error_msg)
                 # Close the WebSocket connection after sending the error message
                 await websocket.close()
@@ -802,6 +866,35 @@ This file contains...
                     except Exception as e_fallback:
                         logger.error(f"Error with Azure AI API fallback: {str(e_fallback)}")
                         error_msg = f"\nError with Azure AI API fallback: {str(e_fallback)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
+                        await websocket.send_text(error_msg)
+                elif request.provider == "privatemodel":
+                    try:
+                        # Create new api_kwargs with the simplified prompt
+                        fallback_api_kwargs = model.convert_inputs_to_api_kwargs(
+                            input=simplified_prompt,
+                            model_kwargs=model_kwargs,
+                            model_type=ModelType.LLM
+                        )
+
+                        # Get the response using the simplified prompt
+                        logger.info("Making fallback PrivateModel API call")
+                        fallback_response = await model.acall(api_kwargs=fallback_api_kwargs, model_type=ModelType.LLM)
+
+                        # Handle streaming fallback response from PrivateModel (OpenAI-compatible)
+                        async for chunk in fallback_response:
+                            choices = getattr(chunk, "choices", [])
+                            if len(choices) > 0:
+                                choice = choices[0]
+                                delta = getattr(choice, "delta", None)
+                                if delta is not None:
+                                    text = getattr(delta, "content", None)
+                                    if text is not None:
+                                        await websocket.send_text(text)
+                        # Send completion signal instead of closing connection
+                        await websocket.send_text("[DONE]")
+                    except Exception as e_fallback:
+                        logger.error(f"Error with PrivateModel API fallback: {str(e_fallback)}")
+                        error_msg = f"\nError with PrivateModel API fallback: {str(e_fallback)}\n\nPlease check that your private model deployment is running and accessible."
                         await websocket.send_text(error_msg)
                 else:
                     # Initialize Google Generative AI model
