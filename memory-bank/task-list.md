@@ -6,6 +6,7 @@
 |----|-----------|--------|----------|-------|----------|
 | TASK032 | Fix Reference Source Hyperlinks | 🔄 **PENDING** | 0% | Bug Fix | 🔴 High |
 | TASK033 | Implement Private Model LLM Support | 🔄 **PENDING** | 0% | Feature Implementation | 🟡 Medium |
+| TASK034 | Update Private Model Configuration to Use Environment Variable | 🔄 **PENDING** | 0% | Configuration Enhancement | 🟡 Medium |
 
 ## Current Status
 

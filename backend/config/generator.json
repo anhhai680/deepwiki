@@ -209,7 +209,6 @@
     "privatemodel": {
       "client_class": "PrivateModelGenerator",
       "default_model": "GPT-4o-mini",
-      "url_base": "https://aiportalapi.stu-platform.live/jpe",
       "supportsCustomModel": true,
       "models": {
         "GPT-4o-mini": {

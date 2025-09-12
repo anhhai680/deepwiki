@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Private Model LLM Implementation Planning** - September 11, 2025 - TASK033 created with comprehensive analysis and implementation plan for privatemodel provider support.
+**Configuration Enhancement for Private Model** - September 12, 2025 - TASK034 created to eliminate configuration duplication and use environment variable for Private Model base URL.
 
 ## Project Status Summary
 Major development phases completed with latest technical improvements:
@@ -19,11 +19,11 @@ Major development phases completed with latest technical improvements:
 12. ✅ **Reference Source Hyperlinks** - TASK032 completed with branch detection and file validation (September 8, 2025)
 
 ## Current Work Context
-- **Phase**: Feature Enhancement and System Extension  
-- **Focus Area**: 🔄 **ACTIVE** - Private Model LLM Implementation (TASK033)
-- **Status**: 📋 **PLANNING COMPLETE** - Comprehensive analysis and implementation plan created
-- **Achievement**: Analyzed existing privatemodel config and designed complete implementation strategy
-- **Priority**: 🟡 **MEDIUM** - Expanding AI provider ecosystem for private deployment support
+- **Phase**: Configuration Enhancement and System Optimization  
+- **Focus Area**: 🔄 **ACTIVE** - Private Model Configuration Cleanup (TASK034)
+- **Status**: 📋 **TASK CREATED** - Configuration duplication issue identified and task planned
+- **Achievement**: Identified inconsistency between generator.json hardcoded URL and .env environment variable
+- **Priority**: 🟡 **MEDIUM** - Improving configuration management and eliminating duplication
 
 ## Key Technical Improvements (September 8, 2025)
 
