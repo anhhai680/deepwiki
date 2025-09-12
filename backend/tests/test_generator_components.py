@@ -34,6 +34,7 @@ def test_import_generator_providers():
         from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
         from backend.components.generator.providers.openrouter_generator import OpenRouterGenerator
         from backend.components.generator.providers.ollama_generator import OllamaGenerator
+        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
         
         assert OpenAIGenerator is not None
         assert AzureAIGenerator is not None
@@ -41,6 +42,7 @@ def test_import_generator_providers():
         assert DashScopeGenerator is not None
         assert OpenRouterGenerator is not None
         assert OllamaGenerator is not None
+        assert PrivateModelGenerator is not None
         
         print("✅ Successfully imported all generator providers")
     except ImportError as e:
@@ -81,7 +83,8 @@ def test_import_generator_module():
             BedrockGenerator,
             DashScopeGenerator,
             OpenRouterGenerator,
-            OllamaGenerator
+            OllamaGenerator,
+            PrivateModelGenerator
         )
         print("✅ Successfully imported main generator module")
     except ImportError as e:
@@ -114,6 +117,7 @@ def test_provider_type_enum():
         assert ProviderType.DASHSCOPE.value == "dashscope"
         assert ProviderType.OPENROUTER.value == "openrouter"
         assert ProviderType.OLLAMA.value == "ollama"
+        assert ProviderType.PRIVATEMODEL.value == "privatemodel"
         
         print("✅ ProviderType enum values are correct")
     except Exception as e:
@@ -153,11 +157,78 @@ def test_generator_manager_creation():
         
         # Test provider listing
         providers = manager.list_providers()
-        assert len(providers) == 6  # Should have 6 provider types
+        assert len(providers) == 7  # Should have 7 provider types (including privatemodel)
         
         print("✅ GeneratorManager creation and basic functionality works")
     except Exception as e:
         pytest.fail(f"GeneratorManager test failed: {e}")
+
+
+def test_private_model_generator():
+    """Test that PrivateModelGenerator can be created and has expected functionality."""
+    try:
+        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
+        from backend.components.generator.base import ModelType
+        
+        # Test basic creation
+        generator = PrivateModelGenerator(
+            base_url="http://test-model:8000/v1",
+            default_model="test-model"
+        )
+        assert generator is not None
+        assert generator.base_url == "http://test-model:8000/v1"
+        assert generator._default_model == "test-model"
+        
+        # Test input conversion for LLM
+        api_kwargs = generator.convert_inputs_to_api_kwargs(
+            input="Test prompt",
+            model_kwargs={"temperature": 0.8},
+            model_type=ModelType.LLM
+        )
+        
+        assert "messages" in api_kwargs
+        assert api_kwargs["messages"][0]["role"] == "user"
+        assert api_kwargs["messages"][0]["content"] == "Test prompt"
+        assert api_kwargs["model"] == "test-model"
+        assert api_kwargs["temperature"] == 0.8
+        assert api_kwargs["top_p"] == 0.8  # Default value
+        assert api_kwargs["max_tokens"] == 4000  # Default value
+        
+        print("✅ PrivateModelGenerator creation and functionality works")
+    except Exception as e:
+        pytest.fail(f"PrivateModelGenerator test failed: {e}")
+
+
+def test_private_model_generator_with_manager():
+    """Test that PrivateModelGenerator can be created through GeneratorManager."""
+    try:
+        from backend.components.generator.generator_manager import GeneratorManager, ProviderType
+        
+        manager = GeneratorManager()
+        
+        # Test creating privatemodel generator through manager
+        generator = manager.create_generator(
+            ProviderType.PRIVATEMODEL,
+            name="test_private_generator",
+            base_url="http://test-private-model:9000/v1",
+            default_model="custom-test-model"
+        )
+        
+        assert generator is not None
+        assert generator.base_url == "http://test-private-model:9000/v1"
+        assert generator._default_model == "custom-test-model"
+        
+        # Test that generator was registered
+        assert len(manager) == 1
+        assert "test_private_generator" in manager
+        
+        # Test getting generator back
+        retrieved_generator = manager.get_generator("test_private_generator")
+        assert retrieved_generator is generator
+        
+        print("✅ PrivateModelGenerator creation through GeneratorManager works")
+    except Exception as e:
+        pytest.fail(f"PrivateModelGenerator manager test failed: {e}")
 
 
 if __name__ == "__main__":
@@ -172,5 +243,7 @@ if __name__ == "__main__":
     test_provider_type_enum()
     test_generator_output_creation()
     test_generator_manager_creation()
+    test_private_model_generator()
+    test_private_model_generator_with_manager()
     
     print("🎉 All generator component tests passed!")

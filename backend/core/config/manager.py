@@ -5,9 +5,7 @@ This module provides a centralized interface for managing
 all application configuration, extracted from existing code.
 """
 
-import os
-from typing import Dict, Any, Optional, Union
-from pathlib import Path
+from typing import Dict, Any, Optional
 
 from .settings import get_settings, update_settings, get_excluded_dirs, get_excluded_files
 from .logging import setup_logging_from_env, get_logger
@@ -45,7 +43,8 @@ class ConfigurationManager:
             from backend.components.generator.providers.azure_generator import AzureAIGenerator
             from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
             from backend.components.generator.providers.ollama_generator import OllamaGenerator
-            from adalflow import GoogleGenAIClient, OllamaClient, OpenAIClient
+            from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
+            from adalflow import GoogleGenAIClient, OpenAIClient
             
             self._client_classes = {
                 "GoogleGenAIClient": GoogleGenAIClient,
@@ -55,7 +54,8 @@ class ConfigurationManager:
                 "OllamaGenerator": OllamaGenerator,
                 "BedrockGenerator": BedrockGenerator,
                 "AzureAIGenerator": AzureAIGenerator,
-                "DashScopeGenerator": DashScopeGenerator
+                "DashScopeGenerator": DashScopeGenerator,
+                "PrivateModelGenerator": PrivateModelGenerator
             }
         except ImportError:
             # Handle import errors gracefully during development

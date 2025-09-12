@@ -78,7 +78,7 @@ Create additional files/folders within memory-bank/ when they help organize:
 
 ## Core Workflows
 
-### Plan Mode
+### Plan Mode (`/plan` command)
 ```mermaid
 flowchart TD
     Start[Start] --> ReadFiles[Read Memory Bank]
@@ -92,7 +92,7 @@ flowchart TD
     Strategy --> Present[Present Approach]
 ```
 
-### Act Mode
+### Act Mode (`/act` command)
 ```mermaid
 flowchart TD
     Start[Start] --> Context[Check Memory Bank]

@@ -16,6 +16,7 @@ from backend.components.generator.providers.bedrock_generator import BedrockGene
 from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
 from backend.components.generator.providers.openrouter_generator import OpenRouterGenerator
 from backend.components.generator.providers.ollama_generator import OllamaGenerator
+from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class ProviderType(Enum):
     DASHSCOPE = "dashscope"
     OPENROUTER = "openrouter"
     OLLAMA = "ollama"
+    PRIVATEMODEL = "privatemodel"
 
 
 class GeneratorManager:
@@ -48,6 +50,7 @@ class GeneratorManager:
             ProviderType.DASHSCOPE: DashScopeGenerator,
             ProviderType.OPENROUTER: OpenRouterGenerator,
             ProviderType.OLLAMA: OllamaGenerator,
+            ProviderType.PRIVATEMODEL: PrivateModelGenerator,
         }
     
     def register_generator(self, name: str, generator: BaseGenerator) -> None:

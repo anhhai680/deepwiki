@@ -21,6 +21,7 @@ from .providers.bedrock_generator import BedrockGenerator
 from .providers.dashscope_generator import DashScopeGenerator
 from .providers.openrouter_generator import OpenRouterGenerator
 from .providers.ollama_generator import OllamaGenerator
+from .providers.private_model_generator import PrivateModelGenerator
 
 __all__ = [
     # Base classes and types
@@ -42,4 +43,5 @@ __all__ = [
     "DashScopeGenerator",
     "OpenRouterGenerator",
     "OllamaGenerator",
+    "PrivateModelGenerator",
 ]

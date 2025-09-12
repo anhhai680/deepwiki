@@ -205,6 +205,18 @@
           "top_p": 0.8
         }
       }
+    },
+    "privatemodel": {
+      "client_class": "PrivateModelGenerator",
+      "default_model": "GPT-4o-mini",
+      "url_base": "https://aiportalapi.stu-platform.live/jpe",
+      "supportsCustomModel": true,
+      "models": {
+        "GPT-4o-mini": {
+          "temperature": 0.7,
+          "top_p": 0.8
+        }
+      }
     }
   }
 }

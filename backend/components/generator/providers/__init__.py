@@ -11,6 +11,7 @@ from .bedrock_generator import BedrockGenerator
 from .dashscope_generator import DashScopeGenerator
 from .openrouter_generator import OpenRouterGenerator
 from .ollama_generator import OllamaGenerator
+from .private_model_generator import PrivateModelGenerator
 
 __all__ = [
     "OpenAIGenerator",
@@ -19,4 +20,5 @@ __all__ = [
     "DashScopeGenerator",
     "OpenRouterGenerator",
     "OllamaGenerator",
+    "PrivateModelGenerator",
 ]
