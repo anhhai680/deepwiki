@@ -5,10 +5,9 @@ This module provides the main chat pipeline that orchestrates all chat steps
 and provides a streaming interface for chat completions.
 """
 
-import logging
-from typing import AsyncGenerator, Dict, Any, List
+from typing import AsyncGenerator, Dict, Any
 
-from ..base.base_pipeline import BasePipeline, PipelineContext
+from ..base.base_pipeline import BasePipeline
 from .chat_context import ChatPipelineContext
 from .steps import (
     RequestValidationStep,

@@ -10,7 +10,6 @@ from typing import AsyncGenerator, Dict, Any
 from fastapi import HTTPException
 
 from .chat_pipeline import ChatPipeline, create_chat_pipeline
-from .chat_context import ChatPipelineContext
 
 logger = logging.getLogger(__name__)
 
