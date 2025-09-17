@@ -24,15 +24,40 @@
 **Files**: `backend/pipelines/rag/`, `backend/components/retriever/`
 **Benefits**: Accurate, context-aware responses based on actual code
 
-### 3. Real-Time Communication Pattern
-**Pattern**: WebSocket-based streaming for AI responses
+### 10. Private Model Integration Pattern
+**Pattern**: OpenAI-compatible private model deployment support
 **Implementation**:
-- WebSocket connections for chat
-- Streaming response handling
-- Real-time diagram updates
-- Async processing with FastAPI
+- PrivateModelGenerator class inheriting from BaseGenerator
+- Environment-driven configuration for security and flexibility
+- Support for various private model solutions (vLLM, Ollama, LocalAI)
+- Connection validation and error handling
 
-**Files**: `backend/websocket/wiki_handler.py`
+**Files**: `backend/components/generator/providers/private_model_generator.py`, `backend/config/generator.json`
+**Benefits**: Vendor independence, cost optimization, enhanced security, private deployment support
+
+## Data Flow Patterns
+
+### 11. Repository Analysis Pipeline
+**Pattern**: Multi-stage repository processing with clear data transformation
+**Implementation**:
+- Repository cloning and structure analysis
+- Code file extraction and filtering
+- Vector embedding generation for RAG
+- Wiki content generation with AI providers
+- Mermaid diagram creation and validation
+
+**Benefits**: Reliable processing flow, clear data stages, error recovery
+
+### 12. Real-Time Streaming Pattern
+**Pattern**: WebSocket-based streaming for real-time AI responses
+**Implementation**:
+- Async generator pattern for streaming responses
+- Provider-specific streaming adapters
+- Error handling and fallback mechanisms
+- Token-based response parsing
+
+**Files**: `backend/websocket/wiki_handler.py`, `backend/pipelines/chat/response_generation.py`
+**Benefits**: Real-time user feedback, responsive interface, scalable architecture
 
 ### 4. Configuration Management Pattern
 **Pattern**: JSON-based configuration with environment variable substitution

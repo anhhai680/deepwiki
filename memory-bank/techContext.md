@@ -22,9 +22,10 @@
 ### AI and ML Technologies
 - **Vector Database**: FAISS (Facebook AI Similarity Search)
 - **Embeddings**: OpenAI embeddings (default)
-- **LLM Providers**: Multiple (Google, OpenAI, OpenRouter, Azure, Ollama)
+- **LLM Providers**: Multiple (Google, OpenAI, OpenRouter, Azure, Ollama, Private Models)
 - **Text Processing**: Tiktoken, LangID
 - **RAG Framework**: Custom implementation
+- **Private Model Support**: OpenAI-compatible private deployments (vLLM, LocalAI, custom)
 
 ### Infrastructure and Deployment
 - **Containerization**: Docker + Docker Compose
