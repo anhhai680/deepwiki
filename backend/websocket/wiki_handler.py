@@ -474,8 +474,7 @@ This file contains...
 
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=prompt,
-            model_kwargs=model_kwargs,
-            model_type=ModelType.LLM
+            model_kwargs=model_kwargs
         )
     elif request.provider == "openrouter":
         logger.info(f"Using OpenRouter with model: {request.model}")
@@ -617,7 +616,7 @@ This file contains...
     try:
         if request.provider == "ollama":
             # Get the response and handle it properly using the previously created api_kwargs
-            response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+            response = await model.acall(api_kwargs=api_kwargs)
             # Handle streaming response from Ollama
             async for chunk in response:
                 text = getattr(chunk, 'response', None) or getattr(chunk, 'text', None) or str(chunk)

@@ -114,6 +114,10 @@ class OllamaGenerator(BaseGenerator):
         """Convert inputs to Ollama API format."""
         model_kwargs = model_kwargs or {}
         
+        # Default UNDEFINED to LLM for Ollama
+        if model_type == ModelType.UNDEFINED:
+            model_type = ModelType.LLM
+        
         if model_type == ModelType.LLM:
             # Handle LLM generation
             messages = []
@@ -238,10 +242,12 @@ class OllamaGenerator(BaseGenerator):
                 raw_response=response
             )
     
-    def call(self, api_kwargs: Dict = None, model_type: ModelType = None) -> Any:
+    def call(self, api_kwargs: Optional[Dict] = None, model_type: Optional[ModelType] = None) -> Any:
         """Execute synchronous call to Ollama API."""
         api_kwargs = api_kwargs or {}
-        model_type = model_type or ModelType.LLM
+        # Default None or UNDEFINED to LLM for Ollama
+        if model_type is None or model_type == ModelType.UNDEFINED:
+            model_type = ModelType.LLM
         
         try:
             # Check if model exists
@@ -278,7 +284,7 @@ class OllamaGenerator(BaseGenerator):
             raise
     
     async def acall(
-        self, api_kwargs: Dict = None, model_type: ModelType = None
+        self, api_kwargs: Optional[Dict] = None, model_type: Optional[ModelType] = None
     ) -> Any:
         """Execute asynchronous call to Ollama API."""
         # For now, we'll use the sync client

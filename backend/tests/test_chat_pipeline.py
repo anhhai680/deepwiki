@@ -318,7 +318,7 @@ class TestContextPreparationStep:
             mock_doc.text = "test content"
             mock_doc.meta_data = {"file_path": "test.py"}
             
-            mock_rag.return_value = [Mock(documents=[mock_doc])]
+            mock_rag.call.return_value = [Mock(documents=[mock_doc])]
             
             with patch('backend.utils.file_utils.get_file_content') as mock_get_file:
                 mock_get_file.return_value = "file content"
