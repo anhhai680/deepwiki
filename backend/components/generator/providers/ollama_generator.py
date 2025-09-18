@@ -8,6 +8,7 @@ extracted from the existing ollama_patch.py implementation.
 import os
 import requests
 import logging
+import time
 from typing import Dict, Any, Optional
 
 from backend.components.generator.base import BaseGenerator, ModelType, GeneratorOutput
@@ -55,7 +56,7 @@ class OllamaGenerator(BaseGenerator):
         
         # Test connection
         try:
-            response = requests.get(f"{self.host}/api/tags", timeout=5)
+            response = requests.get(f"{self.host}/api/tags", timeout=30)
             if response.status_code != 200:
                 log.warning(f"Could not connect to Ollama at {self.host}")
         except requests.exceptions.RequestException as e:
@@ -83,7 +84,7 @@ class OllamaGenerator(BaseGenerator):
             bool: True if model exists, False otherwise
         """
         try:
-            response = requests.get(f"{self.sync_client['base_url']}/tags", timeout=5)
+            response = requests.get(f"{self.sync_client['base_url']}/tags", timeout=30)
             if response.status_code == 200:
                 models_data = response.json()
                 available_models = [model.get('name', '').split(':')[0] for model in models_data.get('models', [])]
@@ -242,6 +243,55 @@ class OllamaGenerator(BaseGenerator):
                 raw_response=response
             )
     
+    def _call_with_retry(self, url: str, api_kwargs: Dict, max_retries: int = 3) -> Dict:
+        """
+        Call Ollama API with retry logic for timeout errors.
+        
+        Args:
+            url: API endpoint URL
+            api_kwargs: API request parameters
+            max_retries: Maximum number of retry attempts
+            
+        Returns:
+            Dict: API response
+            
+        Raises:
+            requests.exceptions.RequestException: If all retries fail
+        """
+        last_exception = None
+        
+        for attempt in range(max_retries + 1):
+            try:
+                if attempt > 0:
+                    wait_time = min(2 ** attempt, 30)  # Exponential backoff, max 30s
+                    log.info(f"Retrying Ollama API call (attempt {attempt + 1}/{max_retries + 1}) after {wait_time}s...")
+                    time.sleep(wait_time)
+                
+                response = requests.post(
+                    url,
+                    json=api_kwargs,
+                    timeout=300  # 5 minutes timeout for large models
+                )
+                response.raise_for_status()
+                return response.json()
+                
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+                last_exception = e
+                if attempt < max_retries:
+                    log.warning(f"Ollama API timeout on attempt {attempt + 1}, retrying... Error: {e}")
+                    continue
+                else:
+                    log.error(f"Ollama API failed after {max_retries + 1} attempts. Last error: {e}")
+                    raise
+            except requests.exceptions.RequestException as e:
+                # For non-timeout errors, don't retry
+                log.error(f"Ollama API request error (non-retryable): {e}")
+                raise
+        
+        # This should never be reached, but just in case
+        if last_exception:
+            raise last_exception
+    
     def call(self, api_kwargs: Optional[Dict] = None, model_type: Optional[ModelType] = None) -> Any:
         """Execute synchronous call to Ollama API."""
         api_kwargs = api_kwargs or {}
@@ -264,14 +314,10 @@ class OllamaGenerator(BaseGenerator):
             else:
                 raise ValueError(f"Model type {model_type} not supported")
             
-            response = requests.post(
-                url,
-                json=api_kwargs,
-                timeout=60  # Ollama can be slow
-            )
-            response.raise_for_status()
+            # Use retry logic for API calls
+            response_data = self._call_with_retry(url, api_kwargs)
             
-            return response.json()
+            return response_data
             
         except requests.exceptions.RequestException as e:
             log.error(f"Ollama API request error: {e}")
