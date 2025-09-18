@@ -291,7 +291,13 @@ def get_embedder_config() -> Dict[str, Any]:
     Returns:
         Dictionary containing embedder configuration
     """
-    return configs.get("embedder", {})
+    try:
+        from backend.core.config import get_config_manager
+        manager = get_config_manager()
+        return manager.get_config("embedder") or {}
+    except Exception:
+        # Fallback to static config if config manager fails
+        return configs.get("embedder", {})
 
 
 def is_ollama_embedder() -> bool:
@@ -302,4 +308,14 @@ def is_ollama_embedder() -> bool:
         True if Ollama embedder is configured, False otherwise
     """
     embedder_config = get_embedder_config()
-    return embedder_config.get("embedder", {}).get("provider", "").lower() == "ollama"
+    embedder_section = embedder_config.get("embedder", {})
+    
+    # Check if provider is set to ollama (legacy check)
+    if embedder_section.get("provider", "").lower() == "ollama":
+        return True
+    
+    # Check if client_class is OllamaClient (new check)
+    if embedder_section.get("client_class") == "OllamaClient":
+        return True
+    
+    return False

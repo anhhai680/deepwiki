@@ -44,10 +44,11 @@ class ConfigurationManager:
             from backend.components.generator.providers.dashscope_generator import DashScopeGenerator
             from backend.components.generator.providers.ollama_generator import OllamaGenerator
             from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
-            from adalflow import GoogleGenAIClient, OpenAIClient
+            from adalflow import GoogleGenAIClient, OllamaClient, OpenAIClient
             
             self._client_classes = {
                 "GoogleGenAIClient": GoogleGenAIClient,
+                "OllamaClient": OllamaClient,
                 "OpenAIClient": OpenAIClient,
                 "OpenAIGenerator": OpenAIGenerator,
                 "OpenRouterGenerator": OpenRouterGenerator,
