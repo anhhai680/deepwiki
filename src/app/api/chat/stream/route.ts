@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // The target backend server base URL, derived from environment variable or defaulted.
 // This should match the logic in your frontend's page.tsx for consistency.
-const TARGET_SERVER_BASE_URL = process.env.SERVER_BASE_URL || 'http://localhost:8002';
+const TARGET_SERVER_BASE_URL = process.env.SERVER_BASE_URL || 'http://localhost:8001';
 
 // This is a fallback HTTP implementation that will be used if WebSockets are not available
 // or if there's an error with the WebSocket connection
@@ -16,16 +16,61 @@ export async function POST(req: NextRequest) {
     console.log('Using HTTP fallback for chat completion instead of WebSockets');
 
     const targetUrl = `${TARGET_SERVER_BASE_URL}/api/chat/completions/stream`;
+    console.log(`Proxying request to: ${targetUrl}`);
 
-    // Make the actual request to the backend service
-    const backendResponse = await fetch(targetUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream', // Indicate that we expect a stream
-      },
-      body: JSON.stringify(requestBody),
-    });
+    // Create an AbortController with timeout for better error handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      console.log('Request timeout after 5 minutes, aborting...');
+      controller.abort();
+    }, 300000); // 5 minutes
+
+    // Add a small delay to ensure backend is ready if running in Docker
+    if (process.env.NODE_ENV === 'production') {
+      console.log('Production mode - adding startup delay');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    // Make the actual request to the backend service with retry logic
+    let backendResponse;
+    let lastError;
+    const maxRetries = 3;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Attempt ${attempt}/${maxRetries} to reach backend`);
+        
+        backendResponse = await fetch(targetUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream', // Indicate that we expect a stream
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+        
+        console.log(`Backend responded with status: ${backendResponse.status}`);
+        break; // Success, exit retry loop
+        
+      } catch (error) {
+        lastError = error;
+        console.error(`Attempt ${attempt} failed:`, error);
+        
+        if (attempt < maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff, max 5s
+          console.log(`Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    // Clear the timeout since we got a response or exhausted retries
+    clearTimeout(timeoutId);
+    
+    if (!backendResponse) {
+      throw lastError || new Error('Failed to connect to backend after retries');
+    }
 
     // If the backend service returned an error, forward that error to the client
     if (!backendResponse.ok) {
@@ -89,11 +134,19 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error in API proxy route (/api/chat/stream):', error);
     let errorMessage = 'Internal Server Error in proxy';
+    let statusCode = 500;
+    
     if (error instanceof Error) {
-      errorMessage = error.message;
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timeout - the backend took too long to respond';
+        statusCode = 504; // Gateway Timeout
+      } else {
+        errorMessage = error.message;
+      }
     }
+    
     return new NextResponse(JSON.stringify({ error: errorMessage }), {
-      status: 500,
+      status: statusCode,
       headers: { 'Content-Type': 'application/json' },
     });
   }

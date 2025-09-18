@@ -90,8 +90,31 @@ if [ -z "$OPENAI_API_KEY" ] || [ -z "$GOOGLE_API_KEY" ]; then\n\
 fi\n\
 \n\
 # Start the API server in the background with the configured port\n\
+echo "Starting backend server on port ${PORT:-8001}..."\n\
 python -m backend.main --port ${PORT:-8001} &\n\
+BACKEND_PID=$!\n\
+\n\
+# Wait for backend to be ready\n\
+echo "Waiting for backend to be ready..."\n\
+for i in {1..30}; do\n\
+  if curl -f http://localhost:${PORT:-8001}/api/health >/dev/null 2>&1; then\n\
+    echo "Backend is ready!"\n\
+    break\n\
+  fi\n\
+  if [ $i -eq 30 ]; then\n\
+    echo "Backend failed to start within 30 seconds"\n\
+    exit 1\n\
+  fi\n\
+  echo "Attempt $i/30: Backend not ready yet, waiting..."\n\
+  sleep 1\n\
+done\n\
+\n\
+# Start the frontend\n\
+echo "Starting frontend server on port 3000..."\n\
 PORT=3000 HOSTNAME=0.0.0.0 node server.js &\n\
+FRONTEND_PID=$!\n\
+\n\
+# Wait for either process to exit\n\
 wait -n\n\
 exit $?' > /app/start.sh && chmod +x /app/start.sh
 
