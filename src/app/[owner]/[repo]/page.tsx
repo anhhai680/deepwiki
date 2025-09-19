@@ -788,7 +788,7 @@ When designing the wiki structure, include pages that would benefit from visual 
 - Class hierarchies
 
 ${isComprehensiveView ? `
-Create a structured wiki with the following main sections:
+Create a structured wiki with the following main sections (ALL at the same root level):
 - Overview (general information about the project)
 - System Architecture (how the system is designed)
 - Core Features (key functionality)
@@ -799,7 +799,7 @@ Create a structured wiki with the following main sections:
 - Deployment/Infrastructure (how to deploy, what's the infrastructure like)
 - Extensibility and Customization: If the project architecture supports it, explain how to extend or customize its functionality (e.g., plugins, theming, custom modules, hooks).
 
-Each section should contain relevant pages. For example, the "Frontend Components" section might include pages for "Home Page", "Repository Wiki Page", "Ask Component", etc.
+IMPORTANT: All main sections should be at the ROOT LEVEL and should NOT be nested under each other. Each section should contain relevant pages but should NOT contain subsections.
 
 Return your analysis in the following XML format:
 
@@ -807,17 +807,21 @@ Return your analysis in the following XML format:
   <title>[Overall title for the wiki]</title>
   <description>[Brief description of the repository]</description>
   <sections>
-    <section id="section-1">
-      <title>[Section title]</title>
+    <section id="overview">
+      <title>Overview</title>
       <pages>
         <page_ref>page-1</page_ref>
         <page_ref>page-2</page_ref>
       </pages>
-      <subsections>
-        <section_ref>section-2</section_ref>
-      </subsections>
     </section>
-    <!-- More sections as needed -->
+    <section id="system-architecture">
+      <title>System Architecture</title>
+      <pages>
+        <page_ref>page-3</page_ref>
+        <page_ref>page-4</page_ref>
+      </pages>
+    </section>
+    <!-- More sections at ROOT LEVEL as needed -->
   </sections>
   <pages>
     <page id="page-1">
@@ -832,7 +836,7 @@ Return your analysis in the following XML format:
         <related>page-2</related>
         <!-- More related page IDs as needed -->
       </related_pages>
-      <parent_section>section-1</parent_section>
+      <parent_section>overview</parent_section>
     </page>
     <!-- More pages as needed -->
   </pages>
@@ -1072,6 +1076,8 @@ IMPORTANT:
         const sectionsEls = xmlDoc.querySelectorAll('section');
 
         if (sectionsEls && sectionsEls.length > 0) {
+          console.log('WikiStructure: Processing', sectionsEls.length, 'sections');
+          
           // Process sections
           sectionsEls.forEach(sectionEl => {
             const id = sectionEl.getAttribute('id') || `section-${sections.length + 1}`;
@@ -1098,21 +1104,31 @@ IMPORTANT:
               subsections: subsections.length > 0 ? subsections : undefined
             });
 
-            // Check if this is a root section (not referenced by any other section)
+            console.log(`WikiStructure: Added section "${title}" (id: ${id}) with ${pages.length} pages and ${subsections.length} subsections`);
+
+            // For comprehensive view, treat all sections as root sections unless explicitly nested
+            // This ensures main sections like "Overview", "System Architecture" etc. are all at root level
             let isReferenced = false;
+            
+            // Only consider a section as non-root if it's explicitly referenced as a subsection by another section
             sectionsEls.forEach(otherSection => {
               const otherSectionRefs = otherSection.querySelectorAll('section_ref');
               otherSectionRefs.forEach(ref => {
                 if (ref.textContent === id) {
                   isReferenced = true;
+                  console.log(`WikiStructure: Section "${title}" is referenced as subsection`);
                 }
               });
             });
 
+            // Add to root sections if not referenced as a subsection
             if (!isReferenced) {
               rootSections.push(id);
+              console.log(`WikiStructure: Added "${title}" as root section`);
             }
           });
+          
+          console.log('WikiStructure: Final root sections:', rootSections);
         }
       }
 
