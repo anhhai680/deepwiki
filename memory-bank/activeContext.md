@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Configuration Enhancement for Private Model** - September 12, 2025 - TASK034 created to eliminate configuration duplication and use environment variable for Private Model base URL.
+**UI Navigation Fix** - September 19, 2025 - TASK035 created to fix system architecture menu level issue where it appears as a subsection of overview instead of being at the same level.
 
 ## Project Status Summary
 Major development phases completed with latest technical improvements:
@@ -19,11 +19,11 @@ Major development phases completed with latest technical improvements:
 12. ✅ **Reference Source Hyperlinks** - TASK032 completed with branch detection and file validation (September 8, 2025)
 
 ## Current Work Context
-- **Phase**: Configuration Enhancement and System Optimization  
-- **Focus Area**: 🔄 **ACTIVE** - Private Model Configuration Cleanup (TASK034)
-- **Status**: 📋 **TASK CREATED** - Configuration duplication issue identified and task planned
-- **Achievement**: Identified inconsistency between generator.json hardcoded URL and .env environment variable
-- **Priority**: 🟡 **MEDIUM** - Improving configuration management and eliminating duplication
+- **Phase**: UI Navigation Enhancement and Bug Fixes  
+- **Focus Area**: 🔄 **ACTIVE** - Wiki Navigation Structure Fix (TASK035)
+- **Status**: 📋 **TASK CREATED** - System Architecture menu level issue identified and task planned
+- **Issue**: "System Architecture" appearing as subsection under "Overview" instead of being at same level
+- **Priority**: 🟡 **MEDIUM** - Improving user navigation experience in wiki structure
 
 ## Key Technical Improvements (September 8, 2025)
 
