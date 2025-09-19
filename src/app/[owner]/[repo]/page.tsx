@@ -505,6 +505,12 @@ Based ONLY on the content of the \`[RELEVANT_SOURCE_FILES]\`:
     *   EXTENSIVELY use Mermaid diagrams (e.g., \`flowchart TD\`, \`sequenceDiagram\`, \`classDiagram\`, \`erDiagram\`, \`graph TD\`) to visually represent architectures, flows, relationships, and schemas found in the source files.
     *   Ensure diagrams are accurate and directly derived from information in the \`[RELEVANT_SOURCE_FILES]\`.
     *   Provide a brief explanation before or after each diagram to give context.
+    *   CRITICAL FORMATTING: All Mermaid diagrams MUST be wrapped in proper markdown code blocks with the mermaid language identifier:
+       \`\`\`mermaid
+       graph TD
+           A[Start] --> B[Process]
+           B --> C[End]
+       \`\`\`
     *   CRITICAL: All diagrams MUST follow strict vertical orientation:
        - Use "graph TD" (top-down) directive for flow diagrams
        - NEVER use "graph LR" (left-right)

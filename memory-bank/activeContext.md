@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**UI Navigation Fix - COMPLETED** - September 19, 2025 - TASK035 successfully completed! Fixed system architecture menu level issue where it appeared as a subsection of overview. Now all main sections (Overview, System Architecture, Core Features, etc.) appear at the same root level.
+**UI Fixes - COMPLETED** - September 19, 2025 - Both TASK035 (System Architecture menu level) and TASK036 (Mermaid diagram display) successfully completed! Fixed navigation hierarchy and restored proper diagram rendering.
 
 ## Project Status Summary
 Major development phases completed with latest technical improvements:
@@ -18,12 +18,13 @@ Major development phases completed with latest technical improvements:
 11. ✅ **Mermaid Diagram Fix** - Comprehensive syntax error fix with code optimization and deduplication
 12. ✅ **Reference Source Hyperlinks** - TASK032 completed with branch detection and file validation (September 8, 2025)
 13. ✅ **Wiki Navigation Structure** - TASK035 completed, system architecture now appears at correct menu level
+14. ✅ **Mermaid Diagram Display** - TASK036 completed, fixed diagram rendering issue
 
 ## Current Work Context
-- **Phase**: Configuration Enhancement and System Optimization  
+- **Phase**: UI Enhancement and Bug Fixes - COMPLETED  
 - **Focus Area**: 🔄 **AVAILABLE** - Ready for next task assignment
-- **Status**: ✅ **TASK COMPLETED** - System Architecture menu level issue resolved
-- **Achievement**: Enhanced XML prompt template and parsing logic to ensure proper section hierarchy
+- **Status**: ✅ **TASKS COMPLETED** - Both navigation and diagram issues resolved
+- **Achievement**: Fixed two critical UI issues affecting user experience
 - **Priority**: Ready for next development task
 
 ## Key Technical Improvements (September 8, 2025)
