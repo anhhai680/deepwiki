@@ -13,16 +13,19 @@
 
 ## Recently Completed (September 2025)
 
-| ID | Task Name | Status | Completed | Phase | Priority |
-|----|-----------|--------|-----------|-------|----------|
-| TASK034 | Update Private Model Configuration to Use Environment Variable | ✅ **COMPLETED** | 2025-09-12 | Configuration Enhancement | 🟡 Medium |
-| TASK033 | Implement Private Model LLM Support | ✅ **COMPLETED** | 2025-09-11 | Feature Implementation | 🟡 Medium |
-| TASK032 | Fix Reference Source Hyperlinks | ✅ **COMPLETED** | 2025-09-08 | Bug Fix | 🔴 High |
-| TASK031 | Mermaid Diagram Syntax Error Fix and Code Optimization | ✅ **COMPLETED** | 2025-09-07 | Bug Fix + Code Quality | 🔴 High |
-| TASK030 | Header and Footer Full Width Alignment with Body Content | ✅ **COMPLETED** | 2025-09-06 | UI Enhancement | � Medium |
-| TASK029 | Remove Language Selection UI | ✅ **COMPLETED** | 2025-09-06 | Cleanup/Simplification | 🟡 Medium |
-| TASK028 | Implement Multi-Repository Selection from Left Sidebar | ✅ **COMPLETED** | 2025-09-06 | Feature Enhancement | � High |
-| TASK027 | Fix Model Selection Issue - Default Model Not Respected | ✅ **COMPLETED** | 2025-09-05 | Bug Fix | � High |
+| ID | Task Name | Status | Progress | Phase | Priority |
+|----|-----------|--------|----------|-------|----------|
+| TASK036 | Fix Mermaid Diagram Display Issue | ✅ **COMPLETED** | 100% | UI Bug Fix | 🔴 High |
+| TASK035 | Fix System Architecture Menu Level Issue | ✅ **COMPLETED** | 100% | UI Bug Fix | 🟡 Medium |
+| TASK031 | Mermaid Diagram Syntax Error Fix and Code Optimization | ✅ **COMPLETED** | 100% | Bug Fix + Code Quality | 🔴 High |
+| TASK030 | Header and Footer Full Width Alignment with Body Content | ✅ **COMPLETED** | 100% | UI Enhancement | 🟡 Medium |
+| TASK029 | Remove Language Selection UI | ✅ **COMPLETED** | 100% | Cleanup/Simplification | 🟡 Medium |
+| TASK028 | Implement Multi-Repository Selection from Left Sidebar | ✅ **COMPLETED** | 100% | Feature Enhancement | 🔴 High |
+| TASK027 | Fix Model Selection Issue - Default Model Not Respected | ✅ **COMPLETED** | 100% | Bug Fix | 🔴 High |
+| TASK026 | Repository Interaction Enhancement - Double-Click Navigation | ✅ **COMPLETED** | 100% | UI Enhancement | 🔴 High |
+| TASK025 | Mobile Responsiveness Optimization | ✅ **COMPLETED** | 100% | UI Enhancement | 🟡 Medium |
+| TASK024 | Ask Component Styling and Integration Refinements | ✅ **COMPLETED** | 100% | UI Enhancement | 🟡 Medium |
+| TASK023 | UI Layout Enhancement - Home Page Two-Column Design | ✅ **COMPLETED** | 100% | UI Enhancement | 🟡 Medium |
 
 ## Completed Tasks
 
