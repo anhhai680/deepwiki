@@ -8,6 +8,12 @@ for different AI providers in the chat pipeline.
 import google.generativeai as genai
 from typing import AsyncGenerator, Any, Dict
 
+try:
+    from openai import APITimeoutError, APIConnectionError, AuthenticationError, RateLimitError
+except ImportError:
+    # Graceful fallback if openai package is not available
+    APITimeoutError = APIConnectionError = AuthenticationError = RateLimitError = Exception
+
 from ..base.base_pipeline import PipelineStep
 from .chat_context import ChatPipelineContext
 from backend.components.generator.base import ModelType
@@ -70,7 +76,23 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
                             yield text
         except Exception as e:
             error_type = "Private Model API fallback" if is_fallback else "Private Model API"
-            yield f"\nError with {error_type}: {str(e)}\n\nPlease check that you have set the PRIVATE_MODEL_API_KEY and PRIVATE_MODEL_BASE_URL environment variables with valid values."
+            
+            # Get actual environment variable names from the generator instance
+            api_key_env = getattr(model, '_env_api_key_name', 'PRIVATE_MODEL_API_KEY')
+            base_url_env = getattr(model, '_env_base_url_name', 'PRIVATE_MODEL_BASE_URL')
+            base_url = getattr(model, 'base_url', 'private model endpoint')
+            
+            if isinstance(e, AuthenticationError):
+                yield f"\nAuthentication error with {error_type}: {str(e)}\n\nPlease check that you have set the {api_key_env} environment variable with a valid API key."
+            elif isinstance(e, APIConnectionError):
+                yield f"\nConnection error with {error_type}: {str(e)}\n\nPlease check that:\n1. The {base_url_env} environment variable is set to the correct endpoint URL (currently: {base_url})\n2. The private model service is running and accessible\n3. Your network connection is working"
+            elif isinstance(e, APITimeoutError):
+                yield f"\nTimeout error with {error_type}: {str(e)}\n\nThe private model service took too long to respond. Please try again or check if the service is overloaded."
+            elif isinstance(e, RateLimitError):
+                yield f"\nRate limit error with {error_type}: {str(e)}\n\nToo many requests to the private model service. Please wait a moment and try again."
+            else:
+                # Fallback for other exceptions
+                yield f"\nError with {error_type}: {str(e)}\n\nPlease check that you have set the {api_key_env} and {base_url_env} environment variables with valid values."
     
     def execute(self, context: ChatPipelineContext) -> ChatPipelineContext:
         """Generate streaming response from the AI model."""
