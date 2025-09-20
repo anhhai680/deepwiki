@@ -1,7 +1,7 @@
 # Active Context - DeepWiki Project
 
 ## Current Session Focus
-**Configuration Enhancement for Private Model** - September 12, 2025 - TASK034 created to eliminate configuration duplication and use environment variable for Private Model base URL.
+**UI Fixes - COMPLETED** - September 19, 2025 - Both TASK035 (System Architecture menu level) and TASK036 (Mermaid diagram display) successfully completed! Fixed navigation hierarchy and restored proper diagram rendering.
 
 ## Project Status Summary
 Major development phases completed with latest technical improvements:
@@ -17,13 +17,15 @@ Major development phases completed with latest technical improvements:
 10. ✅ **Header/Footer Alignment** - TASK030 completed successfully, layout width consistency achieved
 11. ✅ **Mermaid Diagram Fix** - Comprehensive syntax error fix with code optimization and deduplication
 12. ✅ **Reference Source Hyperlinks** - TASK032 completed with branch detection and file validation (September 8, 2025)
+13. ✅ **Wiki Navigation Structure** - TASK035 completed, system architecture now appears at correct menu level
+14. ✅ **Mermaid Diagram Display** - TASK036 completed, fixed diagram rendering issue
 
 ## Current Work Context
-- **Phase**: Configuration Enhancement and System Optimization  
-- **Focus Area**: 🔄 **ACTIVE** - Private Model Configuration Cleanup (TASK034)
-- **Status**: 📋 **TASK CREATED** - Configuration duplication issue identified and task planned
-- **Achievement**: Identified inconsistency between generator.json hardcoded URL and .env environment variable
-- **Priority**: 🟡 **MEDIUM** - Improving configuration management and eliminating duplication
+- **Phase**: UI Enhancement and Bug Fixes - COMPLETED  
+- **Focus Area**: 🔄 **AVAILABLE** - Ready for next task assignment
+- **Status**: ✅ **TASKS COMPLETED** - Both navigation and diagram issues resolved
+- **Achievement**: Fixed two critical UI issues affecting user experience
+- **Priority**: Ready for next development task
 
 ## Key Technical Improvements (September 8, 2025)
 
