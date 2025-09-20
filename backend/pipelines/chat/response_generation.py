@@ -11,6 +11,7 @@ from typing import AsyncGenerator, Any, Dict
 from ..base.base_pipeline import PipelineStep
 from .chat_context import ChatPipelineContext
 from backend.components.generator.base import ModelType
+from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
 
 
 class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineContext]):
@@ -241,7 +242,6 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_private_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Private Model."""
-        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
         
         model = PrivateModelGenerator()
         model_kwargs = {
@@ -485,7 +485,6 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_private_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Private Model fallback response."""
-        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
         
         model = PrivateModelGenerator()
         model_kwargs = {
