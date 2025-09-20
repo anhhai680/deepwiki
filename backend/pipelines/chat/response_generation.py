@@ -19,6 +19,14 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     def __init__(self):
         super().__init__("ResponseGeneration")
+        self._private_model_generator = None
+    
+    @property
+    def private_model_generator(self) -> PrivateModelGenerator:
+        """Lazy-initialized PrivateModelGenerator instance."""
+        if self._private_model_generator is None:
+            self._private_model_generator = PrivateModelGenerator()
+        return self._private_model_generator
     
     def _clean_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Remove keys with None values recursively from a dict."""
@@ -36,17 +44,13 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_private_model_response(self, prompt: str, context: ChatPipelineContext, is_fallback: bool = False) -> AsyncGenerator[str, None]:
         """Common helper method for generating Private Model responses."""
-        model = PrivateModelGenerator()
-        model_kwargs = {
+        model = self.private_model_generator
+        model_kwargs = self._clean_dict({
             "model": context.model,
             "stream": True,
-            "temperature": context.model_config.get("temperature")
-        }
-        
-        top_p = context.model_config.get("top_p")
-        if top_p is not None:
-            model_kwargs["top_p"] = top_p
-        model_kwargs = self._clean_dict(model_kwargs)
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p")
+        })
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=prompt,
