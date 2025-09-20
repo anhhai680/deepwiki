@@ -122,29 +122,23 @@
       }
     },
     "ollama": {
-      "default_model": "qwen3:1.7b",
+      "default_model": "qwen3:4b",
       "supportsCustomModel": true,
       "models": {
-        "qwen3:1.7b": {
-          "options": {
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "num_ctx": 32000
-          }
+        "qwen3:4b": {
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "num_ctx": 4096
         },
-        "llama3:8b": {
-          "options": {
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "num_ctx": 8000
-          }
+        "deepseek-r1:8b": {
+          "temperature": 0.7,
+          "top_p": 0.8,
+          "num_ctx": 8192
         },
-        "qwen3:8b": {
-          "options": {
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "num_ctx": 32000
-          }
+        "llama3.3:latest": {
+          "temperature": 0.7,
+          "top_p": 0.8,
+          "num_ctx": 8192
         }
       }
     },

@@ -16,6 +16,21 @@ from backend.components.memory.conversation_memory import DialogTurn
 
 logger = logging.getLogger(__name__)
 
+
+def _detect_ollama_embedder() -> bool:
+    """
+    Detect if Ollama embedder is being used.
+    
+    Returns:
+        bool: True if Ollama embedder is configured, False otherwise
+    """
+    try:
+        from backend.core.config.settings import is_ollama_embedder
+        return is_ollama_embedder()
+    except Exception:
+        # Fallback to False if detection fails
+        return False
+
 @dataclass
 class RAGPipelineContext(PipelineContext):
     """Context for RAG pipeline execution."""
@@ -36,7 +51,7 @@ class RAGPipelineContext(PipelineContext):
     
     # Document and embedding state
     transformed_docs: List[Any] = field(default_factory=list)
-    is_ollama_embedder: bool = False
+    is_ollama_embedder: bool = field(default_factory=lambda: _detect_ollama_embedder())
     
     # Query processing state
     user_query: str = ""

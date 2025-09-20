@@ -247,7 +247,7 @@ class ContextPreparationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
                     self.logger.info(f"Modified RAG query to focus on file: {context.file_path}")
                 
                 # Perform RAG retrieval
-                retrieved_documents = request_rag(rag_query, language=context.language)
+                retrieved_documents = request_rag.call(rag_query, language=context.language)
                 
                 if retrieved_documents and retrieved_documents[0].documents:
                     # Format context for the prompt in a structured way

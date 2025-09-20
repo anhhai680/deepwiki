@@ -5,13 +5,11 @@ This module handles the AI model interactions and streaming responses
 for different AI providers in the chat pipeline.
 """
 
-import logging
 import google.generativeai as genai
 from typing import AsyncGenerator, Any, Dict
 
-from ..base.base_pipeline import PipelineStep, PipelineContext
+from ..base.base_pipeline import PipelineStep
 from .chat_context import ChatPipelineContext
-from adalflow.components.model_client.ollama_client import OllamaClient
 from backend.components.generator.base import ModelType
 
 
@@ -70,6 +68,9 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
             elif context.provider == "azure":
                 async for chunk in self._generate_azure_response(context):
                     yield chunk
+            elif context.provider == "privatemodel":
+                async for chunk in self._generate_private_response(context):
+                    yield chunk
             else:
                 # Default to Google Generative AI
                 async for chunk in self._generate_google_response(context):
@@ -89,7 +90,9 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_ollama_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Ollama."""
-        model = OllamaClient()
+        from backend.components.generator.providers.ollama_generator import OllamaGenerator
+        
+        model = OllamaGenerator()
         model_name = context.model or context.model_config.get("model")
         model_kwargs = self._clean_dict({
             "model": model_name,
@@ -103,11 +106,10 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=context.final_prompt,
-            model_kwargs=model_kwargs,
-            model_type=ModelType.LLM
+            model_kwargs=model_kwargs
         )
         
-        response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+        response = await model.acall(api_kwargs=api_kwargs)
         
         async for chunk in response:
             text = getattr(chunk, 'response', None) or getattr(chunk, 'text', None) or str(chunk)
@@ -237,6 +239,41 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         except Exception as e:
             yield f"\nError with Azure AI API: {str(e)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
     
+    async def _generate_private_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
+        """Generate streaming response from Private Model."""
+        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
+        
+        model = PrivateModelGenerator()
+        model_kwargs = {
+            "model": context.model,
+            "stream": True,
+            "temperature": context.model_config.get("temperature")
+        }
+        
+        top_p = context.model_config.get("top_p")
+        if top_p is not None:
+            model_kwargs["top_p"] = top_p
+        model_kwargs = self._clean_dict(model_kwargs)
+        
+        api_kwargs = model.convert_inputs_to_api_kwargs(
+            input=context.final_prompt,
+            model_kwargs=model_kwargs,
+            model_type=ModelType.LLM
+        )
+        
+        try:
+            response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+            async for chunk in response:
+                choices = getattr(chunk, "choices", [])
+                if len(choices) > 0:
+                    delta = getattr(choices[0], "delta", None)
+                    if delta is not None:
+                        text = getattr(delta, "content", None)
+                        if text is not None:
+                            yield text
+        except Exception as e:
+            yield f"\nError with Private Model API: {str(e)}\n\nPlease check that you have set the PRIVATE_MODEL_API_KEY and PRIVATE_MODEL_BASE_URL environment variables with valid values."
+    
     async def _generate_google_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Google Generative AI."""
         model_name = context.model or context.model_config.get("model")
@@ -291,6 +328,9 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
             elif context.provider == "azure":
                 async for chunk in self._generate_azure_fallback(simplified_prompt, context):
                     yield chunk
+            elif context.provider == "privatemodel":
+                async for chunk in self._generate_private_fallback(simplified_prompt, context):
+                    yield chunk
             else:
                 async for chunk in self._generate_google_fallback(simplified_prompt, context):
                     yield chunk
@@ -300,7 +340,9 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_ollama_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Ollama fallback response."""
-        model = OllamaClient()
+        from backend.components.generator.providers.ollama_generator import OllamaGenerator
+        
+        model = OllamaGenerator()
         model_name = context.model or context.model_config.get("model")
         model_kwargs = self._clean_dict({
             "model": model_name,
@@ -314,11 +356,10 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
         
         api_kwargs = model.convert_inputs_to_api_kwargs(
             input=simplified_prompt,
-            model_kwargs=model_kwargs,
-            model_type=ModelType.LLM
+            model_kwargs=model_kwargs
         )
         
-        response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+        response = await model.acall(api_kwargs=api_kwargs)
         async for chunk in response:
             text = getattr(chunk, 'response', None) or getattr(chunk, 'text', None) or str(chunk)
             if text and not text.startswith('model=') and not text.startswith('created_at='):
@@ -441,6 +482,41 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
                             yield text
         except Exception as e:
             yield f"\nError with Azure AI API fallback: {str(e)}\n\nPlease check that you have set the AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_VERSION environment variables with valid values."
+    
+    async def _generate_private_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
+        """Generate Private Model fallback response."""
+        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
+        
+        model = PrivateModelGenerator()
+        model_kwargs = {
+            "model": context.model,
+            "stream": True,
+            "temperature": context.model_config.get("temperature")
+        }
+        
+        top_p = context.model_config.get("top_p")
+        if top_p is not None:
+            model_kwargs["top_p"] = top_p
+        model_kwargs = self._clean_dict(model_kwargs)
+        
+        api_kwargs = model.convert_inputs_to_api_kwargs(
+            input=simplified_prompt,
+            model_kwargs=model_kwargs,
+            model_type=ModelType.LLM
+        )
+        
+        try:
+            response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+            async for chunk in response:
+                choices = getattr(chunk, "choices", [])
+                if len(choices) > 0:
+                    delta = getattr(choices[0], "delta", None)
+                    if delta is not None:
+                        text = getattr(delta, "content", None)
+                        if text is not None:
+                            yield text
+        except Exception as e:
+            yield f"\nError with Private Model API fallback: {str(e)}\n\nPlease check that you have set the PRIVATE_MODEL_API_KEY and PRIVATE_MODEL_BASE_URL environment variables with valid values."
     
     async def _generate_google_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Google Generative AI fallback response."""
