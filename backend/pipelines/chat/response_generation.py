@@ -8,9 +8,16 @@ for different AI providers in the chat pipeline.
 import google.generativeai as genai
 from typing import AsyncGenerator, Any, Dict
 
+try:
+    from openai import APITimeoutError, APIConnectionError, AuthenticationError, RateLimitError
+except ImportError:
+    # Graceful fallback if openai package is not available
+    APITimeoutError = APIConnectionError = AuthenticationError = RateLimitError = Exception
+
 from ..base.base_pipeline import PipelineStep
 from .chat_context import ChatPipelineContext
 from backend.components.generator.base import ModelType
+from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
 
 
 class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineContext]):
@@ -18,6 +25,14 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     def __init__(self):
         super().__init__("ResponseGeneration")
+        self._private_model_generator = None
+    
+    @property
+    def private_model_generator(self) -> PrivateModelGenerator:
+        """Lazy-initialized PrivateModelGenerator instance."""
+        if self._private_model_generator is None:
+            self._private_model_generator = PrivateModelGenerator()
+        return self._private_model_generator
     
     def _clean_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Remove keys with None values recursively from a dict."""
@@ -32,6 +47,52 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
             elif value is not None:
                 cleaned[key] = value
         return cleaned
+    
+    async def _generate_private_model_response(self, prompt: str, context: ChatPipelineContext, is_fallback: bool = False) -> AsyncGenerator[str, None]:
+        """Common helper method for generating Private Model responses."""
+        model = self.private_model_generator
+        model_kwargs = self._clean_dict({
+            "model": context.model,
+            "stream": True,
+            "temperature": context.model_config.get("temperature"),
+            "top_p": context.model_config.get("top_p")
+        })
+        
+        api_kwargs = model.convert_inputs_to_api_kwargs(
+            input=prompt,
+            model_kwargs=model_kwargs,
+            model_type=ModelType.LLM
+        )
+        
+        try:
+            response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
+            async for chunk in response:
+                choices = getattr(chunk, "choices", [])
+                if len(choices) > 0:
+                    delta = getattr(choices[0], "delta", None)
+                    if delta is not None:
+                        text = getattr(delta, "content", None)
+                        if text is not None:
+                            yield text
+        except Exception as e:
+            error_type = "Private Model API fallback" if is_fallback else "Private Model API"
+            
+            # Get actual environment variable names from the generator instance
+            api_key_env = getattr(model, '_env_api_key_name', 'PRIVATE_MODEL_API_KEY')
+            base_url_env = getattr(model, '_env_base_url_name', 'PRIVATE_MODEL_BASE_URL')
+            base_url = getattr(model, 'base_url', 'private model endpoint')
+            
+            if isinstance(e, AuthenticationError):
+                yield f"\nAuthentication error with {error_type}: {str(e)}\n\nPlease check that you have set the {api_key_env} environment variable with a valid API key."
+            elif isinstance(e, APIConnectionError):
+                yield f"\nConnection error with {error_type}: {str(e)}\n\nPlease check that:\n1. The {base_url_env} environment variable is set to the correct endpoint URL (currently: {base_url})\n2. The private model service is running and accessible\n3. Your network connection is working"
+            elif isinstance(e, APITimeoutError):
+                yield f"\nTimeout error with {error_type}: {str(e)}\n\nThe private model service took too long to respond. Please try again or check if the service is overloaded."
+            elif isinstance(e, RateLimitError):
+                yield f"\nRate limit error with {error_type}: {str(e)}\n\nToo many requests to the private model service. Please wait a moment and try again."
+            else:
+                # Fallback for other exceptions
+                yield f"\nError with {error_type}: {str(e)}\n\nPlease check that you have set the {api_key_env} and {base_url_env} environment variables with valid values."
     
     def execute(self, context: ChatPipelineContext) -> ChatPipelineContext:
         """Generate streaming response from the AI model."""
@@ -241,38 +302,8 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_private_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Private Model."""
-        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
-        
-        model = PrivateModelGenerator()
-        model_kwargs = {
-            "model": context.model,
-            "stream": True,
-            "temperature": context.model_config.get("temperature")
-        }
-        
-        top_p = context.model_config.get("top_p")
-        if top_p is not None:
-            model_kwargs["top_p"] = top_p
-        model_kwargs = self._clean_dict(model_kwargs)
-        
-        api_kwargs = model.convert_inputs_to_api_kwargs(
-            input=context.final_prompt,
-            model_kwargs=model_kwargs,
-            model_type=ModelType.LLM
-        )
-        
-        try:
-            response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
-            async for chunk in response:
-                choices = getattr(chunk, "choices", [])
-                if len(choices) > 0:
-                    delta = getattr(choices[0], "delta", None)
-                    if delta is not None:
-                        text = getattr(delta, "content", None)
-                        if text is not None:
-                            yield text
-        except Exception as e:
-            yield f"\nError with Private Model API: {str(e)}\n\nPlease check that you have set the PRIVATE_MODEL_API_KEY and PRIVATE_MODEL_BASE_URL environment variables with valid values."
+        async for chunk in self._generate_private_model_response(context.final_prompt, context, is_fallback=False):
+            yield chunk
     
     async def _generate_google_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Google Generative AI."""
@@ -485,38 +516,8 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     
     async def _generate_private_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Private Model fallback response."""
-        from backend.components.generator.providers.private_model_generator import PrivateModelGenerator
-        
-        model = PrivateModelGenerator()
-        model_kwargs = {
-            "model": context.model,
-            "stream": True,
-            "temperature": context.model_config.get("temperature")
-        }
-        
-        top_p = context.model_config.get("top_p")
-        if top_p is not None:
-            model_kwargs["top_p"] = top_p
-        model_kwargs = self._clean_dict(model_kwargs)
-        
-        api_kwargs = model.convert_inputs_to_api_kwargs(
-            input=simplified_prompt,
-            model_kwargs=model_kwargs,
-            model_type=ModelType.LLM
-        )
-        
-        try:
-            response = await model.acall(api_kwargs=api_kwargs, model_type=ModelType.LLM)
-            async for chunk in response:
-                choices = getattr(chunk, "choices", [])
-                if len(choices) > 0:
-                    delta = getattr(choices[0], "delta", None)
-                    if delta is not None:
-                        text = getattr(delta, "content", None)
-                        if text is not None:
-                            yield text
-        except Exception as e:
-            yield f"\nError with Private Model API fallback: {str(e)}\n\nPlease check that you have set the PRIVATE_MODEL_API_KEY and PRIVATE_MODEL_BASE_URL environment variables with valid values."
+        async for chunk in self._generate_private_model_response(simplified_prompt, context, is_fallback=True):
+            yield chunk
     
     async def _generate_google_fallback(self, simplified_prompt: str, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate Google Generative AI fallback response."""
