@@ -28,7 +28,7 @@ html[data-theme='dark'] {
   --card-bg: #222222; /* Slightly lighter than background */
   --highlight: #e57373; /* Soft red */
   --muted: #8c8c8c; /* Muted gray */
-  --link-color: #1e90ff; /* Lighter purple for dark mode links */
+  --link-color: #1e90ff; /* Blue for links (same as light mode and primary accent) */
 }
 
 /* Fix for unreadable <select> options in Chrome's dark mode */
