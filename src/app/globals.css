@@ -14,7 +14,7 @@
   --card-bg: #fffaf0; /* Slightly warmer than background */
   --highlight: #e8927c; /* Soft coral */
   --muted: #a59e8c; /* Soft gray-brown */
-  --link-color: #1e90ff; /* Slightly darker purple for links */
+  --link-color: #1e90ff; /* Blue for links (identical to primary accent color) */
 }
 
 html[data-theme='dark'] {
