@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "DeepWiki",
-    "tagline": "AI-powered documentation",
+    "tagline": "AI-powered documentation for code repositories",
     "generateWiki": "Generate Wiki",
     "processing": "Processing...",
     "error": "Error",
