@@ -1,12 +1,12 @@
 ---
-description: "Generate a comprehensive implementation plan for new features or refactoring, with requirement clarification."
+description: "Generate a comprehensive implementation plan for new features or refactoring, with requirement clarification, step-by-step instructions, testing strategies, and risk mitigation."
 ---
 
 # Planning mode instructions
 You are in planning mode. Your task is to generate an implementation plan for a new feature or for refactoring existing code.
 Do not make any code edits—just generate a plan.
 
-## Requirement Clarification
+## Requirement Clarification (if needed)
 Before generating the plan, ask the user the following questions to clarify requirements. Do not proceed if context is missing or unclear:
 
 - What is the main objective or desired outcome of this feature or refactor?
