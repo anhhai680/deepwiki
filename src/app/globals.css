@@ -4,31 +4,31 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* Japanese aesthetic color palette - light mode */
+  /* Color palette - light mode */
   --background: #f8f4e6; /* Warm off-white like washi paper */
   --foreground: #333333; /* Soft black for text */
   --shadow-color: rgba(0, 0, 0, 0.05);
-  --accent-primary: #9b7cb9; /* Soft purple (Fuji) */
-  --accent-secondary: #d7c4bb; /* Soft beige (Kinari) */
+  --accent-primary: #1e90ff; /* Dodger blue */
+  --accent-secondary: #d7c4bb; /* Soft beige */
   --border-color: #e0d8c8; /* Soft beige border */
   --card-bg: #fffaf0; /* Slightly warmer than background */
-  --highlight: #e8927c; /* Soft coral (Akane) */
-  --muted: #a59e8c; /* Soft gray-brown (Nezumi) */
-  --link-color: #7c5aa0; /* Slightly darker purple for links */
+  --highlight: #e8927c; /* Soft coral */
+  --muted: #a59e8c; /* Soft gray-brown */
+  --link-color: #1e90ff; /* Blue for links (identical to primary accent color) */
 }
 
 html[data-theme='dark'] {
-  /* Japanese aesthetic color palette - dark mode */
+  /* Color palette - dark mode */
   --background: #1a1a1a; /* Deep charcoal */
   --foreground: #f0f0f0; /* Soft white */
   --shadow-color: rgba(0, 0, 0, 0.2);
-  --accent-primary: #9370db; /* Soft lavender */
+  --accent-primary: #1e90ff; /* Soft lavender */
   --accent-secondary: #5d4037; /* Warm brown */
   --border-color: #2c2c2c; /* Dark border */
   --card-bg: #222222; /* Slightly lighter than background */
   --highlight: #e57373; /* Soft red */
   --muted: #8c8c8c; /* Muted gray */
-  --link-color: #b19cd9; /* Lighter purple for dark mode links */
+  --link-color: #1e90ff; /* Blue for links (same as light mode and primary accent) */
 }
 
 /* Fix for unreadable <select> options in Chrome's dark mode */
@@ -49,7 +49,7 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
-/* Custom shadow styles - more subtle for Japanese aesthetic */
+/* Custom shadow styles - more subtle */
 .shadow-custom {
   box-shadow: 0 4px 8px -2px var(--shadow-color);
 }
