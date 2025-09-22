@@ -269,8 +269,9 @@ class DatabaseManager:
         embedder = get_embedder()
 
         if is_ollama_embedder:
-            # Use Ollama document processor for single-document processing
-            embedder_transformer = OllamaDocumentProcessor(embedder=embedder)
+            # Use Ollama document processor with batch processing for better performance
+            batch_size = embedder_config.get("batch_size", 8)  # Smaller batch size for Ollama due to local processing
+            embedder_transformer = OllamaDocumentProcessor(embedder=embedder, batch_size=batch_size)
         else:
             # Use batch processing for other embedders
             batch_size = embedder_config.get("batch_size", 500)

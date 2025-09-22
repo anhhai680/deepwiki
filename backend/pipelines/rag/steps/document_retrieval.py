@@ -35,13 +35,17 @@ class DocumentRetrievalStep(PipelineStep[FAISSRetriever, List[Any]]):
             retriever = input_data
             query = rag_context.user_query
             self.logger.info(f"Retrieving documents for query: {query[:100]}...")
+            self.logger.info(f"DOCUMENT_RETRIEVAL: About to call retriever: {type(retriever)}")
+            self.logger.info(f"DOCUMENT_RETRIEVAL: Retriever instance: {retriever}")
             
             # Validate query
             if not rag_context.validate_query_config():
                 raise ValueError(f"Query validation failed: {rag_context.get_last_error()}")
             
             # Execute retrieval
+            self.logger.info(f"DOCUMENT_RETRIEVAL: Calling retriever('{query}') now...")
             retrieved_documents = retriever(query)
+            self.logger.info(f"DOCUMENT_RETRIEVAL: Retrieved documents result: {retrieved_documents}")
             
             # Process retrieved documents
             processed_docs = self._process_retrieved_documents(retrieved_documents, rag_context)

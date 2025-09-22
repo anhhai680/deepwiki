@@ -54,43 +54,107 @@ def check_ollama_model_exists(model_name: str, ollama_host: Optional[str] = None
         return False
 
 
-class OllamaDocumentProcessor:
+class OllamaDocumentProcessor(adal.Component):
     """
-    Process documents for Ollama embeddings by processing one document at a time.
-    Adalflow Ollama Client does not support batch embedding, so we need to process each document individually.
+    Process documents for Ollama embeddings using batch processing for better performance.
+    Uses concurrent requests to reduce total processing time and avoid frontend timeouts.
     """
-    def __init__(self, embedder: adal.Embedder) -> None:
+    def __init__(self, embedder: adal.Embedder, batch_size: int = 8) -> None:
+        super().__init__()
         self.embedder = embedder
+        self.batch_size = batch_size  # Process documents in batches
 
-    def __call__(self, documents: Sequence[Document]) -> Sequence[Document]:
+    def call(self, documents: Sequence[Document]) -> Sequence[Document]:
         output = deepcopy(documents)
-        logger.info(f"Processing {len(output)} documents individually for Ollama embeddings")
+        logger.info(f"Processing {len(output)} documents in batches of {self.batch_size} for Ollama embeddings")
 
         successful_docs = []
         expected_embedding_size = None
 
-        for i, doc in enumerate(tqdm(output, desc="Processing documents for Ollama embeddings")):
+        # Process documents in batches for better performance
+        for batch_start in tqdm(range(0, len(output), self.batch_size), desc="Processing document batches"):
+            batch_end = min(batch_start + self.batch_size, len(output))
+            batch_docs = output[batch_start:batch_end]
+            
+            # Extract texts from batch
+            batch_texts = [doc.text for doc in batch_docs]
+            
             try:
-                result = self.embedder(input=doc.text)
+                # Process entire batch at once (uses concurrent requests internally)
+                result = self.embedder(input=batch_texts)
+                
                 if result.data and len(result.data) > 0:
-                    embedding = result.data[0].embedding
+                    # Process each embedding result
+                    for i, embedding_result in enumerate(result.data):
+                        if i >= len(batch_docs):  # Safety check
+                            break
+                            
+                        doc_index = batch_start + i
+                        embedding = embedding_result.embedding
 
-                    if expected_embedding_size is None:
-                        expected_embedding_size = len(embedding)
-                        logger.info(f"Expected embedding size set to: {expected_embedding_size}")
-                    elif len(embedding) != expected_embedding_size:
-                        file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{i}')
-                        logger.warning(f"Document '{file_path}' has inconsistent embedding size {len(embedding)} != {expected_embedding_size}, skipping")
-                        continue
+                        if expected_embedding_size is None:
+                            expected_embedding_size = len(embedding)
+                            logger.info(f"Expected embedding size set to: {expected_embedding_size}")
+                        elif len(embedding) != expected_embedding_size:
+                            file_path = getattr(batch_docs[i], 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                            logger.warning(f"Document '{file_path}' has inconsistent embedding size {len(embedding)} != {expected_embedding_size}, skipping")
+                            continue
 
-                    output[i].vector = embedding
-                    successful_docs.append(output[i])
+                        output[doc_index].vector = embedding
+                        successful_docs.append(output[doc_index])
                 else:
-                    file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{i}')
-                    logger.warning(f"Failed to get embedding for document '{file_path}', skipping")
+                    # If batch processing failed, try individual documents in this batch
+                    logger.warning(f"Batch processing failed for batch {batch_start}-{batch_end}, trying individual documents")
+                    for i, doc in enumerate(batch_docs):
+                        doc_index = batch_start + i
+                        try:
+                            individual_result = self.embedder(input=doc.text)
+                            if individual_result.data and len(individual_result.data) > 0:
+                                embedding = individual_result.data[0].embedding
+
+                                if expected_embedding_size is None:
+                                    expected_embedding_size = len(embedding)
+                                    logger.info(f"Expected embedding size set to: {expected_embedding_size}")
+                                elif len(embedding) != expected_embedding_size:
+                                    file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                                    logger.warning(f"Document '{file_path}' has inconsistent embedding size {len(embedding)} != {expected_embedding_size}, skipping")
+                                    continue
+
+                                output[doc_index].vector = embedding
+                                successful_docs.append(output[doc_index])
+                            else:
+                                file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                                logger.warning(f"Failed to get embedding for document '{file_path}', skipping")
+                        except Exception as e:
+                            file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                            logger.error(f"Error processing individual document '{file_path}': {e}, skipping")
+                            
             except Exception as e:
-                file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{i}')
-                logger.error(f"Error processing document '{file_path}': {e}, skipping")
+                logger.error(f"Error processing batch {batch_start}-{batch_end}: {e}, trying individual documents")
+                # Fallback to individual processing for this batch
+                for i, doc in enumerate(batch_docs):
+                    doc_index = batch_start + i
+                    try:
+                        individual_result = self.embedder(input=doc.text)
+                        if individual_result.data and len(individual_result.data) > 0:
+                            embedding = individual_result.data[0].embedding
+
+                            if expected_embedding_size is None:
+                                expected_embedding_size = len(embedding)
+                                logger.info(f"Expected embedding size set to: {expected_embedding_size}")
+                            elif len(embedding) != expected_embedding_size:
+                                file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                                logger.warning(f"Document '{file_path}' has inconsistent embedding size {len(embedding)} != {expected_embedding_size}, skipping")
+                                continue
+
+                            output[doc_index].vector = embedding
+                            successful_docs.append(output[doc_index])
+                        else:
+                            file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                            logger.warning(f"Failed to get embedding for document '{file_path}', skipping")
+                    except Exception as individual_e:
+                        file_path = getattr(doc, 'meta_data', {}).get('file_path', f'document_{doc_index}')
+                        logger.error(f"Error processing individual document '{file_path}': {individual_e}, skipping")
 
         logger.info(f"Successfully processed {len(successful_docs)}/{len(output)} documents with consistent embeddings")
         return successful_docs

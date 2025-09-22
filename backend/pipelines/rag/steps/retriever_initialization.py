@@ -95,7 +95,17 @@ class RetrieverInitializationStep(PipelineStep[List[Any], FAISSRetriever]):
                 if len(query) != 1:
                     raise ValueError("Ollama embedder only supports a single string")
                 query = query[0]
-            return self.embedder(input=query)
+            
+            # Ensure embedder is available
+            if not self.embedder:
+                raise ValueError("Embedder not initialized")
+            
+            # Call the embedder and extract the actual embedding vector
+            result = self.embedder(input=query)
+            if result.data and len(result.data) > 0:
+                return result.data[0].embedding  # Return the actual embedding vector
+            else:
+                raise ValueError(f"No embedding data returned for query: {query}")
         
         self.query_embedder = single_string_embedder
         context.logger.info("Created Ollama-compatible query embedder")

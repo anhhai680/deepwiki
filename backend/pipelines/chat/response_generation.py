@@ -138,11 +138,24 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
                     yield chunk
                 
         except Exception as e:
-            error_message = str(e)
+            error_message = str(e) if e is not None else "Unknown error"
+            # Ensure error_message is not None or empty
+            if not error_message:
+                error_message = "Unknown error occurred"
+                
             self.logger.error(f"Error in streaming response: {error_message}")
             
-            # Check for token limit errors and try fallback
-            if any(phrase in error_message.lower() for phrase in ["maximum context length", "token limit", "too many tokens"]):
+            # Check for token limit errors and try fallback (with robust null checking)
+            try:
+                is_token_limit_error = (
+                    error_message and 
+                    isinstance(error_message, str) and 
+                    any(phrase in error_message.lower() for phrase in ["maximum context length", "token limit", "too many tokens"])
+                )
+            except (TypeError, AttributeError):
+                is_token_limit_error = False
+            
+            if is_token_limit_error:
                 self.logger.warning("Token limit exceeded, retrying without context")
                 async for chunk in self._generate_fallback_response(context):
                     yield chunk
@@ -308,20 +321,35 @@ class ResponseGenerationStep(PipelineStep[ChatPipelineContext, ChatPipelineConte
     async def _generate_google_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate streaming response from Google Generative AI."""
         model_name = context.model or context.model_config.get("model")
+        
+        # Ensure model_name is not None - use default if needed
+        if not model_name:
+            model_name = "gemini-pro"  # Default Google model
+        
         generation_config = self._clean_dict({
             "temperature": context.model_config.get("temperature"),
             "top_p": context.model_config.get("top_p"),
             "top_k": context.model_config.get("top_k")
         })
+        
         model = genai.GenerativeModel(
             model_name=model_name,
             generation_config=generation_config
         )
         
         response = model.generate_content(context.final_prompt, stream=True)
-        for chunk in response:
-            if hasattr(chunk, 'text'):
-                yield chunk.text
+        
+        # Check if response is None or not iterable
+        if response is None:
+            yield "Error: Google API returned None response"
+            return
+            
+        try:
+            for chunk in response:
+                if hasattr(chunk, 'text'):
+                    yield chunk.text
+        except TypeError as e:
+            yield f"Error: Unable to iterate over Google API response: {str(e)}"
     
     async def _generate_fallback_response(self, context: ChatPipelineContext) -> AsyncGenerator[str, None]:
         """Generate fallback response without context when token limits are exceeded."""

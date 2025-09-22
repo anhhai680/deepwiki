@@ -142,6 +142,7 @@ class FAISSRetriever(BaseRetriever):
         Returns:
             RetrievalResult: The retrieval results
         """
+        logger.info(f"FAISSRetriever.__call__ started with query: '{query}'")
         try:
             if not self._faiss_retriever:
                 return RetrievalResult(
@@ -154,7 +155,14 @@ class FAISSRetriever(BaseRetriever):
             k = top_k if top_k is not None else self._top_k
             
             # Perform retrieval using the underlying FAISS retriever
+            logger.info(f"About to call FAISS retriever with query: '{query}'")
+            logger.info(f"FAISS retriever type: {type(self._faiss_retriever)}")
+            logger.info(f"FAISS retriever exists: {self._faiss_retriever is not None}")
+            
             result = self._faiss_retriever(query)
+            
+            logger.info(f"FAISS retriever returned result: {type(result)}")
+            logger.info(f"Result content: {result}")
             
             # Extract document indices and scores - handle different result formats
             doc_indices = []
@@ -200,6 +208,10 @@ class FAISSRetriever(BaseRetriever):
             
         except Exception as e:
             logger.error(f"Error in FAISS retrieval: {str(e)}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return RetrievalResult(
                 documents=[],
                 doc_indices=[],

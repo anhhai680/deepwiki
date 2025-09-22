@@ -44,6 +44,15 @@ def get_embedder():
         model_kwargs = embedder_config.get("model_kwargs", {})
         initialize_kwargs = embedder_config.get("initialize_kwargs", {})
         
+        # Add concurrency parameters from config for Ollama
+        if provider_type == EmbeddingProviderType.OLLAMA:
+            # Get the root config which contains batch_size and max_concurrent_requests
+            from backend.core.config.settings import get_embedder_config
+            full_config = get_embedder_config()
+            
+            if "max_concurrent_requests" in full_config:
+                initialize_kwargs["max_concurrent_requests"] = full_config["max_concurrent_requests"]
+        
         # Create embedder with configuration
         embedder = manager.create_embedder(
             provider_type=provider_type,
